@@ -236,15 +236,37 @@ body {
 
 .pointer {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 14px);
   left: 50%;
   transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-bottom: 34px solid var(--accent);
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+  width: 68px;
+  height: 78px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pointer::before {
+  content: '';
+  width: 48px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  border-radius: 18px 18px 10px 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.pointer::after {
+  content: '';
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 26px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
 }
 
 .result {
@@ -257,6 +279,136 @@ body {
 .app-footer {
   margin-top: 2rem;
   color: var(--muted);
+}
+
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.confetti-container.show {
+  opacity: 1;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10vh;
+  width: 12px;
+  height: 18px;
+  border-radius: 3px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--confetti-x-move), 110vh, 0) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.win-modal[hidden] {
+  display: none;
+}
+
+.win-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(4, 16, 28, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.win-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.win-modal__content {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  max-width: min(420px, 90vw);
+  position: relative;
+  transform: translateY(24px);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.win-modal.show .win-modal__content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.win-modal__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.win-modal__details {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.win-modal__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.win-modal__link:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.win-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.win-modal__close:hover {
+  transform: scale(1.1);
+}
+
+.hidden {
+  display: none !important;
 }
 
 @media (max-width: 768px) {

@@ -7,6 +7,12 @@ const clearSelectionBtn = document.getElementById('clear-selection');
 const resultEl = document.getElementById('result');
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
+const confettiContainer = document.getElementById('confetti-container');
+const winModal = document.getElementById('win-modal');
+const winModalTitle = document.getElementById('win-modal-title');
+const winModalDetails = document.getElementById('win-modal-details');
+const winModalLink = document.getElementById('win-modal-link');
+const winModalCloseBtn = document.getElementById('win-modal-close');
 
 let allMovies = [];
 let selectedIds = new Set();
@@ -19,6 +25,12 @@ let targetRotation = 0;
 let lastTickIndex = null;
 let winnerId = null;
 let audioContext = null;
+let confettiTimeoutId = null;
+let modalHideTimeoutId = null;
+let lastFocusedBeforeModal = null;
+
+// Angle (in radians) representing the pointer direction (straight down from the top).
+const POINTER_DIRECTION = (3 * Math.PI) / 2;
 
 const palette = [
   '#ff8600',
@@ -44,6 +56,24 @@ clearSelectionBtn.addEventListener('click', () => {
 });
 spinButton.addEventListener('click', spinWheel);
 
+if (winModalCloseBtn) {
+  winModalCloseBtn.addEventListener('click', () => closeWinnerPopup());
+}
+
+if (winModal) {
+  winModal.addEventListener('click', (event) => {
+    if (event.target === winModal) {
+      closeWinnerPopup();
+    }
+  });
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    closeWinnerPopup();
+  }
+});
+
 drawEmptyWheel();
 
 function handleFileUpload(event) {
@@ -51,6 +81,8 @@ function handleFileUpload(event) {
   if (!file) {
     return;
   }
+
+  closeWinnerPopup({ restoreFocus: false });
 
   if (!file.name.toLowerCase().endsWith('.csv')) {
     statusMessage.textContent = 'Please choose a CSV file exported from Letterboxd.';
@@ -158,12 +190,14 @@ function updateMovieList() {
   if (winnerId && !selectedIds.has(winnerId)) {
     winnerId = null;
     resultEl.textContent = '';
+    closeWinnerPopup({ restoreFocus: false });
   }
 
   if (!allMovies.length) {
     movieListEl.innerHTML = '<li class="empty">Upload a CSV to see your movies here.</li>';
     spinButton.disabled = true;
     drawEmptyWheel();
+    closeWinnerPopup({ restoreFocus: false });
     return;
   }
 
@@ -223,6 +257,9 @@ function updateMovieList() {
 
   const selectedMovies = allMovies.filter((movie) => selectedIds.has(movie.id));
   spinButton.disabled = selectedMovies.length === 0 || isSpinning;
+  if (!selectedMovies.length) {
+    closeWinnerPopup({ restoreFocus: false });
+  }
   drawWheel(selectedMovies);
 }
 
@@ -252,6 +289,11 @@ function drawWheel(selectedMovies) {
   }
 
   const arc = (2 * Math.PI) / selectedMovies.length;
+  const shouldHighlight = !isSpinning && winnerId;
+  const pointerAngle = shouldHighlight ? getPointerAngle() : 0;
+  const highlightIndex = shouldHighlight
+    ? Math.floor((((pointerAngle + 2 * Math.PI) % (2 * Math.PI)) + 1e-6) / arc) % selectedMovies.length
+    : null;
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rotationAngle);
@@ -262,7 +304,28 @@ function drawWheel(selectedMovies) {
     ctx.moveTo(0, 0);
     ctx.fillStyle = palette[index % palette.length];
     ctx.arc(0, 0, radius, angle, angle + arc);
+    ctx.closePath();
     ctx.fill();
+
+    if (highlightIndex === index) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, radius, angle, angle + arc);
+      ctx.closePath();
+      const gradient = ctx.createRadialGradient(0, 0, radius * 0.1, 0, 0, radius);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+      gradient.addColorStop(0.65, 'rgba(255, 255, 255, 0.18)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.55)';
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.save();
     ctx.fillStyle = '#04121f';
@@ -321,6 +384,7 @@ function spinWheel() {
     return;
   }
 
+  closeWinnerPopup({ restoreFocus: false });
   isSpinning = true;
   spinButton.disabled = true;
   resultEl.textContent = '';
@@ -333,7 +397,7 @@ function spinWheel() {
   const randomOffset = Math.random() * arc;
   const spins = 6 + Math.random() * 3;
   const finalAngle = randomIndex * arc + randomOffset;
-  const currentPointerAngle = (2 * Math.PI - ((rotationAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) % (2 * Math.PI);
+  const currentPointerAngle = getPointerAngle();
   const neededRotation = (spins * 2 * Math.PI) + finalAngle - currentPointerAngle;
   targetRotation = rotationAngle + neededRotation;
   spinDuration = 4500 + Math.random() * 2000;
@@ -377,12 +441,16 @@ function finishSpin(selectedMovies, arc) {
   spinButton.disabled = selectedMovies.length === 0;
 
   const pointerAngle = getPointerAngle();
-  const winningIndex = Math.floor(pointerAngle / arc) % selectedMovies.length;
+  const normalizedPointer = ((pointerAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  const winningIndex = Math.floor((normalizedPointer + 1e-6) / arc) % selectedMovies.length;
   const winningMovie = selectedMovies[winningIndex];
   winnerId = winningMovie.id;
   highlightWinner();
   resultEl.innerHTML = `🎉 Next up: <strong>${winningMovie.name}</strong>${winningMovie.year ? ` (${winningMovie.year})` : ''}`;
   playWinSound();
+  drawWheel(selectedMovies);
+  triggerConfetti();
+  showWinnerPopup(winningMovie);
 }
 
 function highlightWinner() {
@@ -398,7 +466,7 @@ function highlightWinner() {
 
 function getPointerAngle() {
   const normalized = ((rotationAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  return (2 * Math.PI - normalized) % (2 * Math.PI);
+  return (POINTER_DIRECTION - normalized + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function easeOutCubic(x) {
@@ -451,6 +519,117 @@ function playWinSound() {
     oscillator.start(startTime);
     oscillator.stop(startTime + 0.45);
   });
+}
+
+function triggerConfetti() {
+  if (!confettiContainer) return;
+
+  if (confettiTimeoutId) {
+    clearTimeout(confettiTimeoutId);
+    confettiTimeoutId = null;
+  }
+
+  confettiContainer.classList.remove('show');
+  confettiContainer.innerHTML = '';
+
+  const colors = ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
+  const pieceCount = 140;
+
+  for (let i = 0; i < pieceCount; i += 1) {
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const size = 8 + Math.random() * 8;
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size * 1.4}px`;
+    piece.style.backgroundColor = colors[i % colors.length];
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.animationDelay = `${Math.random() * 0.3}s`;
+    const duration = 2.2 + Math.random() * 1.5;
+    piece.style.animationDuration = `${duration}s`;
+    const horizontalDrift = (Math.random() - 0.5) * 40;
+    piece.style.setProperty('--confetti-x-move', `${horizontalDrift}vw`);
+    confettiContainer.appendChild(piece);
+  }
+
+  void confettiContainer.offsetWidth;
+  confettiContainer.classList.add('show');
+
+  confettiTimeoutId = window.setTimeout(() => {
+    confettiContainer.classList.remove('show');
+    confettiContainer.innerHTML = '';
+    confettiTimeoutId = null;
+  }, 4200);
+}
+
+function showWinnerPopup(movie) {
+  if (!winModal) return;
+
+  if (modalHideTimeoutId) {
+    clearTimeout(modalHideTimeoutId);
+    modalHideTimeoutId = null;
+  }
+
+  const details = [];
+  if (movie.year) {
+    details.push(`Released ${movie.year}`);
+  }
+  if (movie.date) {
+    details.push(`Added to your watchlist ${movie.date}`);
+  }
+
+  if (winModalTitle) {
+    winModalTitle.textContent = `The movie selected was ${movie.name}!`;
+  }
+  if (winModalDetails) {
+    winModalDetails.textContent = details.length
+      ? details.join(' • ')
+      : 'Get comfy, cue it up, and enjoy the show!';
+  }
+
+  if (winModalLink) {
+    if (movie.uri) {
+      winModalLink.href = movie.uri;
+      winModalLink.classList.remove('hidden');
+      winModalLink.textContent = 'View on Letterboxd';
+    } else {
+      winModalLink.classList.add('hidden');
+      winModalLink.removeAttribute('href');
+    }
+  }
+
+  winModal.setAttribute('aria-hidden', 'false');
+  winModal.removeAttribute('hidden');
+  requestAnimationFrame(() => {
+    winModal.classList.add('show');
+  });
+
+  lastFocusedBeforeModal = document.activeElement;
+  if (winModalCloseBtn) {
+    winModalCloseBtn.focus();
+  }
+}
+
+function closeWinnerPopup({ restoreFocus = true } = {}) {
+  if (!winModal || winModal.hasAttribute('hidden')) {
+    return;
+  }
+
+  if (modalHideTimeoutId) {
+    clearTimeout(modalHideTimeoutId);
+    modalHideTimeoutId = null;
+  }
+
+  winModal.classList.remove('show');
+  winModal.setAttribute('aria-hidden', 'true');
+
+  modalHideTimeoutId = window.setTimeout(() => {
+    winModal.setAttribute('hidden', '');
+    if (restoreFocus && lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+      lastFocusedBeforeModal.focus();
+    }
+    lastFocusedBeforeModal = null;
+    modalHideTimeoutId = null;
+  }, 220);
 }
 
 window.addEventListener('beforeunload', () => {

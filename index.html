@@ -56,6 +56,30 @@
     <p>Built for movie lovers who love a little chaos.</p>
   </footer>
 
+  <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
+
+  <div
+    id="win-modal"
+    class="win-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="win-modal-title"
+    hidden
+  >
+    <div class="win-modal__content">
+      <button type="button" class="win-modal__close" id="win-modal-close" aria-label="Close winner dialog">&times;</button>
+      <h3 id="win-modal-title" class="win-modal__title"></h3>
+      <p id="win-modal-details" class="win-modal__details"></p>
+      <a
+        id="win-modal-link"
+        class="win-modal__link"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+      >View on Letterboxd</a>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
