@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letterboxd Watchlist Wheel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Letterboxd Watchlist Wheel</h1>
+    <p>Upload your exported watchlist, curate the entries, and spin to decide what to watch next.</p>
+  </header>
+
+  <main class="app">
+    <section class="card" aria-labelledby="upload-heading">
+      <div class="card-header">
+        <h2 id="upload-heading">1. Upload your CSV</h2>
+      </div>
+      <div class="card-body">
+        <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
+        <label class="file-input" for="csv-input">
+          <span class="file-label">Choose CSV file</span>
+          <input type="file" id="csv-input" accept=".csv" />
+        </label>
+        <p class="status" id="status-message" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="selection-heading">
+      <div class="card-header">
+        <h2 id="selection-heading">2. Curate your wheel</h2>
+        <div class="controls">
+          <button type="button" class="btn" id="select-all">Select all</button>
+          <button type="button" class="btn" id="clear-selection">Clear all</button>
+        </div>
+      </div>
+      <div class="card-body selection-area">
+        <div class="movie-list-wrapper">
+          <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
+        </div>
+        <div class="wheel-wrapper">
+          <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
+          <div class="pointer" aria-hidden="true"></div>
+          <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
+          <p class="result" id="result" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Built for movie lovers who love a little chaos.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
