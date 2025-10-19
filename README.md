@@ -13,6 +13,7 @@ Turn your Letterboxd watchlist export into a dramatic wheel spin that chooses wh
 ## Getting started
 
 1. Export your data from Letterboxd: `Profile → Settings → Data → Export Your Data`. Once the archive arrives by email, unzip it and locate `watchlist.csv`.
+   You can also export your watchlist from the watchlist page (https://letterboxd.com/[USERNAME]/watchlist/)
 2. Clone or download this repository.
 3. Open `index.html` in your browser, or push the repository to GitHub and enable GitHub Pages for instant hosting.
 4. Upload `watchlist.csv`, optionally deselect a few entries, and press **Spin the wheel**.
@@ -26,12 +27,6 @@ Everything runs locally in the browser, so there are no dependencies or framewor
 - `index.html` contains the markup for the two-step interface (upload + spin).
 - `styles.css` defines the neon-inspired appearance of the page and the wheel.
 - `script.js` handles CSV parsing, list management, drawing the wheel on a `<canvas>`, and triggering sound effects through the Web Audio API.
-
-## Deploying to GitHub Pages
-
-1. Commit your changes and push to a GitHub repository.
-2. In GitHub, open **Settings → Pages**, choose the `main` branch (or whichever branch you prefer), and select the root folder.
-3. Save – your wheel will be available at `https://<your-username>.github.io/<repository-name>/`.
 
 ## Accessibility considerations
 
