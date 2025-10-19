@@ -20,6 +20,9 @@ let lastTickIndex = null;
 let winnerId = null;
 let audioContext = null;
 
+// Angle (in radians) representing the pointer direction (straight down from the top).
+const POINTER_DIRECTION = (3 * Math.PI) / 2;
+
 const palette = [
   '#ff8600',
   '#3ab0ff',
@@ -333,7 +336,7 @@ function spinWheel() {
   const randomOffset = Math.random() * arc;
   const spins = 6 + Math.random() * 3;
   const finalAngle = randomIndex * arc + randomOffset;
-  const currentPointerAngle = (2 * Math.PI - ((rotationAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) % (2 * Math.PI);
+  const currentPointerAngle = getPointerAngle();
   const neededRotation = (spins * 2 * Math.PI) + finalAngle - currentPointerAngle;
   targetRotation = rotationAngle + neededRotation;
   spinDuration = 4500 + Math.random() * 2000;
@@ -398,7 +401,7 @@ function highlightWinner() {
 
 function getPointerAngle() {
   const normalized = ((rotationAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  return (2 * Math.PI - normalized) % (2 * Math.PI);
+  return (POINTER_DIRECTION - normalized + 2 * Math.PI) % (2 * Math.PI);
 }
 
 function easeOutCubic(x) {
