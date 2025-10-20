@@ -168,11 +168,11 @@ async function handleLetterboxdImport() {
   }
 
   try {
-    const normalizedUrl = normalizeLetterboxdListUrl(rawUrl);
+    const listInfo = normalizeLetterboxdListUrl(rawUrl);
     isFetchingLetterboxdList = true;
     setImportingState(true);
     statusMessage.textContent = 'Fetching list from Letterboxd…';
-    const movies = await fetchLetterboxdList(normalizedUrl);
+    const movies = await fetchLetterboxdList(listInfo);
 
     if (!movies.length) {
       statusMessage.textContent = 'No movies found on that Letterboxd list.';
@@ -185,6 +185,9 @@ async function handleLetterboxdImport() {
     console.error(error);
     if (error && error.name === 'TypeError') {
       statusMessage.textContent = 'Could not reach Letterboxd. Try again later or use the CSV export.';
+    } else if (error && error.code === 'LETTERBOXD_CORS') {
+      statusMessage.textContent =
+        'Letterboxd blocked the request. Configure a CORS-friendly proxy (see README) or use the CSV export.';
     } else if (error && error.message) {
       statusMessage.textContent = error.message;
     } else {
@@ -234,30 +237,97 @@ function normalizeLetterboxdListUrl(rawUrl) {
 
   const normalizedSegments = segments.slice(0, listIndex + 2);
   parsedUrl.pathname = `/${normalizedSegments.join('/')}/`;
-  return parsedUrl.toString();
+
+  const owner = listIndex > 0 ? segments[listIndex - 1] : '';
+  const slug = segments[listIndex + 1] || '';
+
+  return {
+    normalizedUrl: parsedUrl.toString(),
+    origin: parsedUrl.origin,
+    owner,
+    slug
+  };
 }
 
-async function fetchLetterboxdList(listUrl) {
+async function fetchLetterboxdList(listInfo) {
+  const { normalizedUrl, origin, owner, slug } = listInfo;
   const movies = [];
   const seenIds = new Set();
-  const baseUrl = listUrl.endsWith('/') ? listUrl : `${listUrl}/`;
-  const base = new URL(baseUrl);
-  const origin = base.origin;
+  const fetchStrategies = getLetterboxdFetchStrategies();
 
-  for (let page = 1; page <= 30; page += 1) {
-    const pageUrl = page === 1 ? baseUrl : `${baseUrl}page/${page}/`;
-    const response = await fetch(pageUrl, {
-      credentials: 'omit'
-    });
+  let apiAttempted = false;
+  if (owner && slug) {
+    try {
+      apiAttempted = true;
+      const apiMovies = await fetchLetterboxdListViaApi({ origin, owner, slug });
+      if (Array.isArray(apiMovies)) {
+        apiMovies.forEach((movie) => {
+          if (!movie || !movie.name) {
+            return;
+          }
+          const key = movie.id || movie.slug || `${movie.name.toLowerCase()}-${movie.year || 'unknown'}`;
+          if (seenIds.has(key)) {
+            return;
+          }
+          seenIds.add(key);
+          movies.push({
+            id: key,
+            name: movie.name,
+            year: movie.year || '',
+            date: '',
+            uri: movie.uri || ''
+          });
+        });
 
-    if (!response.ok) {
-      if (response.status === 404) {
+        if (movies.length) {
+          return movies;
+        }
+
+        if (apiMovies.length === 0) {
+          return [];
+        }
+      }
+    } catch (error) {
+      if (error && error.code === 'LETTERBOXD_NOT_FOUND') {
         throw new Error('Could not find that Letterboxd list. Check the URL and make sure it is public.');
       }
-      throw new Error('Could not fetch that Letterboxd list. Make sure it is public.');
+
+      if (error && error.code === 'LETTERBOXD_CORS') {
+        // Fall back to HTML scraping with proxy support below.
+      } else if (error && error.code === 'LETTERBOXD_EMPTY') {
+        return [];
+      } else if (!apiAttempted || !(error && error.name === 'TypeError')) {
+        console.warn('Letterboxd API fetch failed, trying HTML fallback.', error);
+      }
+    }
+  }
+
+  let chosenStrategy = null;
+  let encounteredCorsError = false;
+
+  for (let page = 1; page <= 30; page += 1) {
+    const pageUrl = page === 1 ? normalizedUrl : `${normalizedUrl}page/${page}/`;
+    let html;
+
+    try {
+      const result = await fetchLetterboxdHtml(pageUrl, fetchStrategies, chosenStrategy);
+      html = result.html;
+      if (!chosenStrategy) {
+        chosenStrategy = result.strategy;
+      }
+    } catch (error) {
+      if (error && error.code === 'LETTERBOXD_NOT_FOUND') {
+        throw new Error('Could not find that Letterboxd list. Check the URL and make sure it is public.');
+      }
+      if (error && error.code === 'LETTERBOXD_CORS') {
+        encounteredCorsError = true;
+        break;
+      }
+      throw error instanceof Error
+        ? error
+        : new Error('Could not fetch that Letterboxd list. Make sure it is public.');
     }
 
-    const html = await response.text();
     const { movies: pageMovies, hasNextPage } = parseLetterboxdPage(html);
 
     if (!pageMovies.length && page === 1) {
@@ -287,7 +357,393 @@ async function fetchLetterboxdList(listUrl) {
     }
   }
 
+  if (!movies.length && encounteredCorsError) {
+    const corsError = new Error('Letterboxd blocked the request.');
+    corsError.code = 'LETTERBOXD_CORS';
+    throw corsError;
+  }
+
   return movies;
+}
+
+async function fetchLetterboxdListViaApi({ origin, owner, slug }) {
+  const movies = [];
+  let encounteredCors = false;
+
+  for (let page = 1; page <= 30; page += 1) {
+    const apiUrl = `${origin}/api-data/list/${owner}/${slug}/entries?page=${page}`;
+    let response;
+
+    try {
+      response = await fetch(apiUrl, {
+        credentials: 'omit',
+        headers: {
+          'x-requested-with': 'XMLHttpRequest'
+        }
+      });
+    } catch (error) {
+      if (error && error.name === 'TypeError') {
+        encounteredCors = true;
+        break;
+      }
+      throw error;
+    }
+
+    if (response.status === 404) {
+      const notFound = new Error('Letterboxd list not found.');
+      notFound.code = 'LETTERBOXD_NOT_FOUND';
+      throw notFound;
+    }
+
+    if (response.type === 'opaque') {
+      encounteredCors = true;
+      break;
+    }
+
+    if (!response.ok) {
+      throw new Error('Could not fetch that Letterboxd list. Make sure it is public.');
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      break;
+    }
+
+    const items = extractLetterboxdListItems(data);
+
+    if (!items.length) {
+      if (page === 1) {
+        if (typeof data?.itemCount === 'number' && data.itemCount === 0) {
+          const emptyError = new Error('Letterboxd list is empty.');
+          emptyError.code = 'LETTERBOXD_EMPTY';
+          throw emptyError;
+        }
+        return [];
+      }
+      break;
+    }
+
+    items.forEach((item, index) => {
+      const formatted = normalizeLetterboxdApiItem(item, origin, page, index);
+      if (formatted) {
+        movies.push(formatted);
+      }
+    });
+
+    const nextPage = getLetterboxdNextPage(data, page);
+    if (!nextPage) {
+      break;
+    }
+
+    if (nextPage === page) {
+      break;
+    }
+
+    page = nextPage - 1;
+  }
+
+  if (!movies.length && encounteredCors) {
+    const corsError = new Error('Letterboxd blocked the request.');
+    corsError.code = 'LETTERBOXD_CORS';
+    throw corsError;
+  }
+
+  return movies;
+}
+
+function extractLetterboxdListItems(data) {
+  if (!data) {
+    return [];
+  }
+
+  if (Array.isArray(data.items)) {
+    return data.items;
+  }
+
+  if (Array.isArray(data.entries)) {
+    return data.entries;
+  }
+
+  if (Array.isArray(data?.data?.items)) {
+    return data.data.items;
+  }
+
+  if (Array.isArray(data?.listEntries)) {
+    return data.listEntries;
+  }
+
+  return [];
+}
+
+function normalizeLetterboxdApiItem(item, origin, page, index) {
+  if (!item) {
+    return null;
+  }
+
+  const film = typeof item.film === 'object' && item.film ? item.film : item;
+  const name =
+    (typeof film.name === 'string' && film.name) ||
+    (typeof film.title === 'string' && film.title) ||
+    (typeof item.name === 'string' && item.name) ||
+    '';
+
+  if (!name) {
+    return null;
+  }
+
+  const yearValue =
+    film.releaseYear ||
+    film.year ||
+    item.releaseYear ||
+    item.year ||
+    (film.__typename === 'Film' && film.firstReleaseYear);
+  const year = typeof yearValue === 'number' || typeof yearValue === 'string' ? String(yearValue).trim() : '';
+
+  const slugSource =
+    item.filmSlug ||
+    film.slug ||
+    film.uri ||
+    film.path ||
+    item.slug ||
+    '';
+  const slug = normalizeLetterboxdFilmSlug(slugSource);
+
+  const urlSource =
+    item.filmUrl ||
+    film.webUrl ||
+    film.url ||
+    (slug ? `${origin}${slug}` : '');
+  const uri = typeof urlSource === 'string' ? normalizeLetterboxdFilmUrl(urlSource, origin, slug) : '';
+
+  const id = slug || `${name.toLowerCase()}-${year || 'unknown'}-${page}-${index}`;
+
+  return {
+    id,
+    name,
+    year,
+    uri
+  };
+}
+
+function getLetterboxdNextPage(data, currentPage) {
+  const possible = [data?.next, data?.nextPage, data?.pagination?.next, data?.meta?.nextPage];
+
+  for (let i = 0; i < possible.length; i += 1) {
+    const value = possible[i];
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const match = value.match(/page=(\d+)/i);
+      if (match && match[1]) {
+        const parsed = Number.parseInt(match[1], 10);
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+    }
+  }
+
+  if (typeof data?.totalPages === 'number' && data.totalPages > currentPage) {
+    return currentPage + 1;
+  }
+
+  return null;
+}
+
+async function fetchLetterboxdHtml(pageUrl, strategies, preferredStrategy) {
+  const attempts = Array.isArray(strategies) ? strategies.slice() : [];
+  if (!attempts.length) {
+    attempts.push(...getLetterboxdFetchStrategies());
+  }
+
+  if (preferredStrategy) {
+    const hasPreferred = attempts.includes(preferredStrategy);
+    if (hasPreferred) {
+      attempts.splice(attempts.indexOf(preferredStrategy), 1);
+    }
+    attempts.unshift(preferredStrategy);
+  }
+
+  let lastError = null;
+  let encounteredCors = false;
+
+  for (let i = 0; i < attempts.length; i += 1) {
+    const strategy = attempts[i];
+    if (!strategy || typeof strategy.buildUrl !== 'function') {
+      continue;
+    }
+
+    const targetUrl = strategy.buildUrl(pageUrl);
+
+    try {
+      const response = await fetch(targetUrl, {
+        credentials: 'omit'
+      });
+
+      if (response.status === 404) {
+        const notFound = new Error('Letterboxd list not found.');
+        notFound.code = 'LETTERBOXD_NOT_FOUND';
+        throw notFound;
+      }
+
+      if (response.type === 'opaque') {
+        encounteredCors = true;
+        continue;
+      }
+
+      if (!response.ok) {
+        lastError = new Error(`Letterboxd request failed with status ${response.status}.`);
+        continue;
+      }
+
+      const html = await response.text();
+      if (!html || !html.trim()) {
+        lastError = new Error('Letterboxd returned an empty response.');
+        continue;
+      }
+
+      return { html, strategy };
+    } catch (error) {
+      if (error && error.code === 'LETTERBOXD_NOT_FOUND') {
+        throw error;
+      }
+      if (error && error.name === 'TypeError') {
+        encounteredCors = true;
+        lastError = error;
+        continue;
+      }
+      lastError = error;
+    }
+  }
+
+  if (encounteredCors) {
+    const corsError = new Error('Letterboxd blocked the request.');
+    corsError.code = 'LETTERBOXD_CORS';
+    throw corsError;
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  const genericError = new Error('Could not fetch that Letterboxd list. Make sure it is public.');
+  throw genericError;
+}
+
+function getLetterboxdFetchStrategies() {
+  const templates = [];
+
+  const directTemplate = '{{URL}}';
+  templates.push(directTemplate);
+
+  if (typeof window !== 'undefined') {
+    if (typeof window.LETTERBOXD_LIST_PROXY === 'string') {
+      templates.push(window.LETTERBOXD_LIST_PROXY.trim());
+    }
+
+    if (Array.isArray(window.LETTERBOXD_LIST_PROXIES)) {
+      window.LETTERBOXD_LIST_PROXIES.forEach((template) => {
+        if (typeof template === 'string') {
+          templates.push(template.trim());
+        }
+      });
+    }
+  }
+
+  templates.push('https://r.jina.ai/https://{{HOST_AND_PATH}}');
+  templates.push('https://r.jina.ai/http://{{HOST_AND_PATH}}');
+
+  const uniqueTemplates = templates.filter((template, index, array) => {
+    return template && array.indexOf(template) === index;
+  });
+
+  return uniqueTemplates.map((template) => ({
+    buildUrl: (url) => buildLetterboxdProxyUrl(template, url),
+    template
+  }));
+}
+
+function buildLetterboxdProxyUrl(template, url) {
+  if (!template || template === '{{URL}}') {
+    return url;
+  }
+
+  const hostAndPath = stripProtocol(url);
+  return template.replace(/{{URL}}/g, url).replace(/{{HOST_AND_PATH}}/g, hostAndPath);
+}
+
+function stripProtocol(url) {
+  if (typeof url !== 'string') {
+    return '';
+  }
+  return url.replace(/^https?:\/\//i, '');
+}
+
+function normalizeLetterboxdFilmSlug(slug) {
+  if (typeof slug !== 'string') {
+    return '';
+  }
+
+  let value = slug.trim();
+  if (!value) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      value = parsed.pathname || '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  value = value.replace(/^letterboxd\.com/i, '');
+  value = value.replace(/\/+/g, '/');
+  value = value.replace(/^\/+/, '/');
+
+  if (!value.startsWith('/')) {
+    value = `/${value}`;
+  }
+
+  if (!value.startsWith('/film/')) {
+    value = value.replace(/^\/film\//, '/film/');
+    if (!value.startsWith('/film/')) {
+      value = `/film/${value.replace(/^\/+/, '').replace(/^film\//, '')}`;
+    }
+  }
+
+  return value.replace(/\/+$/, '');
+}
+
+function normalizeLetterboxdFilmUrl(url, origin, slug) {
+  if (typeof url !== 'string' || !url) {
+    if (slug) {
+      return `${origin}${slug}`;
+    }
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  if (url.startsWith('//')) {
+    return `https:${url}`;
+  }
+
+  if (slug) {
+    return `${origin}${slug}`;
+  }
+
+  if (!url.startsWith('/')) {
+    return `${origin}/${url}`;
+  }
+
+  return `${origin}${url}`;
 }
 
 function parseLetterboxdPage(html) {

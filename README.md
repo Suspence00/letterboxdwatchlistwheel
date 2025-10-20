@@ -21,6 +21,24 @@ Turn your Letterboxd watchlist export into a dramatic wheel spin that chooses wh
 
 A small sample file (`sample-watchlist.csv`) is included for quick testing.
 
+### Letterboxd list imports
+
+Letterboxd does not currently send CORS headers for their HTML list pages. The importer first tries to use the
+`/api-data/list/{user}/{slug}/entries` endpoint, and then falls back to HTML scraping through a few CORS-friendly proxies. If
+your browser blocks every attempt you can provide your own proxy before `script.js` loads:
+
+```html
+<script>
+  window.LETTERBOXD_LIST_PROXY = 'https://your-proxy.example/fetch?url={{URL}}';
+  window.LETTERBOXD_LIST_PROXIES = [
+    'https://another-proxy.example/{{URL}}'
+  ];
+</script>
+```
+
+Use `{{URL}}` to inject the entire Letterboxd page URL or `{{HOST_AND_PATH}}` for just `letterboxd.com/...`. When no proxy
+works the importer surfaces an actionable error so you can fall back to the CSV export.
+
 ## Development notes
 
 Everything runs locally in the browser, so there are no dependencies or frameworks to install. If you would like to tweak the styling or behaviour:
