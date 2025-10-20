@@ -4,6 +4,8 @@ const movieListEl = document.getElementById('movie-list');
 const spinButton = document.getElementById('spin-button');
 const selectAllBtn = document.getElementById('select-all');
 const clearSelectionBtn = document.getElementById('clear-selection');
+const letterboxdUrlInput = document.getElementById('letterboxd-url');
+const importListButton = document.getElementById('import-list-button');
 const resultEl = document.getElementById('result');
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
@@ -28,6 +30,8 @@ let audioContext = null;
 let confettiTimeoutId = null;
 let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
+let isFetchingLetterboxdList = false;
+const importListButtonDefaultLabel = importListButton ? importListButton.textContent : '';
 
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -55,6 +59,16 @@ clearSelectionBtn.addEventListener('click', () => {
   updateMovieList();
 });
 spinButton.addEventListener('click', spinWheel);
+
+if (importListButton && letterboxdUrlInput) {
+  importListButton.addEventListener('click', () => handleLetterboxdImport());
+  letterboxdUrlInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleLetterboxdImport();
+    }
+  });
+}
 
 if (winModalCloseBtn) {
   winModalCloseBtn.addEventListener('click', () => closeWinnerPopup());
@@ -110,7 +124,7 @@ function handleFileUpload(event) {
         return;
       }
 
-      allMovies = rows.slice(1).map((row, index) => {
+      const movies = rows.slice(1).map((row, index) => {
         return {
           id: `${index}-${row[nameIndex]}`,
           name: row[nameIndex] ? row[nameIndex].trim() : 'Unknown title',
@@ -120,16 +134,12 @@ function handleFileUpload(event) {
         };
       }).filter((movie) => movie.name);
 
-      if (!allMovies.length) {
+      if (!movies.length) {
         statusMessage.textContent = 'No movies found in the CSV file.';
         return;
       }
 
-      selectedIds = new Set(allMovies.map((movie) => movie.id));
-      winnerId = null;
-      resultEl.textContent = '';
-      statusMessage.textContent = `${allMovies.length} movies imported. Ready to spin!`;
-      updateMovieList();
+      applyImportedMovies(movies, `${movies.length} movies imported. Ready to spin!`);
     } catch (error) {
       console.error(error);
       statusMessage.textContent = 'Something went wrong while reading the CSV.';
@@ -139,6 +149,234 @@ function handleFileUpload(event) {
     statusMessage.textContent = 'Failed to read the file. Please try again.';
   };
   reader.readAsText(file);
+}
+
+async function handleLetterboxdImport() {
+  if (!letterboxdUrlInput) {
+    return;
+  }
+
+  const rawUrl = letterboxdUrlInput.value.trim();
+  if (!rawUrl) {
+    statusMessage.textContent = 'Paste a Letterboxd list URL to import.';
+    letterboxdUrlInput.focus();
+    return;
+  }
+
+  if (isFetchingLetterboxdList) {
+    return;
+  }
+
+  try {
+    const normalizedUrl = normalizeLetterboxdListUrl(rawUrl);
+    isFetchingLetterboxdList = true;
+    setImportingState(true);
+    statusMessage.textContent = 'Fetching list from Letterboxd…';
+    const movies = await fetchLetterboxdList(normalizedUrl);
+
+    if (!movies.length) {
+      statusMessage.textContent = 'No movies found on that Letterboxd list.';
+      return;
+    }
+
+    applyImportedMovies(movies, `${movies.length} movies imported from Letterboxd. Ready to spin!`);
+    letterboxdUrlInput.value = '';
+  } catch (error) {
+    console.error(error);
+    if (error && error.name === 'TypeError') {
+      statusMessage.textContent = 'Could not reach Letterboxd. Try again later or use the CSV export.';
+    } else if (error && error.message) {
+      statusMessage.textContent = error.message;
+    } else {
+      statusMessage.textContent = 'Could not import that Letterboxd list. Try again or use the CSV export.';
+    }
+  } finally {
+    isFetchingLetterboxdList = false;
+    setImportingState(false);
+  }
+}
+
+function setImportingState(isLoading) {
+  if (!importListButton || !letterboxdUrlInput) {
+    return;
+  }
+
+  importListButton.disabled = isLoading;
+  letterboxdUrlInput.disabled = isLoading;
+  importListButton.textContent = isLoading ? 'Importing…' : importListButtonDefaultLabel || 'Import list';
+}
+
+function normalizeLetterboxdListUrl(rawUrl) {
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(rawUrl);
+  } catch (error) {
+    try {
+      parsedUrl = new URL(`https://${rawUrl}`);
+    } catch (error2) {
+      throw new Error('Enter a valid Letterboxd list URL.');
+    }
+  }
+
+  if (!parsedUrl.hostname.toLowerCase().endsWith('letterboxd.com')) {
+    throw new Error('Enter a valid Letterboxd list URL from letterboxd.com.');
+  }
+
+  parsedUrl.protocol = 'https:';
+  parsedUrl.search = '';
+  parsedUrl.hash = '';
+
+  const segments = parsedUrl.pathname.split('/').filter(Boolean);
+  const listIndex = segments.indexOf('list');
+  if (listIndex === -1 || !segments[listIndex + 1]) {
+    throw new Error('That does not look like a Letterboxd list URL.');
+  }
+
+  const normalizedSegments = segments.slice(0, listIndex + 2);
+  parsedUrl.pathname = `/${normalizedSegments.join('/')}/`;
+  return parsedUrl.toString();
+}
+
+async function fetchLetterboxdList(listUrl) {
+  const movies = [];
+  const seenIds = new Set();
+  const baseUrl = listUrl.endsWith('/') ? listUrl : `${listUrl}/`;
+  const base = new URL(baseUrl);
+  const origin = base.origin;
+
+  for (let page = 1; page <= 30; page += 1) {
+    const pageUrl = page === 1 ? baseUrl : `${baseUrl}page/${page}/`;
+    const response = await fetch(pageUrl, {
+      credentials: 'omit'
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Could not find that Letterboxd list. Check the URL and make sure it is public.');
+      }
+      throw new Error('Could not fetch that Letterboxd list. Make sure it is public.');
+    }
+
+    const html = await response.text();
+    const { movies: pageMovies, hasNextPage } = parseLetterboxdPage(html);
+
+    if (!pageMovies.length && page === 1) {
+      return [];
+    }
+
+    pageMovies.forEach((movie, index) => {
+      const key = movie.slug
+        ? movie.slug
+        : `${movie.name.toLowerCase()}-${movie.year || 'unknown'}-${page}-${index}`;
+      if (seenIds.has(key)) {
+        return;
+      }
+      seenIds.add(key);
+      const slugPath = movie.slug ? `${movie.slug}/` : '';
+      movies.push({
+        id: key,
+        name: movie.name,
+        year: movie.year,
+        date: '',
+        uri: movie.slug ? `${origin}${slugPath}` : ''
+      });
+    });
+
+    if (!hasNextPage) {
+      break;
+    }
+  }
+
+  return movies;
+}
+
+function parseLetterboxdPage(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const elements = Array.from(doc.querySelectorAll('[data-film-slug]'));
+  const seenOnPage = new Set();
+  const movies = [];
+
+  elements.forEach((element, index) => {
+    const source = element.matches('[data-film-name]') ? element : element.querySelector('[data-film-name]');
+    const nameSource = source || element.querySelector('.film-title, .film-title-wrapper a');
+
+    let name = '';
+    if (source) {
+      name = source.getAttribute('data-film-name') || source.dataset?.filmName || '';
+    }
+    if (!name && nameSource) {
+      name = nameSource.textContent ? nameSource.textContent.trim() : '';
+    }
+
+    if (!name) {
+      return;
+    }
+
+    let year = '';
+    if (source) {
+      year = source.getAttribute('data-film-year') || source.dataset?.filmYear || '';
+    }
+    if (!year) {
+      const yearEl = element.querySelector('[data-film-year], .film-year');
+      if (yearEl) {
+        year = yearEl.getAttribute('data-film-year') || yearEl.textContent.trim();
+      }
+    }
+
+    let slug = element.getAttribute('data-film-slug') || element.dataset?.filmSlug || '';
+    if (!slug) {
+      const slugEl = element.querySelector('[data-film-slug]');
+      if (slugEl) {
+        slug = slugEl.getAttribute('data-film-slug') || slugEl.dataset?.filmSlug || '';
+      }
+    }
+
+    if (slug) {
+      slug = slug.trim();
+      slug = slug.replace(/^https?:\/\/[^/]+/i, '');
+      const cleanedSlug = slug.replace(/^\/+/, '').replace(/\/+$/, '');
+      slug = cleanedSlug ? `/${cleanedSlug}` : '';
+    }
+
+    const dedupeKey = slug || `${name.toLowerCase()}-${year || 'unknown'}-${index}`;
+    if (seenOnPage.has(dedupeKey)) {
+      return;
+    }
+    seenOnPage.add(dedupeKey);
+
+    movies.push({
+      name,
+      year: year || '',
+      slug
+    });
+  });
+
+  const nextLinkEl = doc.querySelector('link[rel="next"]');
+  const nextButtonEl = doc.querySelector('.paginate-nextprev .next, .paginate .next a, .pagination .next a, a.next, button[rel="next"]');
+  const dataNextEl = doc.querySelector('[data-next-page]');
+  const hasNextPage = Boolean(
+    nextLinkEl ||
+      nextButtonEl ||
+      (dataNextEl && dataNextEl.getAttribute('data-next-page') && dataNextEl.getAttribute('data-next-page') !== 'false')
+  );
+
+  return { movies, hasNextPage };
+}
+
+function applyImportedMovies(movies, statusText) {
+  closeWinnerPopup({ restoreFocus: false });
+  allMovies = movies.slice();
+  selectedIds = new Set(allMovies.map((movie) => movie.id));
+  winnerId = null;
+  resultEl.textContent = '';
+  updateMovieList();
+  if (typeof statusText === 'string') {
+    statusMessage.textContent = statusText;
+  }
+  if (movieListEl) {
+    movieListEl.scrollTop = 0;
+  }
 }
 
 function parseCSV(text) {
@@ -194,7 +432,7 @@ function updateMovieList() {
   }
 
   if (!allMovies.length) {
-    movieListEl.innerHTML = '<li class="empty">Upload a CSV to see your movies here.</li>';
+    movieListEl.innerHTML = '<li class="empty">Upload a CSV or import a Letterboxd list to see your movies here.</li>';
     spinButton.disabled = true;
     drawEmptyWheel();
     closeWinnerPopup({ restoreFocus: false });
@@ -275,7 +513,7 @@ function drawEmptyWheel() {
   ctx.font = '700 22px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Upload a CSV to spin', 0, 0);
+  ctx.fillText('Add movies to spin', 0, 0);
   ctx.restore();
 }
 

@@ -26,6 +26,27 @@
           <span class="file-label">Choose CSV file</span>
           <input type="file" id="csv-input" accept=".csv" />
         </label>
+
+        <div class="import-divider" role="presentation">
+          <span>or</span>
+        </div>
+
+        <div class="url-import" aria-live="polite">
+          <label class="url-label" for="letterboxd-url">Paste a Letterboxd list URL</label>
+          <div class="url-input-group">
+            <input
+              type="url"
+              id="letterboxd-url"
+              name="letterboxd-url"
+              class="text-input"
+              inputmode="url"
+              placeholder="https://letterboxd.com/you/list/your-list/"
+              autocomplete="off"
+            />
+            <button type="button" class="btn" id="import-list-button">Import list</button>
+          </div>
+          <p class="helper-text helper-text--small">Works with public lists, including the “Detail” view.</p>
+        </div>
         <p class="status" id="status-message" role="status" aria-live="polite"></p>
       </div>
     </section>

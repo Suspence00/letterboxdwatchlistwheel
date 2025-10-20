@@ -104,6 +104,74 @@ body {
   letter-spacing: 0.02em;
 }
 
+.import-divider {
+  margin: 1.5rem 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.import-divider::before,
+.import-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.url-import {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.url-label {
+  font-weight: 600;
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.url-input-group .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.text-input {
+  flex: 1 1 280px;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  font-size: 1rem;
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.text-input:focus {
+  box-shadow: 0 0 0 3px rgba(255, 134, 0, 0.45);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.text-input::placeholder {
+  color: rgba(245, 247, 250, 0.45);
+}
+
+.helper-text--small {
+  font-size: 0.85rem;
+  margin-top: -0.35rem;
+}
+
 .status {
   margin-top: 1rem;
   min-height: 1.2rem;
