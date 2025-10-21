@@ -16,6 +16,14 @@ const winModalTitle = document.getElementById('win-modal-title');
 const winModalDetails = document.getElementById('win-modal-details');
 const winModalLink = document.getElementById('win-modal-link');
 const winModalCloseBtn = document.getElementById('win-modal-close');
+const lizardForm = document.getElementById('lizard-form');
+const lizardInput = document.getElementById('lizard-input');
+const lizardStatus = document.getElementById('lizard-status');
+const importCard = document.getElementById('import-card');
+const importCardBody = document.getElementById('import-body');
+const importToggleBtn = document.getElementById('import-toggle');
+
+const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
 let allMovies = [];
 let selectedIds = new Set();
@@ -48,6 +56,19 @@ const palette = [
   '#06d6a0',
   '#ff70a6'
 ];
+
+if (lizardForm) {
+  lizardForm.addEventListener('submit', handleLizardOpen);
+}
+
+if (importToggleBtn && importCard && importCardBody) {
+  importToggleBtn.addEventListener('click', () => {
+    const isCollapsed = importCard.classList.toggle('card--collapsed');
+    importCardBody.hidden = isCollapsed;
+    importToggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+    importToggleBtn.textContent = isCollapsed ? 'Show steps' : 'Hide steps';
+  });
+}
 
 csvInput.addEventListener('change', handleFileUpload);
 selectAllBtn.addEventListener('click', () => {
@@ -92,6 +113,120 @@ document.addEventListener('keydown', (event) => {
 drawEmptyWheel();
 updateVetoButtonState();
 
+function handleLizardOpen(event) {
+  event.preventDefault();
+  if (!lizardInput) {
+    return;
+  }
+
+  const rawValue = lizardInput.value.trim();
+  if (!rawValue) {
+    setLizardStatus('Enter a username or list link to open in Lizard.', { tone: 'error' });
+    lizardInput.focus();
+    return;
+  }
+
+  let query;
+  try {
+    query = buildLizardQuery(rawValue);
+  } catch (error) {
+    setLizardStatus(error.message || 'Please provide a valid value.', { tone: 'error' });
+    lizardInput.focus();
+    return;
+  }
+
+  const url = buildLizardManualUrl(query.mode, query.manualQuery);
+  if (!url) {
+    setLizardStatus('Unable to build a Lizard link. Try again.', { tone: 'error' });
+    return;
+  }
+
+  setLizardStatus('Opening Lizard in a new tab…');
+
+  const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!openedWindow) {
+    setLizardStatus('Pop-up blocked. Allow pop-ups for this site or open Lizard manually.', { tone: 'error' });
+    return;
+  }
+
+  setLizardStatus('Opened Lizard. Download the CSV there and upload it above.', { tone: 'success' });
+}
+
+function buildLizardQuery(rawInput) {
+  const trimmed = rawInput.trim();
+  if (!trimmed) {
+    throw new Error('Enter a username or list link to open in Lizard.');
+  }
+
+  if (/^https?:\/\//i.test(trimmed) && !/^https?:\/\/(www\.)?letterboxd\.com\//i.test(trimmed)) {
+    throw new Error('Only Letterboxd links are supported.');
+  }
+
+  const withoutDomain = trimmed.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '');
+  const withoutQuery = withoutDomain.split(/[?#]/)[0];
+  const cleaned = withoutQuery
+    .replace(/^@/, '')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
+  if (!cleaned) {
+    throw new Error('Enter a valid Letterboxd username or list.');
+  }
+
+  const segments = cleaned.split('/').filter(Boolean);
+  if (!segments.length) {
+    throw new Error('Enter a valid Letterboxd username or list.');
+  }
+
+  if (segments.length === 1 || (segments.length === 2 && segments[1].toLowerCase() === 'watchlist')) {
+    const username = segments[0];
+    if (!username || username.toLowerCase() === 'watchlist' || username.toLowerCase() === 'list') {
+      throw new Error('Enter a valid Letterboxd username.');
+    }
+    return {
+      mode: 'watchlist',
+      manualQuery: username
+    };
+  }
+
+  return {
+    mode: 'list',
+    manualQuery: cleaned
+  };
+}
+
+function buildLizardManualUrl(mode, manualQuery) {
+  const safeQuery = manualQuery ? manualQuery.trim() : '';
+  if (!safeQuery) {
+    return '';
+  }
+
+  const params = new URLSearchParams();
+
+  if (mode === 'watchlist') {
+    params.set('username', safeQuery);
+    params.set('tab', 'watchlist');
+  }
+
+  params.set('q', safeQuery);
+
+  return `${LIZARD_BASE_URL}/?${params.toString()}`;
+}
+
+function setLizardStatus(message, { tone } = {}) {
+  if (!lizardStatus) {
+    return;
+  }
+
+  lizardStatus.textContent = message || '';
+  lizardStatus.classList.remove('status--error', 'status--success');
+
+  if (tone === 'error') {
+    lizardStatus.classList.add('status--error');
+  } else if (tone === 'success') {
+    lizardStatus.classList.add('status--success');
+  }
+}
+
 function handleFileUpload(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) {
@@ -109,34 +244,61 @@ function handleFileUpload(event) {
   reader.onload = (e) => {
     try {
       const text = e.target.result;
-      const rows = parseCSV(text).filter((row) => row.length > 0 && row.some((cell) => cell.trim() !== ''));
+      const delimiter = detectDelimiter(text);
+      const rows = parseCSV(text, delimiter).filter(
+        (row) => row.length > 0 && row.some((cell) => cell.trim() !== '')
+      );
       if (rows.length <= 1) {
         statusMessage.textContent = 'The CSV appears to be empty.';
         return;
       }
 
       const header = rows[0].map((h) => h.trim().toLowerCase());
-      const dateIndex = header.indexOf('date');
-      const nameIndex = header.indexOf('name');
-      const yearIndex = header.indexOf('year');
-      const uriIndex = header.findIndex((h) => h.includes('letterboxd'));
+      const findColumn = (candidates) => {
+        for (const candidate of candidates) {
+          const index = header.indexOf(candidate);
+          if (index !== -1) {
+            return index;
+          }
+        }
+        return -1;
+      };
+
+      const dateIndex = findColumn(['date', 'watched date', 'watcheddate', 'added', 'added date']);
+      const nameIndex = findColumn(['name', 'title', 'film title', 'movie', 'film']);
+      const yearIndex = findColumn(['year', 'release year', 'film year']);
+      const uriIndex = header.findIndex((h) => h.includes('letterboxd') || h === 'url' || h === 'uri');
 
       if (nameIndex === -1) {
-        statusMessage.textContent = 'Could not find a “Name” column in this CSV.';
+        statusMessage.textContent = 'Could not find a title column in this CSV.';
         return;
       }
 
+      const isLikelyLizardExport = header.some((h) => h.includes('letterboxduri'));
+
       customEntryCounter = 0;
 
-      allMovies = rows.slice(1).map((row, index) => {
-        return {
-          id: `${index}-${row[nameIndex]}`,
-          name: row[nameIndex] ? row[nameIndex].trim() : 'Unknown title',
-          year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
-          date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
-          uri: uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : ''
-        };
-      }).filter((movie) => movie.name);
+      allMovies = rows
+        .slice(1)
+        .map((row, index) => {
+          const rawName = nameIndex >= 0 && row[nameIndex] ? row[nameIndex].trim() : '';
+          if (!rawName) {
+            return null;
+          }
+
+          const uri = uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : '';
+          const idBase = uri || rawName || index;
+
+          return {
+            id: `${index}-${idBase}`,
+            name: rawName,
+            year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
+            date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
+            uri,
+            fromLizard: isLikelyLizardExport
+          };
+        })
+        .filter(Boolean);
 
       if (!allMovies.length) {
         statusMessage.textContent = 'No movies found in the CSV file.';
@@ -160,7 +322,29 @@ function handleFileUpload(event) {
   reader.readAsText(file);
 }
 
-function parseCSV(text) {
+function detectDelimiter(text) {
+  const lines = text.split(/\r?\n/);
+  const firstContentLine = lines.find((line) => line.trim().length);
+  if (!firstContentLine) {
+    return ',';
+  }
+
+  const candidates = [',', '\t', ';', '|'];
+  let bestDelimiter = ',';
+  let bestSegmentCount = 1;
+
+  candidates.forEach((candidate) => {
+    const segments = firstContentLine.split(candidate);
+    if (segments.length > bestSegmentCount) {
+      bestSegmentCount = segments.length;
+      bestDelimiter = candidate;
+    }
+  });
+
+  return bestDelimiter;
+}
+
+function parseCSV(text, delimiter = ',') {
   const rows = [];
   let current = '';
   let insideQuotes = false;
@@ -181,7 +365,7 @@ function parseCSV(text) {
       } else {
         insideQuotes = !insideQuotes;
       }
-    } else if (char === ',' && !insideQuotes) {
+    } else if (char === delimiter && !insideQuotes) {
       addCell();
     } else if ((char === '\n' || char === '\r') && !insideQuotes) {
       addCell();
@@ -254,6 +438,7 @@ function updateMovieList() {
     const parts = [];
     if (movie.year) parts.push(movie.year);
     if (movie.date) parts.push(`Added ${movie.date}`);
+    if (movie.fromLizard) parts.push('Imported via Lizard');
     if (movie.isCustom) parts.push('Custom entry');
     metaEl.textContent = parts.join(' • ');
 

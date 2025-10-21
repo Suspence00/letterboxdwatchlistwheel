@@ -16,17 +16,54 @@
   </header>
 
   <main class="app">
-    <section class="card" aria-labelledby="upload-heading">
+    <section class="card" id="import-card" aria-labelledby="import-heading">
       <div class="card-header">
-        <h2 id="upload-heading">1. Upload your CSV</h2>
+        <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
+        <button
+          type="button"
+          class="btn card-toggle"
+          id="import-toggle"
+          aria-expanded="true"
+          aria-controls="import-body"
+        >Hide steps</button>
       </div>
-      <div class="card-body">
-        <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
-        <label class="file-input" for="csv-input">
-          <span class="file-label">Choose CSV file</span>
-          <input type="file" id="csv-input" accept=".csv" />
-        </label>
-        <p class="status" id="status-message" role="status" aria-live="polite"></p>
+      <div class="card-body import-body" id="import-body">
+        <div class="import-guide" role="note">
+          <p>
+            Download your watchlist or any public list as a CSV, then upload it below. You can export directly from Letterboxd or let Lizard build the file for you.
+          </p>
+        </div>
+        <div class="import-section">
+          <h3>Upload a CSV</h3>
+          <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
+          <label class="file-input" for="csv-input">
+            <span class="file-label">Choose CSV file</span>
+            <input type="file" id="csv-input" accept=".csv" />
+          </label>
+          <p class="status" id="status-message" role="status" aria-live="polite"></p>
+        </div>
+        <div class="import-section">
+          <h3>Find it with Lizard</h3>
+          <p class="helper-text">
+            Paste a Letterboxd username for watchlists, or a list path/URL (like <code>username/list/faves</code>). We&rsquo;ll open Lizard in a new tab with the right search.
+          </p>
+          <form id="lizard-form" class="lizard-form">
+            <label for="lizard-input">Letterboxd username or list link</label>
+            <input
+              type="text"
+              id="lizard-input"
+              class="text-input"
+              name="lizard-input"
+              placeholder="e.g., fastfingertips or fastfingertips/list/faves"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn" id="lizard-open">Open in Lizard</button>
+            <p class="status" id="lizard-status" role="status" aria-live="polite"></p>
+            <p class="helper-text helper-text--compact">
+              Once the tab opens, download the CSV there and upload it with the button above.
+            </p>
+          </form>
+        </div>
       </div>
     </section>
 
