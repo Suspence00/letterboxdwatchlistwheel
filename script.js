@@ -232,7 +232,10 @@ function handleFileUpload(event) {
   reader.onload = (e) => {
     try {
       const text = e.target.result;
-      const rows = parseCSV(text).filter((row) => row.length > 0 && row.some((cell) => cell.trim() !== ''));
+      const delimiter = detectDelimiter(text);
+      const rows = parseCSV(text, delimiter).filter(
+        (row) => row.length > 0 && row.some((cell) => cell.trim() !== '')
+      );
       if (rows.length <= 1) {
         statusMessage.textContent = 'The CSV appears to be empty.';
         return;
@@ -307,7 +310,29 @@ function handleFileUpload(event) {
   reader.readAsText(file);
 }
 
-function parseCSV(text) {
+function detectDelimiter(text) {
+  const lines = text.split(/\r?\n/);
+  const firstContentLine = lines.find((line) => line.trim().length);
+  if (!firstContentLine) {
+    return ',';
+  }
+
+  const candidates = [',', '\t', ';', '|'];
+  let bestDelimiter = ',';
+  let bestSegmentCount = 1;
+
+  candidates.forEach((candidate) => {
+    const segments = firstContentLine.split(candidate);
+    if (segments.length > bestSegmentCount) {
+      bestSegmentCount = segments.length;
+      bestDelimiter = candidate;
+    }
+  });
+
+  return bestDelimiter;
+}
+
+function parseCSV(text, delimiter = ',') {
   const rows = [];
   let current = '';
   let insideQuotes = false;
@@ -328,7 +353,7 @@ function parseCSV(text) {
       } else {
         insideQuotes = !insideQuotes;
       }
-    } else if (char === ',' && !insideQuotes) {
+    } else if (char === delimiter && !insideQuotes) {
       addCell();
     } else if ((char === '\n' || char === '\r') && !insideQuotes) {
       addCell();
