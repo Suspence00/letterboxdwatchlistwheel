@@ -38,15 +38,35 @@
           <button type="button" class="btn" id="clear-selection">Clear all</button>
         </div>
       </div>
-      <div class="card-body selection-area">
-        <div class="movie-list-wrapper">
-          <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
+      <div class="card-body">
+        <div class="custom-entry">
+          <form id="custom-entry-form" class="custom-entry__form">
+            <label for="custom-entry-name">Add a custom entry</label>
+            <div class="custom-entry__controls">
+              <input
+                type="text"
+                id="custom-entry-name"
+                class="text-input"
+                name="custom-entry-name"
+                placeholder="Anything goes — add a wildcard pick"
+                autocomplete="off"
+              />
+              <button type="submit" class="btn" id="add-custom-entry">Add to wheel</button>
+            </div>
+          </form>
+          <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd picks.</p>
         </div>
-        <div class="wheel-wrapper">
-          <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
-          <div class="pointer" aria-hidden="true"></div>
-          <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
-          <p class="result" id="result" aria-live="polite"></p>
+        <div class="selection-area">
+          <div class="movie-list-wrapper">
+            <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
+          </div>
+          <div class="wheel-wrapper">
+            <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
+            <div class="pointer" aria-hidden="true"></div>
+            <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
+            <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+            <p class="result" id="result" aria-live="polite"></p>
+          </div>
         </div>
       </div>
     </section>
