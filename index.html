@@ -24,7 +24,7 @@
         <div class="import-column">
           <h3>Download from Lizard</h3>
           <p class="helper-text">
-            Fetch any public watchlist or list using
+            Open any public watchlist or list using
             <a href="https://lizard.streamlit.app/" target="_blank" rel="noopener noreferrer">Lizard</a>, the open-source downloader by FastFingertips.
           </p>
           <form id="lizard-form" class="lizard-form">
@@ -41,15 +41,13 @@
               Watchlists: just the username. Lists: use <code>username/list-name</code> or a full list URL.
             </p>
             <div class="lizard-actions">
-              <button type="button" class="btn" data-lizard-action="watchlist">Fetch watchlist</button>
-              <button type="button" class="btn" data-lizard-action="list">Fetch list</button>
+              <button type="button" class="btn" data-lizard-action="watchlist">Open watchlist in Lizard</button>
+              <button type="button" class="btn" data-lizard-action="list">Open list in Lizard</button>
             </div>
             <p class="status" id="lizard-status" role="status" aria-live="polite"></p>
-            <div class="lizard-manual hidden" id="lizard-manual">
-              <p>
-                Having trouble? <a id="lizard-manual-link" href="#" target="_blank" rel="noopener noreferrer">Open this search in Lizard</a>, download the CSV, and upload it on the right.
-              </p>
-            </div>
+            <p class="helper-text helper-text--compact">
+              We&rsquo;ll open a new tab with your query. Download the CSV there and upload it on the right.
+            </p>
           </form>
         </div>
         <div class="import-column">
