@@ -176,9 +176,9 @@ body {
 .lizard-form .text-input {
   width: min(100%, 320px);
   max-width: 100%;
-  padding: 0.35rem 0.75rem;
-  line-height: 1.1;
-  height: 2.5rem;
+  padding: 0.25rem 0.6rem;
+  line-height: 1.2;
+  min-height: 2rem;
 }
 
 .lizard-form .btn {
@@ -425,6 +425,50 @@ body {
 }
 
 .movie-list li.show-weights .movie-weight {
+  display: inline-flex;
+}
+
+.movie-color {
+  display: none;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.movie-color label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.movie-color__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 42px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.movie-color__input::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.movie-color__input::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.movie-color__input::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.movie-list li.show-weights .movie-color {
   display: inline-flex;
 }
 

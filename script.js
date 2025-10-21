@@ -59,6 +59,13 @@ const palette = [
   '#ff70a6'
 ];
 
+function getDefaultColorForIndex(index) {
+  if (!Number.isFinite(index)) {
+    return palette[0];
+  }
+  return palette[((index % palette.length) + palette.length) % palette.length];
+}
+
 if (lizardForm) {
   lizardForm.addEventListener('submit', handleLizardOpen);
 }
@@ -310,7 +317,8 @@ function handleFileUpload(event) {
             date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
             uri,
             fromLizard: isLikelyLizardExport,
-            weight: 1
+            weight: 1,
+            color: getDefaultColorForIndex(index)
           };
         })
         .filter(Boolean);
@@ -438,6 +446,12 @@ function updateMovieList() {
       movie.weight = sanitizedWeight;
     }
 
+    const defaultColor = getDefaultColorForIndex(index);
+    const sanitizedColor = getStoredColor(movie, defaultColor);
+    if (movie.color !== sanitizedColor) {
+      movie.color = sanitizedColor;
+    }
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = selectedIds.has(movie.id);
@@ -463,7 +477,6 @@ function updateMovieList() {
     const parts = [];
     if (movie.year) parts.push(movie.year);
     if (movie.date) parts.push(`Added ${movie.date}`);
-    if (movie.fromLizard) parts.push('Imported via download helper');
     if (movie.isCustom) parts.push('Custom entry');
     metaEl.textContent = parts.join(' • ');
 
@@ -514,6 +527,30 @@ function updateMovieList() {
       weightWrapper.appendChild(weightLabel);
       weightWrapper.appendChild(weightSelect);
       li.appendChild(weightWrapper);
+
+      const colorWrapper = document.createElement('div');
+      colorWrapper.className = 'movie-color';
+
+      const colorInputId = `color-${index}`;
+      const colorLabel = document.createElement('label');
+      colorLabel.setAttribute('for', colorInputId);
+      colorLabel.textContent = 'Slice color';
+
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.id = colorInputId;
+      colorInput.className = 'movie-color__input';
+      colorInput.value = sanitizedColor;
+      colorInput.addEventListener('input', (event) => {
+        const selectedColor = sanitizeColor(event.target.value, defaultColor);
+        movie.color = selectedColor;
+        const selectedMoviesSnapshot = allMovies.filter((item) => selectedIds.has(item.id));
+        drawWheel(selectedMoviesSnapshot);
+      });
+
+      colorWrapper.appendChild(colorLabel);
+      colorWrapper.appendChild(colorInput);
+      li.appendChild(colorWrapper);
     }
 
     if (movie.isCustom) {
@@ -569,6 +606,26 @@ function getStoredWeight(movie) {
     return 1;
   }
   return clampWeight(Number(movie.weight));
+}
+
+function sanitizeColor(value, fallback) {
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    if (/^#([0-9a-f]{6})$/i.test(trimmed)) {
+      return trimmed;
+    }
+  }
+  if (typeof fallback === 'string' && /^#([0-9a-f]{6})$/i.test(fallback.trim())) {
+    return fallback.trim().toLowerCase();
+  }
+  return palette[0];
+}
+
+function getStoredColor(movie, fallback) {
+  if (!movie || typeof movie !== 'object') {
+    return sanitizeColor('', fallback);
+  }
+  return sanitizeColor(movie.color, fallback);
 }
 
 function getEffectiveWeight(movie) {
@@ -642,7 +699,11 @@ function drawWheel(selectedMovies) {
     const angleSpan = endAngle - startAngle;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.fillStyle = palette[index % palette.length];
+    const fillColor = getStoredColor(movie, getDefaultColorForIndex(index));
+    if (movie.color !== fillColor) {
+      movie.color = fillColor;
+    }
+    ctx.fillStyle = fillColor;
     ctx.arc(0, 0, radius, startAngle, endAngle);
     ctx.closePath();
     ctx.fill();
@@ -1085,7 +1146,8 @@ function addCustomEntry() {
     date: '',
     uri: '',
     isCustom: true,
-    weight: 1
+    weight: 1,
+    color: getDefaultColorForIndex(allMovies.length)
   };
 
   allMovies = [...allMovies, customMovie];
