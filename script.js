@@ -110,27 +110,6 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
-    if (searchInput) {
-      searchInput.disabled = !enabled;
-    }
-    if (showCustomsToggle) {
-      showCustomsToggle.disabled = !enabled;
-    }
-    if (!enabled) {
-      if (searchInput) {
-        searchInput.value = '';
-      }
-      filterState.query = '';
-      filterState.normalizedQuery = '';
-      filterState.showCustoms = true;
-      if (showCustomsToggle) {
-        showCustomsToggle.checked = true;
-      }
-    } else if (searchInput) {
-      const trimmed = searchInput.value ? searchInput.value.trim() : '';
-      filterState.query = trimmed;
-      filterState.normalizedQuery = trimmed.toLowerCase();
-    }
     updateMovieList();
   };
 
@@ -515,10 +494,6 @@ function movieMatchesFilters(movie) {
 }
 
 function getFilteredMovies() {
-  if (!isAdvancedOptionsEnabled()) {
-    return [...allMovies];
-  }
-
   if (filterState.showCustoms && !filterState.normalizedQuery) {
     return [...allMovies];
   }
