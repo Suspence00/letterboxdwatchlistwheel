@@ -102,12 +102,21 @@ if (lizardForm) {
   lizardForm.addEventListener('submit', handleLizardOpen);
 }
 
+const setImportCardCollapsed = (collapsed) => {
+  if (!importToggleBtn || !importCard || !importCardBody) {
+    return;
+  }
+
+  importCard.classList.toggle('card--collapsed', collapsed);
+  importCardBody.hidden = collapsed;
+  importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+  importToggleBtn.textContent = collapsed ? 'Show steps' : 'Hide steps';
+};
+
 if (importToggleBtn && importCard && importCardBody) {
   importToggleBtn.addEventListener('click', () => {
-    const isCollapsed = importCard.classList.toggle('card--collapsed');
-    importCardBody.hidden = isCollapsed;
-    importToggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
-    importToggleBtn.textContent = isCollapsed ? 'Show steps' : 'Hide steps';
+    const willCollapse = !importCard.classList.contains('card--collapsed');
+    setImportCardCollapsed(willCollapse);
   });
 }
 
@@ -404,6 +413,7 @@ function handleFileUpload(event) {
       statusMessage.textContent = `${allMovies.length} movies imported. Ready to spin!`;
       updateMovieList();
       updateVetoButtonState();
+      setImportCardCollapsed(true);
     } catch (error) {
       console.error(error);
       statusMessage.textContent = 'Something went wrong while reading the CSV.';
