@@ -15,6 +15,7 @@ const winModal = document.getElementById('win-modal');
 const winModalTitle = document.getElementById('win-modal-title');
 const winModalDetails = document.getElementById('win-modal-details');
 const winModalLink = document.getElementById('win-modal-link');
+const winModalStreamioLink = document.getElementById('win-modal-streamio');
 const winModalCloseBtn = document.getElementById('win-modal-close');
 
 let allMovies = [];
@@ -364,7 +365,6 @@ function drawWheel(selectedMovies) {
     ctx.fillStyle = '#04121f';
     ctx.rotate(angle + arc / 2);
     ctx.textAlign = 'right';
-    ctx.font = '600 16px Inter, sans-serif';
     wrapText(ctx, movie.name, radius - 20, arc * radius * 0.6);
     ctx.restore();
   });
@@ -378,34 +378,106 @@ function drawWheel(selectedMovies) {
 }
 
 function wrapText(context, text, maxWidth, maxArcLength) {
-  const words = text.split(' ');
-  let line = '';
+  if (!text) return;
+
+  const maxFontSize = 16;
+  const minFontSize = 9;
+
+  let fontSize = maxFontSize;
+  let layout = layoutText(context, text, maxWidth, fontSize);
+
+  while (fontSize > minFontSize && !textLayoutFits(layout, maxArcLength)) {
+    fontSize -= 1;
+    layout = layoutText(context, text, maxWidth, fontSize);
+  }
+
+  if (!textLayoutFits(layout, maxArcLength)) {
+    fontSize = minFontSize;
+    layout = layoutText(context, text, maxWidth, fontSize);
+  }
+
+  context.font = `600 ${fontSize}px Inter, sans-serif`;
+  context.textBaseline = 'middle';
+
+  const totalHeight = layout.lineHeight * (layout.lines.length - 1);
+  layout.lines.forEach((line, index) => {
+    context.fillText(line, maxWidth, -totalHeight / 2 + index * layout.lineHeight);
+  });
+}
+
+function layoutText(context, text, maxWidth, fontSize) {
+  context.font = `600 ${fontSize}px Inter, sans-serif`;
+  const lineHeight = fontSize * 1.2;
+  const words = text.split(' ').filter((word) => word.length);
+
+  if (!words.length) {
+    return { lines: [''], lineHeight, blockHeight: lineHeight };
+  }
+
   const lines = [];
+  let line = '';
 
   words.forEach((word) => {
     const testLine = line ? `${line} ${word}` : word;
-    const metrics = context.measureText(testLine);
-    if (metrics.width > maxWidth || lines.length * 20 > maxArcLength) {
-      if (line) {
-        lines.push(line);
-      }
-      line = word;
-    } else {
+    if (context.measureText(testLine).width <= maxWidth) {
       line = testLine;
+      return;
     }
+
+    if (line) {
+      lines.push(line);
+      line = '';
+    }
+
+    if (context.measureText(word).width <= maxWidth) {
+      line = word;
+      return;
+    }
+
+    const segments = breakLongWord(word, context, maxWidth);
+    segments.forEach((segment, index) => {
+      if (index === segments.length - 1) {
+        line = segment;
+      } else {
+        lines.push(segment);
+      }
+    });
   });
 
   if (line) {
     lines.push(line);
   }
 
-  const lineHeight = 18;
-  context.textBaseline = 'middle';
+  return { lines, lineHeight, blockHeight: lines.length * lineHeight };
+}
 
-  const totalHeight = (lines.length - 1) * lineHeight;
-  for (let i = 0; i < lines.length; i += 1) {
-    context.fillText(lines[i], maxWidth, -totalHeight / 2 + i * lineHeight);
+function breakLongWord(word, context, maxWidth) {
+  const segments = [];
+  let current = '';
+  word.split('').forEach((char) => {
+    const test = current ? `${current}${char}` : char;
+    if (context.measureText(test).width <= maxWidth || !current) {
+      current = test;
+    } else {
+      segments.push(current);
+      current = char;
+    }
+  });
+
+  if (current) {
+    segments.push(current);
   }
+
+  return segments;
+}
+
+function textLayoutFits(layout, maxArcLength) {
+  if (!layout) {
+    return false;
+  }
+
+  const availableHeight = Math.max(maxArcLength, layout.lineHeight);
+  return layout.blockHeight <= availableHeight + layout.lineHeight * 0.2;
 }
 
 function spinWheel() {
@@ -629,6 +701,22 @@ function showWinnerPopup(movie) {
     } else {
       winModalLink.classList.add('hidden');
       winModalLink.removeAttribute('href');
+    }
+  }
+
+  if (winModalStreamioLink) {
+    const queryParts = [movie.name];
+    if (movie.year) {
+      queryParts.push(movie.year);
+    }
+    const streamioQuery = queryParts.filter(Boolean).join(' ');
+    winModalStreamioLink.href = streamioQuery
+      ? `https://www.strem.io/s?search=${encodeURIComponent(streamioQuery)}`
+      : 'https://www.strem.io/';
+    if (streamioQuery) {
+      winModalStreamioLink.classList.remove('hidden');
+    } else {
+      winModalStreamioLink.classList.add('hidden');
     }
   }
 

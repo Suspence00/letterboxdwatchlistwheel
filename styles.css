@@ -447,22 +447,44 @@ body {
   line-height: 1.6;
 }
 
-.win-modal__link {
+.win-modal__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.win-modal__action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  padding: 0.65rem 1.2rem;
+  padding: 0.65rem 1.35rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text);
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
 }
 
-.win-modal__link:hover {
-  background: rgba(255, 255, 255, 0.18);
+.win-modal__action--letterboxd {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+}
+
+.win-modal__action--letterboxd:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.win-modal__action--streamio {
+  background: rgba(58, 176, 255, 0.2);
+  color: #cdeaff;
+  box-shadow: 0 6px 14px rgba(7, 95, 156, 0.35);
+}
+
+.win-modal__action--streamio:hover {
+  background: rgba(58, 176, 255, 0.3);
   transform: translateY(-1px);
 }
 
