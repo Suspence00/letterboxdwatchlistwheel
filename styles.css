@@ -255,11 +255,12 @@ body {
 .text-input--slim {
   width: min(100%, 320px);
   max-width: 100%;
-  padding: 0.15rem 0.55rem;
+  padding: 0.25rem 0.55rem;
   font-size: 0.95rem;
-  line-height: 1.1;
-  min-height: 0;
-  height: auto;
+  line-height: 1.25;
+  min-height: 2.5rem;
+  height: 2.5rem;
+  max-height: 2.5rem;
   border-radius: 6px;
 }
 
