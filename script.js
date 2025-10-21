@@ -15,6 +15,11 @@ const winModal = document.getElementById('win-modal');
 const winModalTitle = document.getElementById('win-modal-title');
 const winModalDetails = document.getElementById('win-modal-details');
 const winModalLink = document.getElementById('win-modal-link');
+const winModalPosterWrapper = document.getElementById('win-modal-poster-wrapper');
+const winModalPoster = document.getElementById('win-modal-poster');
+const winModalRuntime = document.getElementById('win-modal-runtime');
+const winModalSynopsis = document.getElementById('win-modal-synopsis');
+const winModalTrailer = document.getElementById('win-modal-trailer');
 const winModalCloseBtn = document.getElementById('win-modal-close');
 const lizardForm = document.getElementById('lizard-form');
 const lizardInput = document.getElementById('lizard-input');
@@ -26,6 +31,8 @@ const advancedOptionsToggle = document.getElementById('advanced-options-toggle')
 const advancedOptionsHint = document.getElementById('advanced-options-hint');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
+const METADATA_API_URL = 'https://www.omdbapi.com/';
+const METADATA_API_KEY = 'trilogy';
 
 let allMovies = [];
 let selectedIds = new Set();
@@ -42,6 +49,9 @@ let confettiTimeoutId = null;
 let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
+let currentModalMetadataKey = null;
+
+const metadataCache = new Map();
 
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -1094,6 +1104,11 @@ function showWinnerPopup(movie) {
     }
   }
 
+  const metadataKey = buildMetadataKey(movie);
+  currentModalMetadataKey = metadataKey;
+  setWinnerModalLoadingState(movie);
+  populateWinnerModalMetadata(movie, metadataKey);
+
   winModal.setAttribute('aria-hidden', 'false');
   winModal.removeAttribute('hidden');
   requestAnimationFrame(() => {
@@ -1104,6 +1119,186 @@ function showWinnerPopup(movie) {
   if (winModalCloseBtn) {
     winModalCloseBtn.focus();
   }
+}
+
+function setWinnerModalLoadingState(movie) {
+  if (winModalPosterWrapper) {
+    winModalPosterWrapper.hidden = true;
+  }
+  if (winModalPoster) {
+    winModalPoster.removeAttribute('src');
+    winModalPoster.alt = '';
+  }
+  if (winModalRuntime) {
+    winModalRuntime.textContent = 'Looking up runtime…';
+    winModalRuntime.classList.add('is-loading');
+  }
+  if (winModalSynopsis) {
+    winModalSynopsis.textContent = 'Fetching synopsis…';
+    winModalSynopsis.classList.add('is-loading');
+  }
+  if (winModalTrailer) {
+    const trailerUrl = buildTrailerSearchUrl(movie?.name, movie?.year);
+    winModalTrailer.href = trailerUrl;
+    winModalTrailer.textContent = 'Find a trailer';
+    winModalTrailer.classList.remove('hidden');
+    if (movie?.name) {
+      winModalTrailer.setAttribute('aria-label', `Find a trailer for ${movie.name}`);
+    } else {
+      winModalTrailer.removeAttribute('aria-label');
+    }
+  }
+}
+
+async function populateWinnerModalMetadata(movie, metadataKey) {
+  if (!movie || !movie.name) {
+    applyWinnerModalFallback(movie);
+    return;
+  }
+
+  const result = await fetchMovieMetadata(movie);
+  if (metadataKey !== currentModalMetadataKey) {
+    return;
+  }
+
+  if (!result || result.status !== 'success' || !result.data) {
+    applyWinnerModalFallback(movie);
+    return;
+  }
+
+  const { title, runtime, plot, poster, year } = result.data;
+
+  if (winModalRuntime) {
+    winModalRuntime.textContent = runtime || 'Runtime unavailable.';
+    winModalRuntime.classList.toggle('is-loading', false);
+  }
+
+  if (winModalSynopsis) {
+    winModalSynopsis.textContent = plot || 'Synopsis unavailable. Check the movie page for more.';
+    winModalSynopsis.classList.toggle('is-loading', false);
+  }
+
+  if (winModalPosterWrapper && winModalPoster) {
+    if (poster) {
+      winModalPoster.src = poster;
+      winModalPoster.alt = title ? `Poster for ${title}` : 'Movie poster';
+      winModalPosterWrapper.hidden = false;
+    } else {
+      winModalPosterWrapper.hidden = true;
+      winModalPoster.removeAttribute('src');
+      winModalPoster.alt = '';
+    }
+  }
+
+  if (winModalTrailer) {
+    const trailerUrl = buildTrailerSearchUrl(title || movie.name, year || movie.year);
+    winModalTrailer.href = trailerUrl;
+    winModalTrailer.textContent = 'Watch trailer';
+    if (title || movie.name) {
+      winModalTrailer.setAttribute('aria-label', `Watch trailer for ${title || movie.name}`);
+    } else {
+      winModalTrailer.removeAttribute('aria-label');
+    }
+    winModalTrailer.classList.remove('hidden');
+  }
+}
+
+function applyWinnerModalFallback(movie) {
+  if (winModalRuntime) {
+    winModalRuntime.textContent = 'Runtime unavailable.';
+    winModalRuntime.classList.toggle('is-loading', false);
+  }
+
+  if (winModalSynopsis) {
+    winModalSynopsis.textContent = 'Synopsis unavailable. Check the movie page for more.';
+    winModalSynopsis.classList.toggle('is-loading', false);
+  }
+
+  if (winModalPosterWrapper) {
+    winModalPosterWrapper.hidden = true;
+  }
+  if (winModalPoster) {
+    winModalPoster.removeAttribute('src');
+    winModalPoster.alt = '';
+  }
+
+  if (winModalTrailer) {
+    const trailerUrl = buildTrailerSearchUrl(movie?.name, movie?.year);
+    winModalTrailer.href = trailerUrl;
+    winModalTrailer.textContent = 'Find a trailer';
+    if (movie?.name) {
+      winModalTrailer.setAttribute('aria-label', `Find a trailer for ${movie.name}`);
+    } else {
+      winModalTrailer.removeAttribute('aria-label');
+    }
+    winModalTrailer.classList.remove('hidden');
+  }
+}
+
+function buildMetadataKey(movie) {
+  if (!movie) {
+    return 'unknown';
+  }
+  const name = (movie.name || '').toLowerCase();
+  const year = movie.year || '';
+  return `${name}__${year}`;
+}
+
+async function fetchMovieMetadata(movie) {
+  const key = buildMetadataKey(movie);
+  if (metadataCache.has(key)) {
+    return metadataCache.get(key);
+  }
+
+  if (!movie || !movie.name) {
+    const value = { status: 'invalid', data: null };
+    metadataCache.set(key, value);
+    return value;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      apikey: METADATA_API_KEY,
+      t: movie.name
+    });
+    if (movie.year) {
+      params.set('y', movie.year);
+    }
+    const response = await fetch(`${METADATA_API_URL}?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error('Metadata request failed');
+    }
+    const data = await response.json();
+    if (data && data.Response === 'True') {
+      const normalized = normalizeMetadataResponse(data, movie);
+      const value = { status: 'success', data: normalized };
+      metadataCache.set(key, value);
+      return value;
+    }
+    const notFound = { status: 'not-found', data: null };
+    metadataCache.set(key, notFound);
+    return notFound;
+  } catch (error) {
+    const failure = { status: 'error', data: null };
+    metadataCache.set(key, failure);
+    return failure;
+  }
+}
+
+function normalizeMetadataResponse(raw, movie) {
+  return {
+    title: raw.Title || movie.name,
+    year: raw.Year && raw.Year !== 'N/A' ? raw.Year : movie.year || '',
+    runtime: raw.Runtime && raw.Runtime !== 'N/A' ? raw.Runtime : '',
+    plot: raw.Plot && raw.Plot !== 'N/A' ? raw.Plot : '',
+    poster: raw.Poster && raw.Poster !== 'N/A' ? raw.Poster : ''
+  };
+}
+
+function buildTrailerSearchUrl(name, year) {
+  const terms = [name, year, 'trailer'].filter(Boolean).join(' ');
+  const query = terms || 'movie trailer';
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 }
 
 function closeWinnerPopup({ restoreFocus = true } = {}) {
