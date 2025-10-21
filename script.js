@@ -19,7 +19,6 @@ const winModalCloseBtn = document.getElementById('win-modal-close');
 const lizardForm = document.getElementById('lizard-form');
 const lizardInput = document.getElementById('lizard-input');
 const lizardStatus = document.getElementById('lizard-status');
-const lizardButtons = document.querySelectorAll('[data-lizard-action]');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
@@ -56,15 +55,7 @@ const palette = [
 ];
 
 if (lizardForm) {
-  lizardForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-  });
-}
-
-if (lizardButtons && lizardButtons.length) {
-  lizardButtons.forEach((button) => {
-    button.addEventListener('click', handleLizardAction);
-  });
+  lizardForm.addEventListener('submit', handleLizardOpen);
 }
 
 csvInput.addEventListener('change', handleFileUpload);
@@ -110,14 +101,9 @@ document.addEventListener('keydown', (event) => {
 drawEmptyWheel();
 updateVetoButtonState();
 
-function handleLizardAction(event) {
+function handleLizardOpen(event) {
   event.preventDefault();
   if (!lizardInput) {
-    return;
-  }
-
-  const mode = event.currentTarget?.getAttribute('data-lizard-action');
-  if (!mode) {
     return;
   }
 
@@ -128,16 +114,16 @@ function handleLizardAction(event) {
     return;
   }
 
-  let queries;
+  let query;
   try {
-    queries = buildLizardQueries(rawValue, mode);
+    query = buildLizardQuery(rawValue);
   } catch (error) {
     setLizardStatus(error.message || 'Please provide a valid value.', { tone: 'error' });
     lizardInput.focus();
     return;
   }
 
-  const url = buildLizardManualUrl(mode, queries.manualQuery);
+  const url = buildLizardManualUrl(query.mode, query.manualQuery);
   if (!url) {
     setLizardStatus('Unable to build a Lizard link. Try again.', { tone: 'error' });
     return;
@@ -151,40 +137,48 @@ function handleLizardAction(event) {
     return;
   }
 
-  setLizardStatus('Opened Lizard. Download the CSV there and upload it on the right.', { tone: 'success' });
+  setLizardStatus('Opened Lizard. Download the CSV there and upload it above.', { tone: 'success' });
 }
 
-function buildLizardQueries(rawInput, mode) {
+function buildLizardQuery(rawInput) {
   const trimmed = rawInput.trim();
   if (!trimmed) {
     throw new Error('Enter a username or list link to open in Lizard.');
   }
 
-  if (mode === 'watchlist') {
-    let username = trimmed
-      .replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '')
-      .replace(/\/?watchlist\/?$/i, '')
-      .replace(/\/$/, '')
-      .replace(/^@/, '');
-    if (!username) {
+  if (/^https?:\/\//i.test(trimmed) && !/^https?:\/\/(www\.)?letterboxd\.com\//i.test(trimmed)) {
+    throw new Error('Only Letterboxd links are supported.');
+  }
+
+  const withoutDomain = trimmed.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '');
+  const withoutQuery = withoutDomain.split(/[?#]/)[0];
+  const cleaned = withoutQuery
+    .replace(/^@/, '')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
+  if (!cleaned) {
+    throw new Error('Enter a valid Letterboxd username or list.');
+  }
+
+  const segments = cleaned.split('/').filter(Boolean);
+  if (!segments.length) {
+    throw new Error('Enter a valid Letterboxd username or list.');
+  }
+
+  if (segments.length === 1 || (segments.length === 2 && segments[1].toLowerCase() === 'watchlist')) {
+    const username = segments[0];
+    if (!username || username.toLowerCase() === 'watchlist' || username.toLowerCase() === 'list') {
       throw new Error('Enter a valid Letterboxd username.');
     }
-    username = username.split('/')[0];
     return {
-      apiQuery: username,
-      manualQuery: username,
-      label: `${username}'s watchlist`
+      mode: 'watchlist',
+      manualQuery: username
     };
   }
 
-  const manualQuery = trimmed.replace(/^@/, '');
-  const labelMatch = manualQuery.match(/letterboxd\.com\/([^?#]+)/i);
-  const fallbackLabel = labelMatch ? labelMatch[1].replace(/\/$/, '') : manualQuery;
-
   return {
-    apiQuery: manualQuery,
-    manualQuery,
-    label: fallbackLabel
+    mode: 'list',
+    manualQuery: cleaned
   };
 }
 
