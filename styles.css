@@ -148,12 +148,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-width: 360px;
+  width: 100%;
+  align-items: center;
+}
+
+.lizard-form label,
+.lizard-form .status,
+.lizard-form .helper-text {
+  align-self: stretch;
 }
 
 .lizard-form .text-input {
-  width: 100%;
-  max-width: 320px;
+  width: min(100%, 560px);
+  max-width: none;
 }
 
 .controls {
