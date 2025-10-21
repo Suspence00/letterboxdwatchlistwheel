@@ -5,6 +5,9 @@ const spinButton = document.getElementById('spin-button');
 const selectAllBtn = document.getElementById('select-all');
 const clearSelectionBtn = document.getElementById('clear-selection');
 const resultEl = document.getElementById('result');
+const customEntryForm = document.getElementById('custom-entry-form');
+const customEntryInput = document.getElementById('custom-entry-name');
+const vetoButton = document.getElementById('veto-button');
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 const confettiContainer = document.getElementById('confetti-container');
@@ -28,6 +31,7 @@ let audioContext = null;
 let confettiTimeoutId = null;
 let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
+let customEntryCounter = 0;
 
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -56,6 +60,17 @@ clearSelectionBtn.addEventListener('click', () => {
 });
 spinButton.addEventListener('click', spinWheel);
 
+if (customEntryForm) {
+  customEntryForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    addCustomEntry();
+  });
+}
+
+if (vetoButton) {
+  vetoButton.addEventListener('click', handleVeto);
+}
+
 if (winModalCloseBtn) {
   winModalCloseBtn.addEventListener('click', () => closeWinnerPopup());
 }
@@ -75,6 +90,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 drawEmptyWheel();
+updateVetoButtonState();
 
 function handleFileUpload(event) {
   const file = event.target.files && event.target.files[0];
@@ -110,6 +126,8 @@ function handleFileUpload(event) {
         return;
       }
 
+      customEntryCounter = 0;
+
       allMovies = rows.slice(1).map((row, index) => {
         return {
           id: `${index}-${row[nameIndex]}`,
@@ -130,6 +148,7 @@ function handleFileUpload(event) {
       resultEl.textContent = '';
       statusMessage.textContent = `${allMovies.length} movies imported. Ready to spin!`;
       updateMovieList();
+      updateVetoButtonState();
     } catch (error) {
       console.error(error);
       statusMessage.textContent = 'Something went wrong while reading the CSV.';
@@ -191,6 +210,7 @@ function updateMovieList() {
     winnerId = null;
     resultEl.textContent = '';
     closeWinnerPopup({ restoreFocus: false });
+    updateVetoButtonState();
   }
 
   if (!allMovies.length) {
@@ -198,6 +218,7 @@ function updateMovieList() {
     spinButton.disabled = true;
     drawEmptyWheel();
     closeWinnerPopup({ restoreFocus: false });
+    updateVetoButtonState();
     return;
   }
 
@@ -233,6 +254,7 @@ function updateMovieList() {
     const parts = [];
     if (movie.year) parts.push(movie.year);
     if (movie.date) parts.push(`Added ${movie.date}`);
+    if (movie.isCustom) parts.push('Custom entry');
     metaEl.textContent = parts.join(' • ');
 
     label.appendChild(nameEl);
@@ -252,6 +274,16 @@ function updateMovieList() {
 
     li.appendChild(checkbox);
     li.appendChild(label);
+
+    if (movie.isCustom) {
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'btn remove-custom';
+      removeButton.textContent = 'Remove';
+      removeButton.addEventListener('click', () => removeCustomEntry(movie.id));
+      li.appendChild(removeButton);
+    }
+
     movieListEl.appendChild(li);
   });
 
@@ -261,6 +293,7 @@ function updateMovieList() {
     closeWinnerPopup({ restoreFocus: false });
   }
   drawWheel(selectedMovies);
+  updateVetoButtonState();
 }
 
 function drawEmptyWheel() {
@@ -389,6 +422,7 @@ function spinWheel() {
   spinButton.disabled = true;
   resultEl.textContent = '';
   winnerId = null;
+  updateVetoButtonState();
   lastTickIndex = null;
   ensureAudioContext();
 
@@ -451,6 +485,7 @@ function finishSpin(selectedMovies, arc) {
   drawWheel(selectedMovies);
   triggerConfetti();
   showWinnerPopup(winningMovie);
+  updateVetoButtonState();
 }
 
 function highlightWinner() {
@@ -630,6 +665,73 @@ function closeWinnerPopup({ restoreFocus = true } = {}) {
     lastFocusedBeforeModal = null;
     modalHideTimeoutId = null;
   }, 220);
+}
+
+function addCustomEntry() {
+  if (!customEntryInput) return;
+  const name = customEntryInput.value.trim();
+  if (!name) {
+    customEntryInput.focus();
+    return;
+  }
+
+  const id = `custom-${customEntryCounter}`;
+  customEntryCounter += 1;
+  const customMovie = {
+    id,
+    name,
+    year: '',
+    date: '',
+    uri: '',
+    isCustom: true
+  };
+
+  allMovies = [...allMovies, customMovie];
+  selectedIds.add(id);
+  if (customEntryForm) {
+    customEntryForm.reset();
+  }
+  customEntryInput.focus();
+  statusMessage.textContent = `Added “${name}” to the wheel.`;
+  updateMovieList();
+}
+
+function removeCustomEntry(id) {
+  const movie = allMovies.find((item) => item.id === id && item.isCustom);
+  if (!movie) return;
+
+  allMovies = allMovies.filter((item) => item.id !== id);
+  selectedIds.delete(id);
+  statusMessage.textContent = `Removed “${movie.name}” from the wheel.`;
+  updateMovieList();
+}
+
+function handleVeto() {
+  if (!winnerId || isSpinning) {
+    return;
+  }
+
+  const vetoedMovie = allMovies.find((movie) => movie.id === winnerId);
+  if (!vetoedMovie) {
+    return;
+  }
+
+  selectedIds.delete(winnerId);
+  statusMessage.textContent = `Vetoed “${vetoedMovie.name}”.`;
+  updateMovieList();
+
+  const remaining = allMovies.filter((movie) => selectedIds.has(movie.id));
+  if (!remaining.length) {
+    statusMessage.textContent += ' No more entries remain to spin.';
+    return;
+  }
+
+  spinWheel();
+}
+
+function updateVetoButtonState() {
+  if (!vetoButton) return;
+  vetoButton.disabled = !winnerId || isSpinning;
 }
 
 window.addEventListener('beforeunload', () => {
