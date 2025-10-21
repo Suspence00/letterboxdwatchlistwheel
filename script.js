@@ -22,6 +22,8 @@ const lizardStatus = document.getElementById('lizard-status');
 const importCard = document.getElementById('import-card');
 const importCardBody = document.getElementById('import-body');
 const importToggleBtn = document.getElementById('import-toggle');
+const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+const advancedOptionsHint = document.getElementById('advanced-options-hint');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
@@ -57,6 +59,13 @@ const palette = [
   '#ff70a6'
 ];
 
+function getDefaultColorForIndex(index) {
+  if (!Number.isFinite(index)) {
+    return palette[0];
+  }
+  return palette[((index % palette.length) + palette.length) % palette.length];
+}
+
 if (lizardForm) {
   lizardForm.addEventListener('submit', handleLizardOpen);
 }
@@ -67,6 +76,18 @@ if (importToggleBtn && importCard && importCardBody) {
     importCardBody.hidden = isCollapsed;
     importToggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
     importToggleBtn.textContent = isCollapsed ? 'Show steps' : 'Hide steps';
+  });
+}
+
+if (advancedOptionsToggle) {
+  if (advancedOptionsHint) {
+    advancedOptionsHint.hidden = !advancedOptionsToggle.checked;
+  }
+  advancedOptionsToggle.addEventListener('change', () => {
+    if (advancedOptionsHint) {
+      advancedOptionsHint.hidden = !advancedOptionsToggle.checked;
+    }
+    updateMovieList();
   });
 }
 
@@ -121,7 +142,7 @@ function handleLizardOpen(event) {
 
   const rawValue = lizardInput.value.trim();
   if (!rawValue) {
-    setLizardStatus('Enter a username or list link to open in Lizard.', { tone: 'error' });
+    setLizardStatus('Enter a Letterboxd profile or list to open the download helper.', { tone: 'error' });
     lizardInput.focus();
     return;
   }
@@ -137,25 +158,25 @@ function handleLizardOpen(event) {
 
   const url = buildLizardManualUrl(query.mode, query.manualQuery);
   if (!url) {
-    setLizardStatus('Unable to build a Lizard link. Try again.', { tone: 'error' });
+    setLizardStatus('Unable to build a download helper link. Try again.', { tone: 'error' });
     return;
   }
 
-  setLizardStatus('Opening Lizard in a new tab…');
+  setLizardStatus('Opening the download helper in a new tab…');
 
   const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
   if (!openedWindow) {
-    setLizardStatus('Pop-up blocked. Allow pop-ups for this site or open Lizard manually.', { tone: 'error' });
+    setLizardStatus('Pop-up blocked. Allow pop-ups for this site or open the helper manually.', { tone: 'error' });
     return;
   }
 
-  setLizardStatus('Opened Lizard. Download the CSV there and upload it above.', { tone: 'success' });
+  setLizardStatus('Opened the helper. Download the CSV there and upload it above.', { tone: 'success' });
 }
 
 function buildLizardQuery(rawInput) {
   const trimmed = rawInput.trim();
   if (!trimmed) {
-    throw new Error('Enter a username or list link to open in Lizard.');
+    throw new Error('Enter a Letterboxd profile or list to open the download helper.');
   }
 
   if (/^https?:\/\//i.test(trimmed) && !/^https?:\/\/(www\.)?letterboxd\.com\//i.test(trimmed)) {
@@ -295,7 +316,9 @@ function handleFileUpload(event) {
             year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
             date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
             uri,
-            fromLizard: isLikelyLizardExport
+            fromLizard: isLikelyLizardExport,
+            weight: 1,
+            color: getDefaultColorForIndex(index)
           };
         })
         .filter(Boolean);
@@ -406,11 +429,27 @@ function updateMovieList() {
     return;
   }
 
-  allMovies.forEach((movie) => {
+  const weightsEnabled = isAdvancedOptionsEnabled();
+
+  allMovies.forEach((movie, index) => {
     const li = document.createElement('li');
     li.dataset.id = movie.id;
     if (winnerId === movie.id) {
       li.classList.add('highlight');
+    }
+    if (weightsEnabled) {
+      li.classList.add('show-weights');
+    }
+
+    const sanitizedWeight = getStoredWeight(movie);
+    if (movie.weight !== sanitizedWeight) {
+      movie.weight = sanitizedWeight;
+    }
+
+    const defaultColor = getDefaultColorForIndex(index);
+    const sanitizedColor = getStoredColor(movie, defaultColor);
+    if (movie.color !== sanitizedColor) {
+      movie.color = sanitizedColor;
     }
 
     const checkbox = document.createElement('input');
@@ -438,7 +477,6 @@ function updateMovieList() {
     const parts = [];
     if (movie.year) parts.push(movie.year);
     if (movie.date) parts.push(`Added ${movie.date}`);
-    if (movie.fromLizard) parts.push('Imported via Lizard');
     if (movie.isCustom) parts.push('Custom entry');
     metaEl.textContent = parts.join(' • ');
 
@@ -459,6 +497,61 @@ function updateMovieList() {
 
     li.appendChild(checkbox);
     li.appendChild(label);
+
+    if (weightsEnabled) {
+      const weightWrapper = document.createElement('div');
+      weightWrapper.className = 'movie-weight';
+
+      const weightSelectId = `weight-${index}`;
+      const weightLabel = document.createElement('label');
+      weightLabel.setAttribute('for', weightSelectId);
+      weightLabel.textContent = 'Slice weight';
+
+      const weightSelect = document.createElement('select');
+      weightSelect.id = weightSelectId;
+      weightSelect.className = 'movie-weight__select';
+      for (let value = 1; value <= 10; value += 1) {
+        const option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = `${value}×`;
+        weightSelect.appendChild(option);
+      }
+      weightSelect.value = String(sanitizedWeight);
+      weightSelect.addEventListener('change', (event) => {
+        const selectedValue = Number(event.target.value);
+        movie.weight = clampWeight(selectedValue);
+        const selectedMoviesSnapshot = allMovies.filter((item) => selectedIds.has(item.id));
+        drawWheel(selectedMoviesSnapshot);
+      });
+
+      weightWrapper.appendChild(weightLabel);
+      weightWrapper.appendChild(weightSelect);
+      li.appendChild(weightWrapper);
+
+      const colorWrapper = document.createElement('div');
+      colorWrapper.className = 'movie-color';
+
+      const colorInputId = `color-${index}`;
+      const colorLabel = document.createElement('label');
+      colorLabel.setAttribute('for', colorInputId);
+      colorLabel.textContent = 'Slice color';
+
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.id = colorInputId;
+      colorInput.className = 'movie-color__input';
+      colorInput.value = sanitizedColor;
+      colorInput.addEventListener('input', (event) => {
+        const selectedColor = sanitizeColor(event.target.value, defaultColor);
+        movie.color = selectedColor;
+        const selectedMoviesSnapshot = allMovies.filter((item) => selectedIds.has(item.id));
+        drawWheel(selectedMoviesSnapshot);
+      });
+
+      colorWrapper.appendChild(colorLabel);
+      colorWrapper.appendChild(colorInput);
+      li.appendChild(colorWrapper);
+    }
 
     if (movie.isCustom) {
       const removeButton = document.createElement('button');
@@ -497,6 +590,90 @@ function drawEmptyWheel() {
   ctx.restore();
 }
 
+function isAdvancedOptionsEnabled() {
+  return Boolean(advancedOptionsToggle && advancedOptionsToggle.checked);
+}
+
+function clampWeight(value) {
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
+  return Math.min(10, Math.max(1, Math.round(value)));
+}
+
+function getStoredWeight(movie) {
+  if (!movie || typeof movie !== 'object') {
+    return 1;
+  }
+  return clampWeight(Number(movie.weight));
+}
+
+function sanitizeColor(value, fallback) {
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    if (/^#([0-9a-f]{6})$/i.test(trimmed)) {
+      return trimmed;
+    }
+  }
+  if (typeof fallback === 'string' && /^#([0-9a-f]{6})$/i.test(fallback.trim())) {
+    return fallback.trim().toLowerCase();
+  }
+  return palette[0];
+}
+
+function getStoredColor(movie, fallback) {
+  if (!movie || typeof movie !== 'object') {
+    return sanitizeColor('', fallback);
+  }
+  return sanitizeColor(movie.color, fallback);
+}
+
+function getEffectiveWeight(movie) {
+  return isAdvancedOptionsEnabled() ? getStoredWeight(movie) : 1;
+}
+
+function computeWheelModel(selectedMovies) {
+  if (!selectedMovies.length) {
+    return { segments: [], totalWeight: 0 };
+  }
+
+  const weights = selectedMovies.map((movie) => getEffectiveWeight(movie));
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+  if (!totalWeight) {
+    return { segments: [], totalWeight: 0 };
+  }
+
+  let currentAngle = 0;
+  const segments = selectedMovies.map((movie, index) => {
+    const weight = weights[index];
+    const fraction = weight / totalWeight;
+    const startAngle = currentAngle;
+    let endAngle = startAngle + fraction * 2 * Math.PI;
+    if (index === selectedMovies.length - 1) {
+      endAngle = 2 * Math.PI;
+    }
+    currentAngle = endAngle;
+    return { movie, startAngle, endAngle, weight, index };
+  });
+
+  return { segments, totalWeight };
+}
+
+function findSegmentIndexForAngle(segments, angle) {
+  if (!segments.length) {
+    return -1;
+  }
+
+  const normalized = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    if (normalized >= segment.startAngle && normalized < segment.endAngle) {
+      return index;
+    }
+  }
+  return segments.length - 1;
+}
+
 function drawWheel(selectedMovies) {
   const radius = canvas.width / 2.1;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -506,30 +683,36 @@ function drawWheel(selectedMovies) {
     return;
   }
 
-  const arc = (2 * Math.PI) / selectedMovies.length;
-  const shouldHighlight = !isSpinning && winnerId;
-  const pointerAngle = shouldHighlight ? getPointerAngle() : 0;
-  const highlightIndex = shouldHighlight
-    ? Math.floor((((pointerAngle + 2 * Math.PI) % (2 * Math.PI)) + 1e-6) / arc) % selectedMovies.length
-    : null;
+  const { segments } = computeWheelModel(selectedMovies);
+  if (!segments.length) {
+    drawEmptyWheel();
+    return;
+  }
+
+  const highlightId = !isSpinning && winnerId ? winnerId : null;
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rotationAngle);
 
-  selectedMovies.forEach((movie, index) => {
-    const angle = index * arc;
+  segments.forEach((segment) => {
+    const { movie, startAngle, endAngle, index } = segment;
+    const angleSpan = endAngle - startAngle;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.fillStyle = palette[index % palette.length];
-    ctx.arc(0, 0, radius, angle, angle + arc);
+    const fillColor = getStoredColor(movie, getDefaultColorForIndex(index));
+    if (movie.color !== fillColor) {
+      movie.color = fillColor;
+    }
+    ctx.fillStyle = fillColor;
+    ctx.arc(0, 0, radius, startAngle, endAngle);
     ctx.closePath();
     ctx.fill();
 
-    if (highlightIndex === index) {
+    if (highlightId === movie.id) {
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, radius, angle, angle + arc);
+      ctx.arc(0, 0, radius, startAngle, endAngle);
       ctx.closePath();
       const gradient = ctx.createRadialGradient(0, 0, radius * 0.1, 0, 0, radius);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
@@ -547,9 +730,9 @@ function drawWheel(selectedMovies) {
 
     ctx.save();
     ctx.fillStyle = '#04121f';
-    ctx.rotate(angle + arc / 2);
+    ctx.rotate(startAngle + angleSpan / 2);
     ctx.textAlign = 'right';
-    wrapText(ctx, movie.name, radius - 20, arc * radius * 0.6);
+    wrapText(ctx, movie.name, radius - 20, angleSpan * radius * 0.6);
     ctx.restore();
   });
 
@@ -682,11 +865,30 @@ function spinWheel() {
   lastTickIndex = null;
   ensureAudioContext();
 
-  const arc = (2 * Math.PI) / selectedMovies.length;
-  const randomIndex = Math.floor(Math.random() * selectedMovies.length);
-  const randomOffset = Math.random() * arc;
+  const { segments, totalWeight } = computeWheelModel(selectedMovies);
+  if (!segments.length || totalWeight <= 0) {
+    drawWheel(selectedMovies);
+    isSpinning = false;
+    spinButton.disabled = selectedMovies.length === 0;
+    updateVetoButtonState();
+    return;
+  }
+
+  const targetWeight = Math.random() * totalWeight;
+  let chosenSegment = segments[segments.length - 1];
+  let cumulative = 0;
+  for (const segment of segments) {
+    cumulative += segment.weight;
+    if (targetWeight <= cumulative) {
+      chosenSegment = segment;
+      break;
+    }
+  }
+
+  const segmentSpan = chosenSegment.endAngle - chosenSegment.startAngle;
+  const randomOffset = Math.random() * segmentSpan;
+  const finalAngle = chosenSegment.startAngle + randomOffset;
   const spins = 6 + Math.random() * 3;
-  const finalAngle = randomIndex * arc + randomOffset;
   const currentPointerAngle = getPointerAngle();
   const neededRotation = (spins * 2 * Math.PI) + finalAngle - currentPointerAngle;
   targetRotation = rotationAngle + neededRotation;
@@ -704,36 +906,40 @@ function spinWheel() {
     rotationAngle = startRotation + (targetRotation - startRotation) * eased;
 
     drawWheel(selectedMovies);
-    tick(selectedMovies, arc);
+    tick(segments);
 
     if (progress < 1) {
       animationFrameId = requestAnimationFrame(animate);
     } else {
-      finishSpin(selectedMovies, arc);
+      finishSpin(selectedMovies, segments);
     }
   };
 
   animationFrameId = requestAnimationFrame(animate);
 }
 
-function tick(selectedMovies, arc) {
+function tick(segments) {
+  if (!segments.length) {
+    return;
+  }
+
   const pointerAngle = getPointerAngle();
-  const index = Math.floor(pointerAngle / arc) % selectedMovies.length;
+  const index = findSegmentIndexForAngle(segments, pointerAngle);
   if (index !== lastTickIndex) {
     playTickSound();
     lastTickIndex = index;
   }
 }
 
-function finishSpin(selectedMovies, arc) {
+function finishSpin(selectedMovies, segments) {
   cancelAnimationFrame(animationFrameId);
   isSpinning = false;
   spinButton.disabled = selectedMovies.length === 0;
 
   const pointerAngle = getPointerAngle();
-  const normalizedPointer = ((pointerAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  const winningIndex = Math.floor((normalizedPointer + 1e-6) / arc) % selectedMovies.length;
-  const winningMovie = selectedMovies[winningIndex];
+  const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
+  const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
+  const winningMovie = winningSegment ? winningSegment.movie : selectedMovies[0];
   winnerId = winningMovie.id;
   highlightWinner();
   resultEl.innerHTML = `🎉 Next up: <strong>${winningMovie.name}</strong>${winningMovie.year ? ` (${winningMovie.year})` : ''}`;
@@ -939,7 +1145,9 @@ function addCustomEntry() {
     year: '',
     date: '',
     uri: '',
-    isCustom: true
+    isCustom: true,
+    weight: 1,
+    color: getDefaultColorForIndex(allMovies.length)
   };
 
   allMovies = [...allMovies, customMovie];

@@ -30,7 +30,7 @@
       <div class="card-body import-body" id="import-body">
         <div class="import-guide" role="note">
           <p>
-            Download your watchlist or any public list as a CSV, then upload it below. You can export directly from Letterboxd or let Lizard build the file for you.
+            Download your watchlist or any public list as a CSV, then upload it below. You can export directly from Letterboxd or use the download helper to build the file for you.
           </p>
         </div>
         <div class="import-section">
@@ -43,21 +43,21 @@
           <p class="status" id="status-message" role="status" aria-live="polite"></p>
         </div>
         <div class="import-section">
-          <h3>Find it with Lizard</h3>
+          <h3>Generate a CSV for your list</h3>
           <p class="helper-text">
-            Paste a Letterboxd username for watchlists, or a list path/URL (like <code>username/list/faves</code>). We&rsquo;ll open Lizard in a new tab with the right search.
+            Paste a Letterboxd profile name or list URL (like <code>username/list/faves</code>). We&rsquo;ll open a new tab that prepares a CSV you can download for the wheel.
           </p>
           <form id="lizard-form" class="lizard-form">
-            <label for="lizard-input">Letterboxd username or list link</label>
+            <label for="lizard-input">Letterboxd URL or profile name</label>
             <input
               type="text"
               id="lizard-input"
-              class="text-input"
+              class="text-input text-input--slim"
               name="lizard-input"
               placeholder="e.g., fastfingertips or fastfingertips/list/faves"
               autocomplete="off"
             />
-            <button type="submit" class="btn" id="lizard-open">Open in Lizard</button>
+            <button type="submit" class="btn" id="lizard-open">Open download helper</button>
             <p class="status" id="lizard-status" role="status" aria-live="polite"></p>
             <p class="helper-text helper-text--compact">
               Once the tab opens, download the CSV there and upload it with the button above.
@@ -92,6 +92,15 @@
             </div>
           </form>
           <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd picks.</p>
+        </div>
+        <div class="advanced-options">
+          <label class="advanced-options__toggle" for="advanced-options-toggle">
+            <input type="checkbox" id="advanced-options-toggle" />
+            <span>Advanced options</span>
+          </label>
+          <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
+            Adjust slice weights and colors to boost your favorites and personalize the wheel.
+          </p>
         </div>
         <div class="selection-area">
           <div class="movie-list-wrapper">

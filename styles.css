@@ -164,7 +164,7 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .lizard-form label,
@@ -173,12 +173,33 @@ body {
   align-self: stretch;
 }
 
-.lizard-form .text-input {
-  width: min(100%, 560px);
-  max-width: none;
-  padding: 0.25rem 1rem;
-  line-height: 1.15;
-  height: 2rem;
+
+
+.lizard-form .btn {
+  align-self: flex-start;
+}
+
+.advanced-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.advanced-options__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.advanced-options__toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
 }
 
 .controls {
@@ -229,6 +250,18 @@ body {
 .text-input:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.text-input--slim {
+  width: min(100%, 320px);
+  max-width: 100%;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  min-height: 2.5rem;
+  height: 2.5rem;
+  max-height: 2.5rem;
+  border-radius: 6px;
 }
 
 .helper-text--compact {
@@ -312,6 +345,7 @@ body {
 
 .movie-list li {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 0.75rem;
   background: rgba(255, 255, 255, 0.04);
@@ -363,6 +397,87 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.movie-weight {
+  display: none;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.movie-weight label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.movie-weight__select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  color: var(--text);
+  font: inherit;
+  min-width: 90px;
+}
+
+.movie-weight__select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.movie-weight__select option {
+  background: #0b1622;
+  color: var(--text);
+}
+
+.movie-list li.show-weights .movie-weight {
+  display: inline-flex;
+}
+
+.movie-color {
+  display: none;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.movie-color label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.movie-color__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 42px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.movie-color__input::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.movie-color__input::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.movie-color__input::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.movie-list li.show-weights .movie-color {
+  display: inline-flex;
+}
+
 .wheel-wrapper {
   position: relative;
   display: flex;
@@ -370,6 +485,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   gap: 0.75rem;
+  margin-top: 4.5rem;
 }
 
 #wheel {
@@ -382,11 +498,11 @@ body {
 
 .pointer {
   position: absolute;
-  bottom: calc(100% + 14px);
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  width: 68px;
-  height: 78px;
+  width: 58px;
+  height: 60px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -395,21 +511,21 @@ body {
 
 .pointer::before {
   content: '';
-  width: 48px;
-  height: 38px;
+  width: 40px;
+  height: 32px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  border-radius: 18px 18px 10px 10px;
+  border-radius: 16px 16px 10px 10px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 .pointer::after {
   content: '';
   position: absolute;
-  bottom: -24px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 26px;
+  width: 28px;
+  height: 22px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   clip-path: polygon(50% 100%, 0 0, 100% 0);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
