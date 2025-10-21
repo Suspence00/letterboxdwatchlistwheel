@@ -33,6 +33,8 @@ const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const lastStandingToggle = document.getElementById('last-standing-toggle');
+const lastStandingSpeedControls = document.getElementById('last-standing-speed-controls');
+const lastStandingSpeedSelect = document.getElementById('last-standing-speed');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -55,6 +57,33 @@ let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
+
+const LAST_STANDING_SPEEDS = {
+  dramatic: {
+    eliminationSpin: { minSpins: 4, maxSpins: 6, minDuration: 2800, maxDuration: 3900 },
+    finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 6800 },
+    interRoundDelay: 1100,
+    knockoutRevealDelay: 1100,
+    finalRevealDelay: 1500,
+    winnerRevealDelay: 650
+  },
+  steady: {
+    eliminationSpin: { minSpins: 3, maxSpins: 5, minDuration: 2200, maxDuration: 3400 },
+    finalSpin: { minSpins: 6, maxSpins: 8, minDuration: 4200, maxDuration: 5600 },
+    interRoundDelay: 900,
+    knockoutRevealDelay: 900,
+    finalRevealDelay: 1200,
+    winnerRevealDelay: 500
+  },
+  rapid: {
+    eliminationSpin: { minSpins: 2, maxSpins: 4, minDuration: 1500, maxDuration: 2400 },
+    finalSpin: { minSpins: 4, maxSpins: 6, minDuration: 3100, maxDuration: 4300 },
+    interRoundDelay: 600,
+    knockoutRevealDelay: 750,
+    finalRevealDelay: 900,
+    winnerRevealDelay: 380
+  }
+};
 
 const metadataCache = new Map();
 
@@ -134,6 +163,7 @@ if (advancedOptionsToggle) {
     if (!enabled && lastStandingToggle) {
       lastStandingToggle.checked = false;
     }
+    syncLastStandingControls();
     updateMovieList();
     updateSpinButtonLabel();
     updateVetoButtonState();
@@ -150,6 +180,26 @@ if (advancedOptionsToggle) {
   }
   if (advancedOptionsPanel) {
     advancedOptionsPanel.hidden = false;
+  }
+}
+
+function syncLastStandingControls() {
+  if (!lastStandingSpeedControls) {
+    return;
+  }
+
+  const shouldShow = Boolean(
+    lastStandingToggle &&
+      lastStandingToggle.checked &&
+      isAdvancedOptionsEnabled()
+  );
+
+  lastStandingSpeedControls.hidden = !shouldShow;
+  if (lastStandingSpeedSelect) {
+    lastStandingSpeedSelect.disabled = !shouldShow;
+    if (!shouldShow) {
+      lastStandingSpeedSelect.blur();
+    }
   }
 }
 
@@ -182,10 +232,13 @@ if (lastStandingToggle) {
     if (!lastStandingToggle.checked) {
       clearKnockoutStyles();
     }
+    syncLastStandingControls();
     updateSpinButtonLabel();
     updateVetoButtonState();
   });
 }
+
+syncLastStandingControls();
 
 csvInput.addEventListener('change', handleFileUpload);
 selectAllBtn.addEventListener('click', () => {
@@ -819,6 +872,15 @@ function isLastStandingModeEnabled() {
   );
 }
 
+function getLastStandingSpeedConfig() {
+  if (!lastStandingSpeedSelect) {
+    return LAST_STANDING_SPEEDS.steady;
+  }
+
+  const selectedValue = lastStandingSpeedSelect.value;
+  return LAST_STANDING_SPEEDS[selectedValue] || LAST_STANDING_SPEEDS.steady;
+}
+
 function clampWeight(value) {
   if (!Number.isFinite(value)) {
     return 1;
@@ -1224,6 +1286,7 @@ function performSpin(selectedMovies, options = {}) {
 async function runLastStandingMode(selectedMovies) {
   const eliminationPool = [...selectedMovies];
   let eliminationOrder = 1;
+  const speedConfig = getLastStandingSpeedConfig();
   isLastStandingInProgress = true;
   spinButton.disabled = true;
   updateSpinButtonLabel();
@@ -1231,10 +1294,10 @@ async function runLastStandingMode(selectedMovies) {
 
   while (eliminationPool.length > 1) {
     const isFinalElimination = eliminationPool.length === 2;
-    const spinResult = await performSpin(eliminationPool, isFinalElimination
-      ? { minSpins: 6, maxSpins: 8, minDuration: 4200, maxDuration: 5600 }
-      : { minSpins: 3, maxSpins: 5, minDuration: 2200, maxDuration: 3400 }
-    );
+    const spinSettings = isFinalElimination
+      ? speedConfig.finalSpin
+      : speedConfig.eliminationSpin;
+    const spinResult = await performSpin(eliminationPool, spinSettings);
 
     const eliminatedMovie = spinResult.winningMovie;
     if (!eliminatedMovie) {
@@ -1257,20 +1320,20 @@ async function runLastStandingMode(selectedMovies) {
     drawWheel(eliminationPool);
 
     if (remainingCount <= 1) {
-      await delay(isFinalElimination ? 1200 : 900);
+      await delay(isFinalElimination ? speedConfig.finalRevealDelay : speedConfig.knockoutRevealDelay);
       break;
     }
 
     spinButton.disabled = true;
     updateSpinButtonLabel();
-    await delay(900);
+    await delay(speedConfig.interRoundDelay);
   }
 
   const finalMovie = eliminationPool[0];
   if (finalMovie) {
     winnerId = finalMovie.id;
     highlightWinner();
-    await delay(500);
+    await delay(speedConfig.winnerRevealDelay);
     resultEl.innerHTML = `🏆 Last movie standing: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
     playWinSound();
     drawWheel(eliminationPool);

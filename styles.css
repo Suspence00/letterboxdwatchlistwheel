@@ -123,6 +123,23 @@ body {
   color: var(--muted);
 }
 
+.spin-mode-speed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 2.3rem;
+  max-width: 100%;
+}
+
+.spin-mode-speed label {
+  font-weight: 600;
+}
+
+.spin-mode-speed .helper-text {
+  margin: 0;
+  color: var(--muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -365,6 +382,24 @@ body {
   height: 2.5rem;
   max-height: 2.5rem;
   border-radius: 6px;
+}
+
+.text-input--select {
+  width: min(100%, 240px);
+  padding-right: 2.2rem;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.6) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.6) 50%, transparent 50%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25));
+  background-position: calc(100% - 1.15rem) calc(50% - 0.35rem), calc(100% - 0.8rem) calc(50% - 0.35rem),
+    calc(100% - 2.1rem) 0.4rem;
+  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem, 1px calc(100% - 0.8rem);
+  background-repeat: no-repeat;
+}
+
+.text-input--select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .helper-text--compact {
