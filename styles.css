@@ -173,13 +173,7 @@ body {
   align-self: stretch;
 }
 
-.lizard-form .text-input {
-  width: min(100%, 320px);
-  max-width: 100%;
-  padding: 0.25rem 0.6rem;
-  line-height: 1.2;
-  min-height: 2rem;
-}
+
 
 .lizard-form .btn {
   align-self: flex-start;
@@ -256,6 +250,15 @@ body {
 .text-input:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.lizard-form .text-input {
+  width: min(100%, 320px);
+  max-width: 100%;
+  padding: 0.25rem 0.6rem;
+  line-height: 1.2;
+  min-height: 0;
+  height: 2.1rem;
 }
 
 .helper-text--compact {
