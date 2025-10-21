@@ -136,6 +136,15 @@
       <button type="button" class="win-modal__close" id="win-modal-close" aria-label="Close winner dialog">&times;</button>
       <h3 id="win-modal-title" class="win-modal__title"></h3>
       <p id="win-modal-details" class="win-modal__details"></p>
+      <div class="win-modal__body">
+        <figure class="win-modal__poster" id="win-modal-poster-wrapper" hidden>
+          <img id="win-modal-poster" src="" alt="" />
+        </figure>
+        <div class="win-modal__meta">
+          <p id="win-modal-runtime" class="win-modal__runtime" aria-live="polite">Looking up runtime…</p>
+          <p id="win-modal-synopsis" class="win-modal__synopsis">Fetching synopsis…</p>
+        </div>
+      </div>
       <div class="win-modal__actions">
         <a
           id="win-modal-link"
@@ -144,6 +153,13 @@
           target="_blank"
           rel="noopener noreferrer"
         >View on Letterboxd</a>
+        <a
+          id="win-modal-trailer"
+          class="win-modal__action win-modal__action--trailer hidden"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Find a trailer</a>
       </div>
     </div>
   </div>
