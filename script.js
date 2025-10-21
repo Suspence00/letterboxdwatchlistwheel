@@ -15,7 +15,6 @@ const winModal = document.getElementById('win-modal');
 const winModalTitle = document.getElementById('win-modal-title');
 const winModalDetails = document.getElementById('win-modal-details');
 const winModalLink = document.getElementById('win-modal-link');
-const winModalStreamioLink = document.getElementById('win-modal-streamio');
 const winModalCloseBtn = document.getElementById('win-modal-close');
 
 let allMovies = [];
@@ -701,22 +700,6 @@ function showWinnerPopup(movie) {
     } else {
       winModalLink.classList.add('hidden');
       winModalLink.removeAttribute('href');
-    }
-  }
-
-  if (winModalStreamioLink) {
-    const queryParts = [movie.name];
-    if (movie.year) {
-      queryParts.push(movie.year);
-    }
-    const streamioQuery = queryParts.filter(Boolean).join(' ');
-    winModalStreamioLink.href = streamioQuery
-      ? `https://www.strem.io/s?search=${encodeURIComponent(streamioQuery)}`
-      : 'https://www.strem.io/';
-    if (streamioQuery) {
-      winModalStreamioLink.classList.remove('hidden');
-    } else {
-      winModalStreamioLink.classList.add('hidden');
     }
   }
 

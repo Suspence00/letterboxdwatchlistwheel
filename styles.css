@@ -477,17 +477,6 @@ body {
   transform: translateY(-1px);
 }
 
-.win-modal__action--streamio {
-  background: rgba(58, 176, 255, 0.2);
-  color: #cdeaff;
-  box-shadow: 0 6px 14px rgba(7, 95, 156, 0.35);
-}
-
-.win-modal__action--streamio:hover {
-  background: rgba(58, 176, 255, 0.3);
-  transform: translateY(-1px);
-}
-
 .win-modal__close {
   position: absolute;
   top: 0.75rem;
