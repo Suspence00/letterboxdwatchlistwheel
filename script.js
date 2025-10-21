@@ -239,27 +239,51 @@ function handleFileUpload(event) {
       }
 
       const header = rows[0].map((h) => h.trim().toLowerCase());
-      const dateIndex = header.indexOf('date');
-      const nameIndex = header.indexOf('name');
-      const yearIndex = header.indexOf('year');
-      const uriIndex = header.findIndex((h) => h.includes('letterboxd'));
+      const findColumn = (candidates) => {
+        for (const candidate of candidates) {
+          const index = header.indexOf(candidate);
+          if (index !== -1) {
+            return index;
+          }
+        }
+        return -1;
+      };
+
+      const dateIndex = findColumn(['date', 'watched date', 'watcheddate', 'added', 'added date']);
+      const nameIndex = findColumn(['name', 'title', 'film title', 'movie', 'film']);
+      const yearIndex = findColumn(['year', 'release year', 'film year']);
+      const uriIndex = header.findIndex((h) => h.includes('letterboxd') || h === 'url' || h === 'uri');
 
       if (nameIndex === -1) {
-        statusMessage.textContent = 'Could not find a “Name” column in this CSV.';
+        statusMessage.textContent = 'Could not find a title column in this CSV.';
         return;
       }
 
+      const isLikelyLizardExport = header.some((h) => h.includes('letterboxduri'));
+
       customEntryCounter = 0;
 
-      allMovies = rows.slice(1).map((row, index) => {
-        return {
-          id: `${index}-${row[nameIndex]}`,
-          name: row[nameIndex] ? row[nameIndex].trim() : 'Unknown title',
-          year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
-          date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
-          uri: uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : ''
-        };
-      }).filter((movie) => movie.name);
+      allMovies = rows
+        .slice(1)
+        .map((row, index) => {
+          const rawName = nameIndex >= 0 && row[nameIndex] ? row[nameIndex].trim() : '';
+          if (!rawName) {
+            return null;
+          }
+
+          const uri = uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : '';
+          const idBase = uri || rawName || index;
+
+          return {
+            id: `${index}-${idBase}`,
+            name: rawName,
+            year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
+            date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
+            uri,
+            fromLizard: isLikelyLizardExport
+          };
+        })
+        .filter(Boolean);
 
       if (!allMovies.length) {
         statusMessage.textContent = 'No movies found in the CSV file.';

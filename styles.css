@@ -161,8 +161,9 @@ body {
 .lizard-form .text-input {
   width: min(100%, 560px);
   max-width: none;
-  padding: 0.35rem 1rem;
-  line-height: 1.35;
+  padding: 0.2rem 1.2rem;
+  line-height: 1.2;
+  height: 2.4rem;
 }
 
 .controls {
