@@ -160,9 +160,6 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
-    if (!enabled && lastStandingToggle) {
-      lastStandingToggle.checked = false;
-    }
     syncLastStandingControls();
     updateMovieList();
     updateSpinButtonLabel();
@@ -865,11 +862,7 @@ function isAdvancedOptionsEnabled() {
 }
 
 function isLastStandingModeEnabled() {
-  return Boolean(
-    lastStandingToggle &&
-      lastStandingToggle.checked &&
-      isAdvancedOptionsEnabled()
-  );
+  return Boolean(lastStandingToggle && lastStandingToggle.checked);
 }
 
 function getLastStandingSpeedConfig() {
