@@ -68,11 +68,36 @@
     </section>
 
     <section class="card" aria-labelledby="selection-heading">
-      <div class="card-header">
-        <h2 id="selection-heading">2. Curate your wheel</h2>
-        <div class="controls">
-          <button type="button" class="btn" id="select-all">Select all</button>
-          <button type="button" class="btn" id="clear-selection">Clear all</button>
+      <div class="card-header card-header--selection">
+        <div class="card-header__section">
+          <h2 id="selection-heading">2. Curate your wheel</h2>
+          <div class="controls">
+            <button type="button" class="btn" id="select-all">Select all</button>
+            <button type="button" class="btn" id="clear-selection">Clear all</button>
+          </div>
+        </div>
+        <div class="card-header__section card-header__filters">
+          <label class="visually-hidden" for="movie-search">Search your picks</label>
+          <div class="selection-search">
+            <input
+              type="search"
+              id="movie-search"
+              class="text-input"
+              name="movie-search"
+              placeholder="Search titles or years"
+              autocomplete="off"
+            />
+          </div>
+          <div class="filter-toggles" role="group" aria-label="Filters">
+            <label class="filter-toggle" for="filter-unwatched">
+              <input type="checkbox" id="filter-unwatched" />
+              <span>Only unwatched this year</span>
+            </label>
+            <label class="filter-toggle" for="filter-show-customs">
+              <input type="checkbox" id="filter-show-customs" checked />
+              <span>Show customs</span>
+            </label>
+          </div>
         </div>
       </div>
       <div class="card-body">

@@ -24,6 +24,9 @@ const importCardBody = document.getElementById('import-body');
 const importToggleBtn = document.getElementById('import-toggle');
 const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
 const advancedOptionsHint = document.getElementById('advanced-options-hint');
+const searchInput = document.getElementById('movie-search');
+const unwatchedFilterToggle = document.getElementById('filter-unwatched');
+const showCustomsToggle = document.getElementById('filter-show-customs');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
@@ -43,6 +46,13 @@ let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 
+const filterState = {
+  query: '',
+  normalizedQuery: '',
+  onlyUnwatchedThisYear: Boolean(unwatchedFilterToggle && unwatchedFilterToggle.checked),
+  showCustoms: showCustomsToggle ? Boolean(showCustomsToggle.checked) : true
+};
+
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
 
@@ -58,6 +68,19 @@ const palette = [
   '#06d6a0',
   '#ff70a6'
 ];
+
+function debounce(fn, delay = 200) {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+    timeoutId = window.setTimeout(() => {
+      timeoutId = null;
+      fn(...args);
+    }, delay);
+  };
+}
 
 function getDefaultColorForIndex(index) {
   if (!Number.isFinite(index)) {
@@ -87,6 +110,37 @@ if (advancedOptionsToggle) {
     if (advancedOptionsHint) {
       advancedOptionsHint.hidden = !advancedOptionsToggle.checked;
     }
+    updateMovieList();
+  });
+}
+
+if (searchInput) {
+  const initialValue = searchInput.value || '';
+  const applyQuery = (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    filterState.query = trimmed;
+    filterState.normalizedQuery = trimmed.toLowerCase();
+    updateMovieList();
+  };
+  if (initialValue.trim()) {
+    applyQuery(initialValue);
+  }
+  const debouncedSearch = debounce(applyQuery, 200);
+  searchInput.addEventListener('input', (event) => {
+    debouncedSearch(event.target.value || '');
+  });
+}
+
+if (unwatchedFilterToggle) {
+  unwatchedFilterToggle.addEventListener('change', (event) => {
+    filterState.onlyUnwatchedThisYear = Boolean(event.target.checked);
+    updateMovieList();
+  });
+}
+
+if (showCustomsToggle) {
+  showCustomsToggle.addEventListener('change', (event) => {
+    filterState.showCustoms = Boolean(event.target.checked);
     updateMovieList();
   });
 }
@@ -411,17 +465,94 @@ function parseCSV(text, delimiter = ',') {
   return rows;
 }
 
-function updateMovieList() {
-  movieListEl.innerHTML = '';
-  if (winnerId && !selectedIds.has(winnerId)) {
-    winnerId = null;
-    resultEl.textContent = '';
-    closeWinnerPopup({ restoreFocus: false });
-    updateVetoButtonState();
+function extractYearFromDateString(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
   }
 
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.getFullYear();
+  }
+
+  const match = trimmed.match(/(\d{4})/);
+  if (match) {
+    const year = Number(match[1]);
+    if (Number.isFinite(year)) {
+      return year;
+    }
+  }
+
+  return null;
+}
+
+function movieMatchesFilters(movie) {
+  if (!movie || typeof movie !== 'object') {
+    return false;
+  }
+
+  if (!filterState.showCustoms && movie.isCustom) {
+    return false;
+  }
+
+  if (filterState.onlyUnwatchedThisYear) {
+    const currentYear = new Date().getFullYear();
+    const watchedYear = extractYearFromDateString(movie.date);
+    if (watchedYear === currentYear) {
+      return false;
+    }
+  }
+
+  if (filterState.normalizedQuery) {
+    const haystack = [movie.name, movie.year, movie.date]
+      .filter((part) => typeof part === 'string' && part.trim())
+      .join(' ')
+      .toLowerCase();
+    if (!haystack.includes(filterState.normalizedQuery)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function getFilteredMovies() {
+  if (!filterState.onlyUnwatchedThisYear && filterState.showCustoms && !filterState.normalizedQuery) {
+    return [...allMovies];
+  }
+  return allMovies.filter((movie) => movieMatchesFilters(movie));
+}
+
+function getFilteredSelectedMovies() {
+  return getFilteredMovies().filter((movie) => selectedIds.has(movie.id));
+}
+
+function getActiveFilterDescriptions() {
+  const descriptions = [];
+  if (filterState.query) {
+    descriptions.push(`search “${filterState.query}”`);
+  }
+  if (filterState.onlyUnwatchedThisYear) {
+    descriptions.push('Only unwatched this year');
+  }
+  if (!filterState.showCustoms) {
+    descriptions.push('Custom entries hidden');
+  }
+  return descriptions;
+}
+
+function updateMovieList() {
+  movieListEl.innerHTML = '';
+
   if (!allMovies.length) {
-    movieListEl.innerHTML = '<li class="empty">Upload a CSV to see your movies here.</li>';
+    const emptyItem = document.createElement('li');
+    emptyItem.className = 'empty';
+    emptyItem.textContent = 'Upload a CSV to see your movies here.';
+    movieListEl.appendChild(emptyItem);
     spinButton.disabled = true;
     drawEmptyWheel();
     closeWinnerPopup({ restoreFocus: false });
@@ -429,9 +560,32 @@ function updateMovieList() {
     return;
   }
 
+  const filteredMovies = getFilteredMovies();
+
+  const winnerVisible = filteredMovies.some((movie) => movie.id === winnerId && selectedIds.has(movie.id));
+  if (winnerId && !winnerVisible) {
+    winnerId = null;
+    resultEl.textContent = '';
+    closeWinnerPopup({ restoreFocus: false });
+  }
+
+  if (!filteredMovies.length) {
+    const emptyItem = document.createElement('li');
+    emptyItem.className = 'empty';
+    const descriptions = getActiveFilterDescriptions();
+    emptyItem.textContent = descriptions.length
+      ? `No movies match your current filters (${descriptions.join(', ')}).`
+      : 'No movies match your current filters.';
+    movieListEl.appendChild(emptyItem);
+    spinButton.disabled = true;
+    drawEmptyWheel();
+    updateVetoButtonState();
+    return;
+  }
+
   const weightsEnabled = isAdvancedOptionsEnabled();
 
-  allMovies.forEach((movie, index) => {
+  filteredMovies.forEach((movie, index) => {
     const li = document.createElement('li');
     li.dataset.id = movie.id;
     if (winnerId === movie.id) {
@@ -446,7 +600,7 @@ function updateMovieList() {
       movie.weight = sanitizedWeight;
     }
 
-    const defaultColor = getDefaultColorForIndex(index);
+    const defaultColor = getDefaultColorForIndex(allMovies.indexOf(movie));
     const sanitizedColor = getStoredColor(movie, defaultColor);
     if (movie.color !== sanitizedColor) {
       movie.color = sanitizedColor;
@@ -520,7 +674,7 @@ function updateMovieList() {
       weightSelect.addEventListener('change', (event) => {
         const selectedValue = Number(event.target.value);
         movie.weight = clampWeight(selectedValue);
-        const selectedMoviesSnapshot = allMovies.filter((item) => selectedIds.has(item.id));
+        const selectedMoviesSnapshot = getFilteredSelectedMovies();
         drawWheel(selectedMoviesSnapshot);
       });
 
@@ -544,7 +698,7 @@ function updateMovieList() {
       colorInput.addEventListener('input', (event) => {
         const selectedColor = sanitizeColor(event.target.value, defaultColor);
         movie.color = selectedColor;
-        const selectedMoviesSnapshot = allMovies.filter((item) => selectedIds.has(item.id));
+        const selectedMoviesSnapshot = getFilteredSelectedMovies();
         drawWheel(selectedMoviesSnapshot);
       });
 
@@ -565,7 +719,7 @@ function updateMovieList() {
     movieListEl.appendChild(li);
   });
 
-  const selectedMovies = allMovies.filter((movie) => selectedIds.has(movie.id));
+  const selectedMovies = filteredMovies.filter((movie) => selectedIds.has(movie.id));
   spinButton.disabled = selectedMovies.length === 0 || isSpinning;
   if (!selectedMovies.length) {
     closeWinnerPopup({ restoreFocus: false });
@@ -850,9 +1004,9 @@ function textLayoutFits(layout, maxArcLength) {
 function spinWheel() {
   if (isSpinning) return;
 
-  const selectedMovies = allMovies.filter((movie) => selectedIds.has(movie.id));
+  const selectedMovies = getFilteredSelectedMovies();
   if (!selectedMovies.length) {
-    statusMessage.textContent = 'Select at least one movie to spin the wheel.';
+    statusMessage.textContent = 'Select at least one movie that matches your filters to spin the wheel.';
     return;
   }
 
@@ -1184,9 +1338,9 @@ function handleVeto() {
   statusMessage.textContent = `Vetoed “${vetoedMovie.name}”.`;
   updateMovieList();
 
-  const remaining = allMovies.filter((movie) => selectedIds.has(movie.id));
+  const remaining = getFilteredSelectedMovies();
   if (!remaining.length) {
-    statusMessage.textContent += ' No more entries remain to spin.';
+    statusMessage.textContent += ' No more entries remain to spin with the current filters.';
     return;
   }
 
