@@ -107,6 +107,22 @@ body {
   accent-color: var(--accent);
 }
 
+.spin-modes {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.spin-mode-toggle {
+  align-self: flex-start;
+}
+
+.spin-mode-hint {
+  margin: 0;
+  color: var(--muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -447,6 +463,37 @@ body {
 
 .movie-list li.highlight {
   background: rgba(255, 134, 0, 0.25);
+}
+
+.movie-list li.is-knocked-out {
+  position: relative;
+  opacity: 0.55;
+  background: rgba(255, 255, 255, 0.06);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.movie-list li.is-knocked-out .movie-name {
+  text-decoration: line-through;
+}
+
+.knockout-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 93, 87, 0.24);
+  color: #ffb3ae;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.knockout-badge::before {
+  content: '⛔';
+  font-size: 0.8rem;
 }
 
 .movie-list label {

@@ -32,6 +32,7 @@ const advancedOptionsHint = document.getElementById('advanced-options-hint');
 const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
+const lastStandingToggle = document.getElementById('last-standing-toggle');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -53,6 +54,7 @@ let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 let currentModalMetadataKey = null;
+let isLastStandingInProgress = false;
 
 const metadataCache = new Map();
 
@@ -129,7 +131,12 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
+    if (!enabled && lastStandingToggle) {
+      lastStandingToggle.checked = false;
+    }
     updateMovieList();
+    updateSpinButtonLabel();
+    updateVetoButtonState();
   };
 
   syncAdvancedOptions();
@@ -167,6 +174,16 @@ if (showCustomsToggle) {
   showCustomsToggle.addEventListener('change', (event) => {
     filterState.showCustoms = Boolean(event.target.checked);
     updateMovieList();
+  });
+}
+
+if (lastStandingToggle) {
+  lastStandingToggle.addEventListener('change', () => {
+    if (!lastStandingToggle.checked) {
+      clearKnockoutStyles();
+    }
+    updateSpinButtonLabel();
+    updateVetoButtonState();
   });
 }
 
@@ -212,6 +229,7 @@ document.addEventListener('keydown', (event) => {
 
 drawEmptyWheel();
 updateVetoButtonState();
+updateSpinButtonLabel();
 
 function handleLizardOpen(event) {
   event.preventDefault();
@@ -548,6 +566,7 @@ function updateMovieList() {
     drawEmptyWheel();
     closeWinnerPopup({ restoreFocus: false });
     updateVetoButtonState();
+    updateSpinButtonLabel();
     return;
   }
 
@@ -717,6 +736,7 @@ function updateMovieList() {
   }
   drawWheel(selectedMovies);
   updateVetoButtonState();
+  updateSpinButtonLabel();
 }
 
 function drawEmptyWheel() {
@@ -735,8 +755,68 @@ function drawEmptyWheel() {
   ctx.restore();
 }
 
+function updateSpinButtonLabel() {
+  if (!spinButton) return;
+  if (isLastStandingInProgress) {
+    spinButton.textContent = 'Eliminating…';
+    return;
+  }
+
+  if (isLastStandingModeEnabled()) {
+    const remaining = getFilteredSelectedMovies();
+    if (remaining.length > 1) {
+      spinButton.textContent = 'Start last movie standing';
+      return;
+    }
+  }
+
+  spinButton.textContent = 'Spin the wheel';
+}
+
+function clearKnockoutStyles() {
+  if (!movieListEl) return;
+  movieListEl.querySelectorAll('.is-knocked-out').forEach((item) => {
+    item.classList.remove('is-knocked-out');
+    const badge = item.querySelector('.knockout-badge');
+    if (badge) {
+      badge.remove();
+    }
+  });
+}
+
+function escapeSelector(value) {
+  if (window.CSS && typeof window.CSS.escape === 'function') {
+    return window.CSS.escape(value);
+  }
+  return String(value).replace(/["\\]/g, '\\$&');
+}
+
+function markMovieKnockedOut(movieId, order) {
+  if (!movieListEl) return;
+  const safeId = escapeSelector(movieId);
+  const item = movieListEl.querySelector(`li[data-id="${safeId}"]`);
+  if (!item) return;
+
+  item.classList.add('is-knocked-out');
+  let badge = item.querySelector('.knockout-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'knockout-badge';
+    item.appendChild(badge);
+  }
+  badge.textContent = order ? `Knocked out #${order}` : 'Knocked out';
+}
+
 function isAdvancedOptionsEnabled() {
   return Boolean(advancedOptionsToggle && advancedOptionsToggle.checked);
+}
+
+function isLastStandingModeEnabled() {
+  return Boolean(
+    lastStandingToggle &&
+      lastStandingToggle.checked &&
+      isAdvancedOptionsEnabled()
+  );
 }
 
 function clampWeight(value) {
@@ -992,8 +1072,8 @@ function textLayoutFits(layout, maxArcLength) {
   return layout.blockHeight <= availableHeight + layout.lineHeight * 0.2;
 }
 
-function spinWheel() {
-  if (isSpinning) return;
+async function spinWheel() {
+  if (isSpinning || isLastStandingInProgress) return;
 
   const selectedMovies = getFilteredSelectedMovies();
   if (!selectedMovies.length) {
@@ -1001,66 +1081,42 @@ function spinWheel() {
     return;
   }
 
+  clearKnockoutStyles();
   closeWinnerPopup({ restoreFocus: false });
-  isSpinning = true;
-  spinButton.disabled = true;
   resultEl.textContent = '';
   winnerId = null;
+  highlightWinner();
   updateVetoButtonState();
-  lastTickIndex = null;
+  updateSpinButtonLabel();
   ensureAudioContext();
 
-  const { segments, totalWeight } = computeWheelModel(selectedMovies);
-  if (!segments.length || totalWeight <= 0) {
-    drawWheel(selectedMovies);
-    isSpinning = false;
-    spinButton.disabled = selectedMovies.length === 0;
-    updateVetoButtonState();
+  if (isLastStandingModeEnabled() && selectedMovies.length > 1) {
+    await runLastStandingMode(selectedMovies);
     return;
   }
 
-  const targetWeight = Math.random() * totalWeight;
-  let chosenSegment = segments[segments.length - 1];
-  let cumulative = 0;
-  for (const segment of segments) {
-    cumulative += segment.weight;
-    if (targetWeight <= cumulative) {
-      chosenSegment = segment;
-      break;
-    }
+  const { winningMovie } = await performSpin(selectedMovies, {
+    minSpins: 6,
+    maxSpins: 9,
+    minDuration: 4500,
+    maxDuration: 6500
+  });
+
+  if (!winningMovie) {
+    updateVetoButtonState();
+    updateSpinButtonLabel();
+    return;
   }
 
-  const segmentSpan = chosenSegment.endAngle - chosenSegment.startAngle;
-  const randomOffset = Math.random() * segmentSpan;
-  const finalAngle = chosenSegment.startAngle + randomOffset;
-  const spins = 6 + Math.random() * 3;
-  const currentPointerAngle = getPointerAngle();
-  const neededRotation = (spins * 2 * Math.PI) + finalAngle - currentPointerAngle;
-  targetRotation = rotationAngle + neededRotation;
-  spinDuration = 4500 + Math.random() * 2000;
-  spinStartTimestamp = null;
-  const startRotation = rotationAngle;
-
-  const animate = (timestamp) => {
-    if (!spinStartTimestamp) {
-      spinStartTimestamp = timestamp;
-    }
-    const elapsed = timestamp - spinStartTimestamp;
-    const progress = Math.min(elapsed / spinDuration, 1);
-    const eased = easeOutCubic(progress);
-    rotationAngle = startRotation + (targetRotation - startRotation) * eased;
-
-    drawWheel(selectedMovies);
-    tick(segments);
-
-    if (progress < 1) {
-      animationFrameId = requestAnimationFrame(animate);
-    } else {
-      finishSpin(selectedMovies, segments);
-    }
-  };
-
-  animationFrameId = requestAnimationFrame(animate);
+  winnerId = winningMovie.id;
+  highlightWinner();
+  resultEl.innerHTML = `🎉 Next up: <strong>${winningMovie.name}</strong>${winningMovie.year ? ` (${winningMovie.year})` : ''}`;
+  playWinSound();
+  drawWheel(selectedMovies);
+  triggerConfetti();
+  showWinnerPopup(winningMovie);
+  updateVetoButtonState();
+  updateSpinButtonLabel();
 }
 
 function tick(segments) {
@@ -1076,23 +1132,178 @@ function tick(segments) {
   }
 }
 
-function finishSpin(selectedMovies, segments) {
-  cancelAnimationFrame(animationFrameId);
-  isSpinning = false;
-  spinButton.disabled = selectedMovies.length === 0;
+function performSpin(selectedMovies, options = {}) {
+  const {
+    minSpins = 6,
+    maxSpins = 9,
+    minDuration = 4500,
+    maxDuration = 6500
+  } = options;
 
-  const pointerAngle = getPointerAngle();
-  const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
-  const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
-  const winningMovie = winningSegment ? winningSegment.movie : selectedMovies[0];
-  winnerId = winningMovie.id;
-  highlightWinner();
-  resultEl.innerHTML = `🎉 Next up: <strong>${winningMovie.name}</strong>${winningMovie.year ? ` (${winningMovie.year})` : ''}`;
-  playWinSound();
-  drawWheel(selectedMovies);
-  triggerConfetti();
-  showWinnerPopup(winningMovie);
+  const parsedMinSpins = Number(minSpins);
+  const parsedMaxSpins = Number(maxSpins);
+  const parsedMinDuration = Number(minDuration);
+  const parsedMaxDuration = Number(maxDuration);
+  const normalizedMinSpins = Math.max(1, Number.isFinite(parsedMinSpins) ? parsedMinSpins : 1);
+  const normalizedMaxSpins = Math.max(
+    normalizedMinSpins,
+    Number.isFinite(parsedMaxSpins) ? parsedMaxSpins : normalizedMinSpins
+  );
+  const safeMinDuration = Math.max(800, Number.isFinite(parsedMinDuration) ? parsedMinDuration : 800);
+  const safeMaxDuration = Math.max(
+    safeMinDuration,
+    Number.isFinite(parsedMaxDuration) ? parsedMaxDuration : safeMinDuration
+  );
+
+  return new Promise((resolve) => {
+    const { segments, totalWeight } = computeWheelModel(selectedMovies);
+    if (!segments.length || totalWeight <= 0) {
+      isSpinning = false;
+      spinButton.disabled = selectedMovies.length === 0;
+      resolve({ winningMovie: null, segments: [] });
+      return;
+    }
+
+    ensureAudioContext();
+    isSpinning = true;
+    spinButton.disabled = true;
+    lastTickIndex = null;
+
+    const targetWeight = Math.random() * totalWeight;
+    let chosenSegment = segments[segments.length - 1];
+    let cumulative = 0;
+    for (const segment of segments) {
+      cumulative += segment.weight;
+      if (targetWeight <= cumulative) {
+        chosenSegment = segment;
+        break;
+      }
+    }
+
+    const segmentSpan = chosenSegment.endAngle - chosenSegment.startAngle;
+    const randomOffset = Math.random() * segmentSpan;
+    const finalAngle = chosenSegment.startAngle + randomOffset;
+    const turns = normalizedMinSpins + Math.random() * (normalizedMaxSpins - normalizedMinSpins);
+    const currentPointerAngle = getPointerAngle();
+    const neededRotation = (turns * 2 * Math.PI) + finalAngle - currentPointerAngle;
+    targetRotation = rotationAngle + neededRotation;
+    spinDuration = safeMinDuration + Math.random() * (safeMaxDuration - safeMinDuration);
+    spinStartTimestamp = null;
+    const startRotation = rotationAngle;
+
+    const animate = (timestamp) => {
+      if (!spinStartTimestamp) {
+        spinStartTimestamp = timestamp;
+      }
+      const elapsed = timestamp - spinStartTimestamp;
+      const progress = Math.min(elapsed / spinDuration, 1);
+      const eased = easeOutCubic(progress);
+      rotationAngle = startRotation + (targetRotation - startRotation) * eased;
+
+      drawWheel(selectedMovies);
+      tick(segments);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else {
+        cancelAnimationFrame(animationFrameId);
+        isSpinning = false;
+        spinButton.disabled = selectedMovies.length === 0;
+        const pointerAngle = getPointerAngle();
+        const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
+        const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
+        const winningMovie = winningSegment ? winningSegment.movie : selectedMovies[0];
+        resolve({ winningMovie, segments });
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+  });
+}
+
+async function runLastStandingMode(selectedMovies) {
+  const eliminationPool = [...selectedMovies];
+  let eliminationOrder = 1;
+  isLastStandingInProgress = true;
+  spinButton.disabled = true;
+  updateSpinButtonLabel();
   updateVetoButtonState();
+
+  while (eliminationPool.length > 1) {
+    const isFinalElimination = eliminationPool.length === 2;
+    const spinResult = await performSpin(eliminationPool, isFinalElimination
+      ? { minSpins: 6, maxSpins: 8, minDuration: 4200, maxDuration: 5600 }
+      : { minSpins: 3, maxSpins: 5, minDuration: 2200, maxDuration: 3400 }
+    );
+
+    const eliminatedMovie = spinResult.winningMovie;
+    if (!eliminatedMovie) {
+      break;
+    }
+
+    const removalIndex = eliminationPool.findIndex((movie) => movie.id === eliminatedMovie.id);
+    if (removalIndex === -1) {
+      break;
+    }
+
+    markMovieKnockedOut(eliminatedMovie.id, eliminationOrder);
+    eliminationOrder += 1;
+    playKnockoutSound();
+
+    eliminationPool.splice(removalIndex, 1);
+    const remainingCount = eliminationPool.length;
+    const remainText = remainingCount === 1 ? 'Final showdown! One movie remains.' : `${remainingCount} movies remain.`;
+    resultEl.innerHTML = `💥 Knocked out: <strong>${eliminatedMovie.name}</strong>${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''} — ${remainText}`;
+    drawWheel(eliminationPool);
+
+    if (remainingCount <= 1) {
+      await delay(isFinalElimination ? 1200 : 900);
+      break;
+    }
+
+    spinButton.disabled = true;
+    updateSpinButtonLabel();
+    await delay(900);
+  }
+
+  const finalMovie = eliminationPool[0];
+  if (finalMovie) {
+    winnerId = finalMovie.id;
+    highlightWinner();
+    await delay(500);
+    resultEl.innerHTML = `🏆 Last movie standing: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
+    playWinSound();
+    drawWheel(eliminationPool);
+    triggerConfetti();
+    showWinnerPopup(finalMovie);
+  }
+
+  isLastStandingInProgress = false;
+  spinButton.disabled = getFilteredSelectedMovies().length === 0;
+  updateVetoButtonState();
+  updateSpinButtonLabel();
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, Math.max(0, ms));
+  });
+}
+
+function playKnockoutSound() {
+  ensureAudioContext();
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(520, now);
+  oscillator.frequency.exponentialRampToValueAtTime(220, now + 0.4);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.5);
 }
 
 function highlightWinner() {
@@ -1525,7 +1736,7 @@ function handleVeto() {
 
 function updateVetoButtonState() {
   if (!vetoButton) return;
-  vetoButton.disabled = !winnerId || isSpinning;
+  vetoButton.disabled = !winnerId || isSpinning || isLastStandingInProgress;
 }
 
 window.addEventListener('beforeunload', () => {
