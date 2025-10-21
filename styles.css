@@ -176,9 +176,9 @@ body {
 .lizard-form .text-input {
   width: min(100%, 320px);
   max-width: 100%;
-  padding: 0.2rem 0.75rem;
-  line-height: 1.15;
-  height: auto;
+  padding: 0.35rem 0.75rem;
+  line-height: 1.1;
+  height: 2.5rem;
 }
 
 .lizard-form .btn {
@@ -435,6 +435,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   gap: 0.75rem;
+  margin-top: 4.5rem;
 }
 
 #wheel {
@@ -447,11 +448,11 @@ body {
 
 .pointer {
   position: absolute;
-  bottom: calc(100% + 14px);
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  width: 68px;
-  height: 78px;
+  width: 58px;
+  height: 60px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -460,21 +461,21 @@ body {
 
 .pointer::before {
   content: '';
-  width: 48px;
-  height: 38px;
+  width: 40px;
+  height: 32px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  border-radius: 18px 18px 10px 10px;
+  border-radius: 16px 16px 10px 10px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 .pointer::after {
   content: '';
   position: absolute;
-  bottom: -24px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 26px;
+  width: 28px;
+  height: 22px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   clip-path: polygon(50% 100%, 0 0, 100% 0);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
