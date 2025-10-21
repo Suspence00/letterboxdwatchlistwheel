@@ -76,29 +76,6 @@
             <button type="button" class="btn" id="clear-selection">Clear all</button>
           </div>
         </div>
-        <div class="card-header__section card-header__filters">
-          <label class="visually-hidden" for="movie-search">Search your picks</label>
-          <div class="selection-search">
-            <input
-              type="search"
-              id="movie-search"
-              class="text-input"
-              name="movie-search"
-              placeholder="Search titles or years"
-              autocomplete="off"
-            />
-          </div>
-          <div class="filter-toggles" role="group" aria-label="Filters">
-            <label class="filter-toggle" for="filter-unwatched">
-              <input type="checkbox" id="filter-unwatched" />
-              <span>Only unwatched this year</span>
-            </label>
-            <label class="filter-toggle" for="filter-show-customs">
-              <input type="checkbox" id="filter-show-customs" checked />
-              <span>Show customs</span>
-            </label>
-          </div>
-        </div>
       </div>
       <div class="card-body">
         <div class="custom-entry">
@@ -119,13 +96,34 @@
           <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd picks.</p>
         </div>
         <div class="advanced-options">
-          <label class="advanced-options__toggle" for="advanced-options-toggle">
-            <input type="checkbox" id="advanced-options-toggle" />
-            <span>Advanced options</span>
-          </label>
-          <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
-            Adjust slice weights and colors to boost your favorites and personalize the wheel.
-          </p>
+          <div class="advanced-options__header">
+            <label class="advanced-options__toggle" for="advanced-options-toggle">
+              <input type="checkbox" id="advanced-options-toggle" />
+              <span>Advanced options</span>
+            </label>
+            <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
+              Adjust slice weights and colors to boost your favorites and personalize the wheel.
+            </p>
+          </div>
+          <div class="advanced-options__panel" id="advanced-options-panel" hidden>
+            <label class="visually-hidden" for="movie-search">Search your picks</label>
+            <div class="selection-search">
+              <input
+                type="search"
+                id="movie-search"
+                class="text-input"
+                name="movie-search"
+                placeholder="Search titles or years"
+                autocomplete="off"
+              />
+            </div>
+            <div class="filter-toggles" role="group" aria-label="Filters">
+              <label class="filter-toggle" for="filter-show-customs">
+                <input type="checkbox" id="filter-show-customs" checked />
+                <span>Show customs</span>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="selection-area">
           <div class="movie-list-wrapper">

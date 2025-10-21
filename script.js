@@ -24,8 +24,8 @@ const importCardBody = document.getElementById('import-body');
 const importToggleBtn = document.getElementById('import-toggle');
 const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
 const advancedOptionsHint = document.getElementById('advanced-options-hint');
+const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
-const unwatchedFilterToggle = document.getElementById('filter-unwatched');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
@@ -49,7 +49,6 @@ let customEntryCounter = 0;
 const filterState = {
   query: '',
   normalizedQuery: '',
-  onlyUnwatchedThisYear: Boolean(unwatchedFilterToggle && unwatchedFilterToggle.checked),
   showCustoms: showCustomsToggle ? Boolean(showCustomsToggle.checked) : true
 };
 
@@ -103,15 +102,50 @@ if (importToggleBtn && importCard && importCardBody) {
 }
 
 if (advancedOptionsToggle) {
-  if (advancedOptionsHint) {
-    advancedOptionsHint.hidden = !advancedOptionsToggle.checked;
-  }
-  advancedOptionsToggle.addEventListener('change', () => {
+  const syncAdvancedOptions = () => {
+    const enabled = Boolean(advancedOptionsToggle.checked);
     if (advancedOptionsHint) {
-      advancedOptionsHint.hidden = !advancedOptionsToggle.checked;
+      advancedOptionsHint.hidden = !enabled;
+    }
+    if (advancedOptionsPanel) {
+      advancedOptionsPanel.hidden = !enabled;
+    }
+    if (searchInput) {
+      searchInput.disabled = !enabled;
+    }
+    if (showCustomsToggle) {
+      showCustomsToggle.disabled = !enabled;
+    }
+    if (!enabled) {
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      filterState.query = '';
+      filterState.normalizedQuery = '';
+      filterState.showCustoms = true;
+      if (showCustomsToggle) {
+        showCustomsToggle.checked = true;
+      }
+    } else if (searchInput) {
+      const trimmed = searchInput.value ? searchInput.value.trim() : '';
+      filterState.query = trimmed;
+      filterState.normalizedQuery = trimmed.toLowerCase();
     }
     updateMovieList();
+  };
+
+  syncAdvancedOptions();
+
+  advancedOptionsToggle.addEventListener('change', () => {
+    syncAdvancedOptions();
   });
+} else {
+  if (advancedOptionsHint) {
+    advancedOptionsHint.hidden = true;
+  }
+  if (advancedOptionsPanel) {
+    advancedOptionsPanel.hidden = false;
+  }
 }
 
 if (searchInput) {
@@ -128,13 +162,6 @@ if (searchInput) {
   const debouncedSearch = debounce(applyQuery, 200);
   searchInput.addEventListener('input', (event) => {
     debouncedSearch(event.target.value || '');
-  });
-}
-
-if (unwatchedFilterToggle) {
-  unwatchedFilterToggle.addEventListener('change', (event) => {
-    filterState.onlyUnwatchedThisYear = Boolean(event.target.checked);
-    updateMovieList();
   });
 }
 
@@ -465,31 +492,6 @@ function parseCSV(text, delimiter = ',') {
   return rows;
 }
 
-function extractYearFromDateString(value) {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  const parsed = new Date(trimmed);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.getFullYear();
-  }
-
-  const match = trimmed.match(/(\d{4})/);
-  if (match) {
-    const year = Number(match[1]);
-    if (Number.isFinite(year)) {
-      return year;
-    }
-  }
-
-  return null;
-}
-
 function movieMatchesFilters(movie) {
   if (!movie || typeof movie !== 'object') {
     return false;
@@ -497,14 +499,6 @@ function movieMatchesFilters(movie) {
 
   if (!filterState.showCustoms && movie.isCustom) {
     return false;
-  }
-
-  if (filterState.onlyUnwatchedThisYear) {
-    const currentYear = new Date().getFullYear();
-    const watchedYear = extractYearFromDateString(movie.date);
-    if (watchedYear === currentYear) {
-      return false;
-    }
   }
 
   if (filterState.normalizedQuery) {
@@ -521,9 +515,14 @@ function movieMatchesFilters(movie) {
 }
 
 function getFilteredMovies() {
-  if (!filterState.onlyUnwatchedThisYear && filterState.showCustoms && !filterState.normalizedQuery) {
+  if (!isAdvancedOptionsEnabled()) {
     return [...allMovies];
   }
+
+  if (filterState.showCustoms && !filterState.normalizedQuery) {
+    return [...allMovies];
+  }
+
   return allMovies.filter((movie) => movieMatchesFilters(movie));
 }
 
@@ -535,9 +534,6 @@ function getActiveFilterDescriptions() {
   const descriptions = [];
   if (filterState.query) {
     descriptions.push(`search “${filterState.query}”`);
-  }
-  if (filterState.onlyUnwatchedThisYear) {
-    descriptions.push('Only unwatched this year');
   }
   if (!filterState.showCustoms) {
     descriptions.push('Custom entries hidden');
