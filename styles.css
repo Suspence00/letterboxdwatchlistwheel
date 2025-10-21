@@ -252,13 +252,15 @@ body {
   outline-offset: 2px;
 }
 
-.lizard-form .text-input {
+.text-input--slim {
   width: min(100%, 320px);
   max-width: 100%;
-  padding: 0.25rem 0.6rem;
-  line-height: 1.2;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.95rem;
+  line-height: 1.1;
   min-height: 0;
-  height: 2.1rem;
+  height: auto;
+  border-radius: 6px;
 }
 
 .helper-text--compact {
