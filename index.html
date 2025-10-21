@@ -16,17 +16,51 @@
   </header>
 
   <main class="app">
-    <section class="card" aria-labelledby="upload-heading">
+    <section class="card" aria-labelledby="import-heading">
       <div class="card-header">
-        <h2 id="upload-heading">1. Upload your CSV</h2>
+        <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
       </div>
-      <div class="card-body">
-        <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
-        <label class="file-input" for="csv-input">
-          <span class="file-label">Choose CSV file</span>
-          <input type="file" id="csv-input" accept=".csv" />
-        </label>
-        <p class="status" id="status-message" role="status" aria-live="polite"></p>
+      <div class="card-body import-options">
+        <div class="import-column">
+          <h3>Download from Lizard</h3>
+          <p class="helper-text">
+            Fetch any public watchlist or list using
+            <a href="https://lizard.streamlit.app/" target="_blank" rel="noopener noreferrer">Lizard</a>, the open-source downloader by FastFingertips.
+          </p>
+          <form id="lizard-form" class="lizard-form">
+            <label for="lizard-input">Letterboxd username or list link</label>
+            <input
+              type="text"
+              id="lizard-input"
+              class="text-input"
+              name="lizard-input"
+              placeholder="e.g., fastfingertips or fastfingertips/list/faves"
+              autocomplete="off"
+            />
+            <p class="helper-text helper-text--compact">
+              Watchlists: just the username. Lists: use <code>username/list-name</code> or a full list URL.
+            </p>
+            <div class="lizard-actions">
+              <button type="button" class="btn" data-lizard-action="watchlist">Fetch watchlist</button>
+              <button type="button" class="btn" data-lizard-action="list">Fetch list</button>
+            </div>
+            <p class="status" id="lizard-status" role="status" aria-live="polite"></p>
+            <div class="lizard-manual hidden" id="lizard-manual">
+              <p>
+                Having trouble? <a id="lizard-manual-link" href="#" target="_blank" rel="noopener noreferrer">Open this search in Lizard</a>, download the CSV, and upload it on the right.
+              </p>
+            </div>
+          </form>
+        </div>
+        <div class="import-column">
+          <h3>Upload a CSV</h3>
+          <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
+          <label class="file-input" for="csv-input">
+            <span class="file-label">Choose CSV file</span>
+            <input type="file" id="csv-input" accept=".csv" />
+          </label>
+          <p class="status" id="status-message" role="status" aria-live="polite"></p>
+        </div>
       </div>
     </section>
 

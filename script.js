@@ -16,6 +16,14 @@ const winModalTitle = document.getElementById('win-modal-title');
 const winModalDetails = document.getElementById('win-modal-details');
 const winModalLink = document.getElementById('win-modal-link');
 const winModalCloseBtn = document.getElementById('win-modal-close');
+const lizardForm = document.getElementById('lizard-form');
+const lizardInput = document.getElementById('lizard-input');
+const lizardStatus = document.getElementById('lizard-status');
+const lizardManual = document.getElementById('lizard-manual');
+const lizardManualLink = document.getElementById('lizard-manual-link');
+const lizardButtons = document.querySelectorAll('[data-lizard-action]');
+
+const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
 let allMovies = [];
 let selectedIds = new Set();
@@ -48,6 +56,18 @@ const palette = [
   '#06d6a0',
   '#ff70a6'
 ];
+
+if (lizardForm) {
+  lizardForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+  });
+}
+
+if (lizardButtons && lizardButtons.length) {
+  lizardButtons.forEach((button) => {
+    button.addEventListener('click', handleLizardAction);
+  });
+}
 
 csvInput.addEventListener('change', handleFileUpload);
 selectAllBtn.addEventListener('click', () => {
@@ -91,6 +111,238 @@ document.addEventListener('keydown', (event) => {
 
 drawEmptyWheel();
 updateVetoButtonState();
+
+async function handleLizardAction(event) {
+  event.preventDefault();
+  if (!lizardInput) {
+    return;
+  }
+
+  const mode = event.currentTarget?.getAttribute('data-lizard-action');
+  if (!mode) {
+    return;
+  }
+
+  const rawValue = lizardInput.value.trim();
+  if (!rawValue) {
+    setLizardStatus('Enter a username or list link to fetch from Lizard.', { tone: 'error' });
+    lizardInput.focus();
+    return;
+  }
+
+  let queries;
+  try {
+    queries = buildLizardQueries(rawValue, mode);
+  } catch (error) {
+    setLizardStatus(error.message || 'Please provide a valid value.', { tone: 'error' });
+    lizardInput.focus();
+    return;
+  }
+
+  setLizardStatus('Fetching data from Lizard…');
+  hideLizardManual();
+  toggleLizardButtons(true);
+
+  try {
+    const responseData = await fetchLizardData(mode, queries.apiQuery);
+    const movies = normalizeLizardMovies(responseData);
+
+    if (!movies.length) {
+      throw new Error('No movies were returned. The list may be private or empty.');
+    }
+
+    const metadata = responseData && responseData.metadata ? responseData.metadata : {};
+    const descriptor = metadata.title
+      || (metadata.username && metadata.slug ? `${metadata.username}/${metadata.slug}`
+      : metadata.username ? `${metadata.username}${mode === 'watchlist' ? "'s watchlist" : ''}`
+      : queries.label);
+
+    allMovies = movies;
+    selectedIds = new Set(allMovies.map((movie) => movie.id));
+    winnerId = null;
+    resultEl.textContent = '';
+    customEntryCounter = 0;
+    statusMessage.textContent = `${allMovies.length} movies imported from Lizard (${descriptor}). Ready to spin!`;
+    setLizardStatus(`Imported ${allMovies.length} movies from Lizard (${descriptor}).`, { tone: 'success' });
+    updateMovieList();
+    updateVetoButtonState();
+    closeWinnerPopup({ restoreFocus: false });
+  } catch (error) {
+    console.error('Failed to fetch data from Lizard:', error);
+    const message = error && error.message
+      ? error.message
+      : 'Unable to reach Lizard. Try again or open the link manually.';
+    setLizardStatus(`${message} Use the link below to download and upload the CSV manually.`, { tone: 'error' });
+    showLizardManualLink(queries.manualQuery);
+  } finally {
+    toggleLizardButtons(false);
+  }
+}
+
+function buildLizardQueries(rawInput, mode) {
+  const trimmed = rawInput.trim();
+  if (!trimmed) {
+    throw new Error('Enter a username or list link to fetch from Lizard.');
+  }
+
+  if (mode === 'watchlist') {
+    let username = trimmed
+      .replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '')
+      .replace(/\/?watchlist\/?$/i, '')
+      .replace(/\/$/, '')
+      .replace(/^@/, '');
+    if (!username) {
+      throw new Error('Enter a valid Letterboxd username.');
+    }
+    username = username.split('/')[0];
+    return {
+      apiQuery: username,
+      manualQuery: username,
+      label: `${username}'s watchlist`
+    };
+  }
+
+  const manualQuery = trimmed.replace(/^@/, '');
+  const labelMatch = manualQuery.match(/letterboxd\.com\/([^?#]+)/i);
+  const fallbackLabel = labelMatch ? labelMatch[1].replace(/\/$/, '') : manualQuery;
+
+  return {
+    apiQuery: manualQuery,
+    manualQuery,
+    label: fallbackLabel
+  };
+}
+
+function buildLizardApiUrl(mode, apiQuery) {
+  if (mode === 'watchlist') {
+    return `${LIZARD_BASE_URL}/api/watchlist?username=${encodeURIComponent(apiQuery)}&format=json`;
+  }
+  return `${LIZARD_BASE_URL}/api/list?query=${encodeURIComponent(apiQuery)}&format=json`;
+}
+
+async function fetchLizardData(mode, apiQuery) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const response = await fetch(buildLizardApiUrl(mode, apiQuery), {
+      headers: {
+        Accept: 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'omit',
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`Lizard responded with status ${response.status}.`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error && error.name === 'AbortError') {
+      throw new Error('The request to Lizard timed out.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+function normalizeLizardMovies(data) {
+  const movies = Array.isArray(data?.movies)
+    ? data.movies
+    : Array.isArray(data)
+      ? data
+      : [];
+
+  const timestamp = Date.now();
+
+  return movies
+    .map((movie, index) => {
+      if (!movie) return null;
+      const rawName = movie.Title || movie.title || movie.Name || movie.name;
+      if (!rawName) {
+        return null;
+      }
+
+      const cleanedName = String(rawName).trim();
+      if (!cleanedName) {
+        return null;
+      }
+
+      let year = movie.Year ?? movie.year ?? '';
+      if (typeof year === 'number') {
+        year = String(year);
+      } else if (year) {
+        year = String(year).trim();
+      }
+
+      let uri = movie.LetterboxdURI || movie.letterboxd_uri || movie.uri || movie.URL || movie.url || '';
+      if (uri) {
+        uri = String(uri).trim();
+        if (uri && !/^https?:\/\//i.test(uri)) {
+          uri = uri.startsWith('/') ? `https://letterboxd.com${uri}` : `https://letterboxd.com/${uri}`;
+        }
+      }
+
+      return {
+        id: `lizard-${timestamp}-${index}`,
+        name: cleanedName,
+        year: year || '',
+        date: '',
+        uri,
+        fromLizard: true
+      };
+    })
+    .filter(Boolean);
+}
+
+function toggleLizardButtons(disabled) {
+  if (!lizardButtons || !lizardButtons.length) {
+    return;
+  }
+  lizardButtons.forEach((button) => {
+    button.disabled = Boolean(disabled);
+  });
+}
+
+function setLizardStatus(message, { tone } = {}) {
+  if (!lizardStatus) {
+    return;
+  }
+
+  lizardStatus.textContent = message || '';
+  lizardStatus.classList.remove('status--error', 'status--success');
+
+  if (tone === 'error') {
+    lizardStatus.classList.add('status--error');
+  } else if (tone === 'success') {
+    lizardStatus.classList.add('status--success');
+  }
+}
+
+function showLizardManualLink(manualQuery) {
+  if (!lizardManual || !lizardManualLink) {
+    return;
+  }
+
+  const safeQuery = manualQuery ? manualQuery.trim() : '';
+  if (!safeQuery) {
+    lizardManual.classList.add('hidden');
+    return;
+  }
+
+  lizardManualLink.href = `${LIZARD_BASE_URL}/?q=${encodeURIComponent(safeQuery)}`;
+  lizardManual.classList.remove('hidden');
+}
+
+function hideLizardManual() {
+  if (!lizardManual) {
+    return;
+  }
+  lizardManual.classList.add('hidden');
+}
 
 function handleFileUpload(event) {
   const file = event.target.files && event.target.files[0];
@@ -254,6 +506,7 @@ function updateMovieList() {
     const parts = [];
     if (movie.year) parts.push(movie.year);
     if (movie.date) parts.push(`Added ${movie.date}`);
+    if (movie.fromLizard) parts.push('Imported via Lizard');
     if (movie.isCustom) parts.push('Custom entry');
     metaEl.textContent = parts.join(' • ');
 

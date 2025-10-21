@@ -110,6 +110,56 @@ body {
   color: var(--muted);
 }
 
+.status--error {
+  color: var(--accent-strong);
+}
+
+.status--success {
+  color: #70e000;
+}
+
+.import-options {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: flex-start;
+}
+
+.import-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lizard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lizard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lizard-manual {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.lizard-manual p {
+  margin: 0;
+}
+
+.lizard-manual a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .controls {
   display: flex;
   gap: 0.5rem;
