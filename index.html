@@ -16,11 +16,18 @@
   </header>
 
   <main class="app">
-    <section class="card" aria-labelledby="import-heading">
+    <section class="card" id="import-card" aria-labelledby="import-heading">
       <div class="card-header">
         <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
+        <button
+          type="button"
+          class="btn card-toggle"
+          id="import-toggle"
+          aria-expanded="true"
+          aria-controls="import-body"
+        >Hide steps</button>
       </div>
-      <div class="card-body import-body">
+      <div class="card-body import-body" id="import-body">
         <div class="import-guide" role="note">
           <p>
             Download your watchlist or any public list as a CSV, then upload it below. You can export directly from Letterboxd or let Lizard build the file for you.

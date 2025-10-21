@@ -19,6 +19,9 @@ const winModalCloseBtn = document.getElementById('win-modal-close');
 const lizardForm = document.getElementById('lizard-form');
 const lizardInput = document.getElementById('lizard-input');
 const lizardStatus = document.getElementById('lizard-status');
+const importCard = document.getElementById('import-card');
+const importCardBody = document.getElementById('import-body');
+const importToggleBtn = document.getElementById('import-toggle');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 
@@ -56,6 +59,15 @@ const palette = [
 
 if (lizardForm) {
   lizardForm.addEventListener('submit', handleLizardOpen);
+}
+
+if (importToggleBtn && importCard && importCardBody) {
+  importToggleBtn.addEventListener('click', () => {
+    const isCollapsed = importCard.classList.toggle('card--collapsed');
+    importCardBody.hidden = isCollapsed;
+    importToggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+    importToggleBtn.textContent = isCollapsed ? 'Show steps' : 'Hide steps';
+  });
 }
 
 csvInput.addEventListener('change', handleFileUpload);

@@ -64,6 +64,21 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.card-toggle {
+  font-size: 0.9rem;
+  padding: 0.45rem 0.85rem;
+  white-space: nowrap;
+}
+
+.card--collapsed .card-header {
+  border-bottom: none;
+  padding-bottom: 1.25rem;
+}
+
+.card--collapsed .card-body {
+  display: none;
+}
+
 .card-header h2 {
   margin: 0;
   font-size: 1.35rem;
@@ -161,9 +176,9 @@ body {
 .lizard-form .text-input {
   width: min(100%, 560px);
   max-width: none;
-  padding: 0.2rem 1.2rem;
-  line-height: 1.2;
-  height: 2.4rem;
+  padding: 0.25rem 1rem;
+  line-height: 1.15;
+  height: 2rem;
 }
 
 .controls {
