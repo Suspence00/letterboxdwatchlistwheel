@@ -102,7 +102,7 @@
               <span>Advanced options</span>
             </label>
             <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
-              Adjust slice weights and colors to boost your favorites and personalize the wheel.
+              Adjust slice weights, colors, and spin modes to boost your favorites and personalize the wheel.
             </p>
           </div>
           <div class="advanced-options__panel" id="advanced-options-panel" hidden>
@@ -122,6 +122,15 @@
                 <input type="checkbox" id="filter-show-customs" checked />
                 <span>Show customs</span>
               </label>
+            </div>
+            <div class="spin-modes" role="group" aria-label="Spin modes">
+              <label class="filter-toggle spin-mode-toggle" for="last-standing-toggle">
+                <input type="checkbox" id="last-standing-toggle" />
+                <span>Last movie standing</span>
+              </label>
+              <p class="helper-text helper-text--compact spin-mode-hint" id="last-standing-hint">
+                Automatically play knockout rounds until one movie survives.
+              </p>
             </div>
           </div>
         </div>
