@@ -123,23 +123,6 @@ body {
   color: var(--muted);
 }
 
-.spin-mode-speed {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-left: 2.3rem;
-  max-width: 100%;
-}
-
-.spin-mode-speed label {
-  font-weight: 600;
-}
-
-.spin-mode-speed .helper-text {
-  margin: 0;
-  color: var(--muted);
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;

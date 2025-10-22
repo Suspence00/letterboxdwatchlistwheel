@@ -33,8 +33,6 @@ const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const lastStandingToggle = document.getElementById('last-standing-toggle');
-const lastStandingSpeedControls = document.getElementById('last-standing-speed-controls');
-const lastStandingSpeedSelect = document.getElementById('last-standing-speed');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -160,7 +158,6 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
-    syncLastStandingControls();
     updateMovieList();
     updateSpinButtonLabel();
     updateVetoButtonState();
@@ -177,26 +174,6 @@ if (advancedOptionsToggle) {
   }
   if (advancedOptionsPanel) {
     advancedOptionsPanel.hidden = false;
-  }
-}
-
-function syncLastStandingControls() {
-  if (!lastStandingSpeedControls) {
-    return;
-  }
-
-  const shouldShow = Boolean(
-    lastStandingToggle &&
-      lastStandingToggle.checked &&
-      isAdvancedOptionsEnabled()
-  );
-
-  lastStandingSpeedControls.hidden = !shouldShow;
-  if (lastStandingSpeedSelect) {
-    lastStandingSpeedSelect.disabled = !shouldShow;
-    if (!shouldShow) {
-      lastStandingSpeedSelect.blur();
-    }
   }
 }
 
@@ -229,13 +206,10 @@ if (lastStandingToggle) {
     if (!lastStandingToggle.checked) {
       clearKnockoutStyles();
     }
-    syncLastStandingControls();
     updateSpinButtonLabel();
     updateVetoButtonState();
   });
 }
-
-syncLastStandingControls();
 
 csvInput.addEventListener('change', handleFileUpload);
 selectAllBtn.addEventListener('click', () => {
@@ -866,12 +840,7 @@ function isLastStandingModeEnabled() {
 }
 
 function getLastStandingSpeedConfig() {
-  if (!lastStandingSpeedSelect) {
-    return LAST_STANDING_SPEEDS.steady;
-  }
-
-  const selectedValue = lastStandingSpeedSelect.value;
-  return LAST_STANDING_SPEEDS[selectedValue] || LAST_STANDING_SPEEDS.steady;
+  return LAST_STANDING_SPEEDS.rapid;
 }
 
 function clampWeight(value) {
