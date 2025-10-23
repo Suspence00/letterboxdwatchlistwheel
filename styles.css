@@ -651,6 +651,18 @@ body {
   margin-top: 4.5rem;
 }
 
+.wheel-wrapper.is-spinning #wheel {
+  animation: wheelSpinPulse 1.45s ease-in-out infinite;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(0 0 14px rgba(255, 134, 0, 0.35));
+}
+
+.wheel-wrapper.is-suspense #wheel {
+  animation-duration: 0.85s;
+  filter: drop-shadow(0 0 18px rgba(255, 210, 63, 0.55));
+  transform: scale(1.01);
+}
+
 #wheel {
   width: min(520px, 90vw);
   height: auto;
@@ -681,6 +693,10 @@ body {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
+.pointer.is-spinning::before {
+  animation: pointerGlow 1.45s ease-in-out infinite;
+}
+
 .pointer::after {
   content: '';
   position: absolute;
@@ -692,6 +708,10 @@ body {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   clip-path: polygon(50% 100%, 0 0, 100% 0);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pointer.is-suspense::after {
+  animation: pointerShake 0.35s ease-in-out infinite;
 }
 
 .result {
@@ -740,6 +760,42 @@ body {
   100% {
     transform: translate3d(var(--confetti-x-move), 110vh, 0) rotate(720deg);
     opacity: 0;
+  }
+}
+
+@keyframes wheelSpinPulse {
+  0% {
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 26px 58px rgba(0, 0, 0, 0.56);
+  }
+  100% {
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes pointerGlow {
+  0% {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
+@keyframes pointerShake {
+  0% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(-6deg);
+  }
+  100% {
+    transform: translateX(-50%) rotate(0deg);
   }
 }
 

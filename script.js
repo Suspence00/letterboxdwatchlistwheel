@@ -33,6 +33,8 @@ const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const lastStandingToggle = document.getElementById('last-standing-toggle');
+const wheelWrapper = document.querySelector('.wheel-wrapper');
+const pointerEl = document.querySelector('.pointer');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -55,6 +57,7 @@ let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
+let releaseSpinSwell = null;
 
 const LAST_STANDING_SPEEDS = {
   dramatic: {
@@ -1143,7 +1146,7 @@ async function spinWheel() {
   updateSpinButtonLabel();
 }
 
-function tick(segments) {
+function tick(segments, dynamics = {}) {
   if (!segments.length) {
     return;
   }
@@ -1151,7 +1154,8 @@ function tick(segments) {
   const pointerAngle = getPointerAngle();
   const index = findSegmentIndexForAngle(segments, pointerAngle);
   if (index !== lastTickIndex) {
-    playTickSound();
+    const { progress = 0 } = dynamics;
+    playTickSound(progress);
     lastTickIndex = index;
   }
 }
@@ -1184,14 +1188,18 @@ function performSpin(selectedMovies, options = {}) {
     if (!segments.length || totalWeight <= 0) {
       isSpinning = false;
       spinButton.disabled = selectedMovies.length === 0;
+      resetSpinVisualState();
+      stopSpinSwell();
       resolve({ winningMovie: null, segments: [] });
       return;
     }
 
     ensureAudioContext();
+    stopSpinSwell();
     isSpinning = true;
     spinButton.disabled = true;
     lastTickIndex = null;
+    enterSpinVisualState();
 
     const targetWeight = Math.random() * totalWeight;
     let chosenSegment = segments[segments.length - 1];
@@ -1214,6 +1222,9 @@ function performSpin(selectedMovies, options = {}) {
     spinDuration = safeMinDuration + Math.random() * (safeMaxDuration - safeMinDuration);
     spinStartTimestamp = null;
     const startRotation = rotationAngle;
+    let suspenseActivated = false;
+
+    startSpinSwell(spinDuration);
 
     const animate = (timestamp) => {
       if (!spinStartTimestamp) {
@@ -1221,11 +1232,17 @@ function performSpin(selectedMovies, options = {}) {
       }
       const elapsed = timestamp - spinStartTimestamp;
       const progress = Math.min(elapsed / spinDuration, 1);
-      const eased = easeOutCubic(progress);
-      rotationAngle = startRotation + (targetRotation - startRotation) * eased;
+      const eased = dramaticSpinEase(progress);
+      const suspenseShake = progress > 0.78 ? Math.sin(progress * Math.PI * 12) * (1 - progress) * 0.08 : 0;
+      rotationAngle = startRotation + (targetRotation - startRotation) * eased + suspenseShake;
 
       drawWheel(selectedMovies);
-      tick(segments);
+      tick(segments, { progress });
+
+      if (!suspenseActivated && progress >= 0.72) {
+        suspenseActivated = true;
+        enterSpinSuspenseState();
+      }
 
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(animate);
@@ -1233,6 +1250,8 @@ function performSpin(selectedMovies, options = {}) {
         cancelAnimationFrame(animationFrameId);
         isSpinning = false;
         spinButton.disabled = selectedMovies.length === 0;
+        resetSpinVisualState();
+        stopSpinSwell();
         const pointerAngle = getPointerAngle();
         const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
         const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
@@ -1347,12 +1366,31 @@ function getPointerAngle() {
   return (POINTER_DIRECTION - normalized + 2 * Math.PI) % (2 * Math.PI);
 }
 
-function easeOutCubic(x) {
-  return 1 - Math.pow(1 - x, 3);
+function dramaticSpinEase(x) {
+  const clamped = Math.min(Math.max(x, 0), 1);
+  const acceleratePortion = 0.18;
+  const suspenseStart = 0.65;
+
+  if (clamped <= acceleratePortion) {
+    const local = clamped / acceleratePortion;
+    return Math.pow(local, 2) * 0.2;
+  }
+
+  if (clamped <= suspenseStart) {
+    const local = (clamped - acceleratePortion) / (suspenseStart - acceleratePortion);
+    const base = 0.2 + local * 0.6;
+    const lift = Math.sin(local * Math.PI) * 0.04 * (1 - local);
+    return base + lift;
+  }
+
+  const local = (clamped - suspenseStart) / (1 - suspenseStart);
+  const slow = easeOutQuint(local);
+  const shimmy = Math.sin(local * Math.PI * 1.5) * 0.03 * (1 - local);
+  return Math.min(1, 0.8 + slow * 0.2 + shimmy);
 }
 
-function lerp(start, end, amount) {
-  return start + (end - start) * amount;
+function easeOutQuint(x) {
+  return 1 - Math.pow(1 - x, 5);
 }
 
 function ensureAudioContext() {
@@ -1364,19 +1402,22 @@ function ensureAudioContext() {
   }
 }
 
-function playTickSound() {
+function playTickSound(progress = 0) {
   ensureAudioContext();
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
   oscillator.type = 'triangle';
-  oscillator.frequency.value = 600;
+  const intensity = Math.min(1, 0.45 + progress * 0.35 + (progress > 0.7 ? (progress - 0.7) * 1.4 : 0));
+  const frequency = 420 + (1 - intensity) * 260;
+  oscillator.frequency.value = frequency;
   const now = audioContext.currentTime;
+  const peakGain = 0.05 + intensity * 0.09;
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  gain.gain.exponentialRampToValueAtTime(peakGain, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
   oscillator.connect(gain).connect(audioContext.destination);
   oscillator.start(now);
-  oscillator.stop(now + 0.12);
+  oscillator.stop(now + 0.18);
 }
 
 function playWinSound() {
@@ -1437,6 +1478,92 @@ function triggerConfetti() {
     confettiContainer.innerHTML = '';
     confettiTimeoutId = null;
   }, 4200);
+}
+
+function enterSpinVisualState() {
+  if (wheelWrapper) {
+    wheelWrapper.classList.add('is-spinning');
+    wheelWrapper.classList.remove('is-suspense');
+  }
+  if (pointerEl) {
+    pointerEl.classList.add('is-spinning');
+    pointerEl.classList.remove('is-suspense');
+  }
+}
+
+function enterSpinSuspenseState() {
+  if (wheelWrapper) {
+    wheelWrapper.classList.add('is-suspense');
+  }
+  if (pointerEl) {
+    pointerEl.classList.add('is-suspense');
+  }
+}
+
+function resetSpinVisualState() {
+  if (wheelWrapper) {
+    wheelWrapper.classList.remove('is-spinning');
+    wheelWrapper.classList.remove('is-suspense');
+  }
+  if (pointerEl) {
+    pointerEl.classList.remove('is-spinning');
+    pointerEl.classList.remove('is-suspense');
+  }
+}
+
+function startSpinSwell(durationMs) {
+  if (!Number.isFinite(durationMs) || durationMs <= 0) {
+    stopSpinSwell();
+    return;
+  }
+
+  ensureAudioContext();
+  stopSpinSwell();
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  const now = audioContext.currentTime;
+  const durationSeconds = Math.max(0.4, durationMs / 1000);
+
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(160, now);
+  oscillator.frequency.exponentialRampToValueAtTime(520, now + Math.min(durationSeconds * 0.7, Math.max(durationSeconds - 0.1, 0.1)));
+  oscillator.frequency.exponentialRampToValueAtTime(260, now + durationSeconds);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.18);
+  gain.gain.exponentialRampToValueAtTime(0.22, now + Math.min(durationSeconds * 0.68, Math.max(durationSeconds - 0.12, 0.12)));
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start(now);
+  oscillator.stop(now + durationSeconds + 0.2);
+
+  const cleanup = () => {
+    const stopTime = audioContext.currentTime;
+    gain.gain.cancelScheduledValues(stopTime);
+    gain.gain.setTargetAtTime(0.0001, stopTime, 0.08);
+    try {
+      oscillator.stop(stopTime + 0.12);
+    } catch (error) {
+      // Oscillator may already be stopped.
+    }
+    releaseSpinSwell = null;
+  };
+
+  oscillator.onended = () => {
+    if (releaseSpinSwell === cleanup) {
+      releaseSpinSwell = null;
+    }
+  };
+
+  releaseSpinSwell = cleanup;
+}
+
+function stopSpinSwell() {
+  if (typeof releaseSpinSwell === 'function') {
+    releaseSpinSwell();
+  }
 }
 
 function showWinnerPopup(movie) {
