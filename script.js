@@ -33,6 +33,14 @@ const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const lastStandingToggle = document.getElementById('last-standing-toggle');
+const betForm = document.getElementById('bet-form');
+const betSelection = document.getElementById('bet-selection');
+const betAmountInput = document.getElementById('bet-amount');
+const betOddsDisplay = document.getElementById('bet-odds');
+const betStatus = document.getElementById('bet-status');
+const betList = document.getElementById('bet-list');
+const betSummary = document.getElementById('bet-summary');
+const betSubmitButton = document.getElementById('bet-submit');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -55,6 +63,18 @@ let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
+let bets = [];
+let betIdCounter = 0;
+
+const betAmountFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2
+});
+
+const betRatioFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2
+});
 
 const LAST_STANDING_SPEEDS = {
   dramatic: {
@@ -222,6 +242,18 @@ clearSelectionBtn.addEventListener('click', () => {
 });
 spinButton.addEventListener('click', spinWheel);
 
+if (betForm) {
+  betForm.addEventListener('submit', handleBetSubmit);
+}
+
+if (betSelection) {
+  betSelection.addEventListener('change', () => updateBetOddsDisplay());
+}
+
+if (betAmountInput) {
+  betAmountInput.addEventListener('input', () => updateBetOddsDisplay());
+}
+
 if (customEntryForm) {
   customEntryForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -254,6 +286,7 @@ document.addEventListener('keydown', (event) => {
 drawEmptyWheel();
 updateVetoButtonState();
 updateSpinButtonLabel();
+updateBettingInterface();
 
 function handleLizardOpen(event) {
   event.preventDefault();
@@ -591,6 +624,7 @@ function updateMovieList() {
     closeWinnerPopup({ restoreFocus: false });
     updateVetoButtonState();
     updateSpinButtonLabel();
+    updateBettingInterface();
     return;
   }
 
@@ -614,6 +648,7 @@ function updateMovieList() {
     spinButton.disabled = true;
     drawEmptyWheel();
     updateVetoButtonState();
+    updateBettingInterface();
     return;
   }
 
@@ -759,8 +794,355 @@ function updateMovieList() {
     closeWinnerPopup({ restoreFocus: false });
   }
   drawWheel(selectedMovies);
+  updateBettingInterface();
   updateVetoButtonState();
   updateSpinButtonLabel();
+}
+
+function updateBettingInterface() {
+  if (!betSelection || !betAmountInput || !betList) {
+    return;
+  }
+
+  const selectedMovies = getFilteredSelectedMovies();
+  const pool = buildBettingPool(selectedMovies);
+  const previousValue = betSelection.value;
+
+  betSelection.innerHTML = '';
+
+  if (!selectedMovies.length) {
+    const placeholder = document.createElement('option');
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = 'No slices available';
+    placeholder.value = '';
+    betSelection.appendChild(placeholder);
+  } else {
+    selectedMovies.forEach((movie) => {
+      const option = document.createElement('option');
+      option.value = movie.id;
+      option.textContent = movie.year ? `${movie.name} (${movie.year})` : movie.name;
+      betSelection.appendChild(option);
+    });
+  }
+
+  const activeIds = new Set(selectedMovies.map((movie) => movie.id));
+  const previousCount = bets.length;
+  bets = bets.filter((bet) => activeIds.has(bet.movieId));
+  if (previousCount !== bets.length) {
+    setBetStatus('Removed bets for entries no longer on the wheel.', { tone: 'info' });
+  }
+
+  if (previousValue && activeIds.has(previousValue)) {
+    betSelection.value = previousValue;
+  } else if (selectedMovies.length) {
+    betSelection.value = selectedMovies[0].id;
+  } else {
+    betSelection.value = '';
+  }
+
+  const bettingLocked = !pool || isSpinning || isLastStandingInProgress;
+  betSelection.disabled = bettingLocked;
+  betAmountInput.disabled = bettingLocked;
+  if (betSubmitButton) {
+    betSubmitButton.disabled = bettingLocked;
+  }
+
+  renderBetList(pool);
+  updateBetSummary(pool);
+  updateBetOddsDisplay(pool);
+}
+
+function buildBettingPool(selectedMovies) {
+  if (!Array.isArray(selectedMovies) || !selectedMovies.length) {
+    return null;
+  }
+
+  const weights = new Map();
+  let totalWeight = 0;
+
+  selectedMovies.forEach((movie) => {
+    const weight = getEffectiveWeight(movie);
+    if (weight > 0) {
+      weights.set(movie.id, weight);
+      totalWeight += weight;
+    }
+  });
+
+  if (!totalWeight) {
+    return null;
+  }
+
+  return { totalWeight, weights };
+}
+
+function buildBettingSnapshot(selectedMovies) {
+  const pool = buildBettingPool(selectedMovies);
+  if (!pool) {
+    return null;
+  }
+  return {
+    totalWeight: pool.totalWeight,
+    weights: new Map(pool.weights)
+  };
+}
+
+function updateBetOddsDisplay(pool) {
+  if (!betOddsDisplay) {
+    return;
+  }
+
+  if (isSpinning || isLastStandingInProgress) {
+    betOddsDisplay.textContent = 'Bets are locked while the wheel is spinning.';
+    return;
+  }
+
+  const activePool = pool || buildBettingPool(getFilteredSelectedMovies());
+  if (!betSelection || !activePool) {
+    betOddsDisplay.textContent = 'Add slices to enable betting odds.';
+    return;
+  }
+
+  const movieId = betSelection.value;
+  if (!movieId || !activePool.weights.has(movieId)) {
+    betOddsDisplay.textContent = 'Select a slice to see the current odds.';
+    return;
+  }
+
+  const weight = activePool.weights.get(movieId);
+  const multiplier = activePool.totalWeight / weight;
+  const amount = sanitizeBetAmount(betAmountInput ? betAmountInput.value : '');
+
+  if (amount) {
+    const payout = amount * multiplier;
+    betOddsDisplay.textContent = `Odds: 1 in ${formatOddsRatio(multiplier)} • Potential payout: ${formatBetAmount(payout)} pts`;
+  } else {
+    betOddsDisplay.textContent = `Odds: 1 in ${formatOddsRatio(multiplier)} • Payout multiplier: ×${formatOddsRatio(multiplier)}`;
+  }
+}
+
+function handleBetSubmit(event) {
+  event.preventDefault();
+
+  if (!betSelection) {
+    return;
+  }
+
+  if (isSpinning || isLastStandingInProgress) {
+    setBetStatus('Bets are locked while the wheel is spinning.', { tone: 'info' });
+    return;
+  }
+
+  const selectedMovies = getFilteredSelectedMovies();
+  const pool = buildBettingPool(selectedMovies);
+
+  if (!pool) {
+    setBetStatus('Add slices to the wheel before placing a bet.', { tone: 'error' });
+    return;
+  }
+
+  const movieId = betSelection.value;
+  if (!movieId || !pool.weights.has(movieId)) {
+    setBetStatus('Select a slice before placing a bet.', { tone: 'error' });
+    return;
+  }
+
+  const amount = sanitizeBetAmount(betAmountInput ? betAmountInput.value : '');
+
+  if (amount === null) {
+    setBetStatus('Enter a bet amount of at least 1 point.', { tone: 'error' });
+    if (betAmountInput) {
+      betAmountInput.focus();
+    }
+    return;
+  }
+
+  const movie = allMovies.find((item) => item.id === movieId);
+  betIdCounter += 1;
+  bets.push({ id: `bet-${betIdCounter}`, movieId, amount });
+
+  if (betAmountInput) {
+    betAmountInput.value = '';
+    betAmountInput.focus();
+  }
+
+  setBetStatus(`Placed ${formatBetAmount(amount)} pts on ${movie ? movie.name : 'your pick'}.`, { tone: 'success' });
+
+  const refreshedPool = buildBettingPool(getFilteredSelectedMovies());
+  renderBetList(refreshedPool);
+  updateBetSummary(refreshedPool);
+  updateBetOddsDisplay(refreshedPool);
+}
+
+function sanitizeBetAmount(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
+function formatBetAmount(amount) {
+  if (!Number.isFinite(amount)) {
+    return '0.00';
+  }
+  return betAmountFormatter.format(Math.max(0, amount));
+}
+
+function formatOddsRatio(value) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return '0.00';
+  }
+  return betRatioFormatter.format(value);
+}
+
+function renderBetList(pool) {
+  if (!betList) {
+    return;
+  }
+
+  betList.innerHTML = '';
+
+  if (!bets.length) {
+    const emptyItem = document.createElement('li');
+    emptyItem.className = 'betting__empty';
+    emptyItem.textContent = 'No bets placed yet.';
+    betList.appendChild(emptyItem);
+    return;
+  }
+
+  const activePool = pool || buildBettingPool(getFilteredSelectedMovies());
+
+  bets.forEach((bet) => {
+    const movie = allMovies.find((item) => item.id === bet.movieId);
+    const item = document.createElement('li');
+
+    const wager = document.createElement('span');
+    wager.className = 'betting__wager';
+    wager.textContent = `${formatBetAmount(bet.amount)} pts on ${movie ? movie.name : 'removed entry'}`;
+    item.appendChild(wager);
+
+    const meta = document.createElement('span');
+    meta.className = 'betting__meta';
+
+    if (activePool && activePool.weights.has(bet.movieId)) {
+      const weight = activePool.weights.get(bet.movieId);
+      const multiplier = activePool.totalWeight / weight;
+      meta.textContent = `Potential payout: ${formatBetAmount(bet.amount * multiplier)} pts`;
+    } else {
+      meta.textContent = 'Awaiting active slice to calculate payout.';
+    }
+
+    item.appendChild(meta);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn betting__remove';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => {
+      removeBet(bet.id);
+    });
+    item.appendChild(removeBtn);
+
+    betList.appendChild(item);
+  });
+}
+
+function removeBet(betId) {
+  bets = bets.filter((bet) => bet.id !== betId);
+  const pool = buildBettingPool(getFilteredSelectedMovies());
+  renderBetList(pool);
+  updateBetSummary(pool);
+  updateBetOddsDisplay(pool);
+  setBetStatus('Removed bet.', { tone: 'info' });
+}
+
+function updateBetSummary(pool) {
+  if (!betSummary) {
+    return;
+  }
+
+  if (!bets.length) {
+    betSummary.textContent = '';
+    return;
+  }
+
+  const totalStake = bets.reduce((sum, bet) => sum + bet.amount, 0);
+  const activePool = pool || buildBettingPool(getFilteredSelectedMovies());
+
+  if (!activePool) {
+    betSummary.textContent = `Total staked: ${formatBetAmount(totalStake)} pts. Bets activate once slices are available.`;
+    return;
+  }
+
+  const inactiveCount = bets.filter((bet) => !activePool.weights.has(bet.movieId)).length;
+  if (inactiveCount > 0) {
+    const suffix = inactiveCount === 1 ? '' : 's';
+    betSummary.textContent = `Total staked: ${formatBetAmount(totalStake)} pts. ${inactiveCount} bet${suffix} awaiting active slices.`;
+  } else {
+    betSummary.textContent = `Total staked: ${formatBetAmount(totalStake)} pts.`;
+  }
+}
+
+function setBetStatus(message, options = {}) {
+  if (!betStatus) {
+    return;
+  }
+
+  betStatus.textContent = message || '';
+  betStatus.classList.remove('status--error', 'status--info', 'status--success');
+
+  if (!message) {
+    return;
+  }
+
+  const tone = options.tone;
+  if (tone === 'error') {
+    betStatus.classList.add('status--error');
+  } else if (tone === 'success') {
+    betStatus.classList.add('status--success');
+  } else if (tone === 'info') {
+    betStatus.classList.add('status--info');
+  }
+}
+
+function settleBets(winningMovie, betSnapshot) {
+  if (!bets.length) {
+    return;
+  }
+
+  const snapshot = betSnapshot || buildBettingSnapshot(getFilteredSelectedMovies());
+  if (!snapshot || !winningMovie) {
+    setBetStatus('Bets could not be settled for this spin.', { tone: 'info' });
+    bets = [];
+    const pool = buildBettingPool(getFilteredSelectedMovies());
+    renderBetList(pool);
+    updateBetSummary(pool);
+    updateBetOddsDisplay(pool);
+    return;
+  }
+
+  const winningWeight = snapshot.weights.get(winningMovie.id);
+  const winningBets = bets.filter((bet) => bet.movieId === winningMovie.id);
+
+  if (!winningWeight || !winningBets.length) {
+    setBetStatus('No winning bets this time.', { tone: 'info' });
+  } else {
+    const multiplier = snapshot.totalWeight / winningWeight;
+    const totalPayout = winningBets.reduce((sum, bet) => sum + bet.amount * multiplier, 0);
+    setBetStatus(`Your bet on ${winningMovie.name} paid out ${formatBetAmount(totalPayout)} pts!`, {
+      tone: 'success'
+    });
+  }
+
+  bets = [];
+  const pool = buildBettingPool(getFilteredSelectedMovies());
+  renderBetList(pool);
+  updateBetSummary(pool);
+  updateBetOddsDisplay(pool);
 }
 
 function drawEmptyWheel() {
@@ -1105,6 +1487,7 @@ async function spinWheel() {
     return;
   }
 
+  const betSnapshot = buildBettingSnapshot(selectedMovies);
   clearKnockoutStyles();
   closeWinnerPopup({ restoreFocus: false });
   resultEl.textContent = '';
@@ -1115,7 +1498,7 @@ async function spinWheel() {
   ensureAudioContext();
 
   if (isLastStandingModeEnabled() && selectedMovies.length > 1) {
-    await runLastStandingMode(selectedMovies);
+    await runLastStandingMode(selectedMovies, betSnapshot);
     return;
   }
 
@@ -1139,6 +1522,7 @@ async function spinWheel() {
   drawWheel(selectedMovies);
   triggerConfetti();
   showWinnerPopup(winningMovie);
+  settleBets(winningMovie, betSnapshot);
   updateVetoButtonState();
   updateSpinButtonLabel();
 }
@@ -1184,6 +1568,7 @@ function performSpin(selectedMovies, options = {}) {
     if (!segments.length || totalWeight <= 0) {
       isSpinning = false;
       spinButton.disabled = selectedMovies.length === 0;
+      updateBettingInterface();
       resolve({ winningMovie: null, segments: [] });
       return;
     }
@@ -1192,6 +1577,7 @@ function performSpin(selectedMovies, options = {}) {
     isSpinning = true;
     spinButton.disabled = true;
     lastTickIndex = null;
+    updateBettingInterface();
 
     const targetWeight = Math.random() * totalWeight;
     let chosenSegment = segments[segments.length - 1];
@@ -1233,6 +1619,7 @@ function performSpin(selectedMovies, options = {}) {
         cancelAnimationFrame(animationFrameId);
         isSpinning = false;
         spinButton.disabled = selectedMovies.length === 0;
+        updateBettingInterface();
         const pointerAngle = getPointerAngle();
         const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
         const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
@@ -1245,7 +1632,7 @@ function performSpin(selectedMovies, options = {}) {
   });
 }
 
-async function runLastStandingMode(selectedMovies) {
+async function runLastStandingMode(selectedMovies, betSnapshot) {
   const eliminationPool = [...selectedMovies];
   let eliminationOrder = 1;
   const speedConfig = getLastStandingSpeedConfig();
@@ -1253,6 +1640,7 @@ async function runLastStandingMode(selectedMovies) {
   spinButton.disabled = true;
   updateSpinButtonLabel();
   updateVetoButtonState();
+  updateBettingInterface();
 
   while (eliminationPool.length > 1) {
     const isFinalElimination = eliminationPool.length === 2;
@@ -1307,6 +1695,13 @@ async function runLastStandingMode(selectedMovies) {
   spinButton.disabled = getFilteredSelectedMovies().length === 0;
   updateVetoButtonState();
   updateSpinButtonLabel();
+  updateBettingInterface();
+
+  if (finalMovie) {
+    settleBets(finalMovie, betSnapshot);
+  } else {
+    settleBets(null, betSnapshot);
+  }
 }
 
 function delay(ms) {

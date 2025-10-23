@@ -144,6 +144,39 @@
             <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
             <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
             <p class="result" id="result" aria-live="polite"></p>
+            <div class="betting" id="betting-panel" aria-labelledby="betting-title">
+              <h3 id="betting-title" class="betting__title">Place your bets</h3>
+              <p class="helper-text helper-text--compact">Wagers pay out based on how many slices each pick holds.</p>
+              <form id="bet-form" class="betting__form">
+                <div class="betting__field">
+                  <label for="bet-selection">Pick a slice</label>
+                  <select id="bet-selection" class="text-input text-input--select" name="bet-selection"></select>
+                </div>
+                <div class="betting__field">
+                  <label for="bet-amount">Bet amount (points)</label>
+                  <div class="betting__amount-row">
+                    <input
+                      type="number"
+                      id="bet-amount"
+                      class="text-input"
+                      name="bet-amount"
+                      min="1"
+                      step="1"
+                      inputmode="numeric"
+                      placeholder="10"
+                    />
+                    <button type="submit" class="btn" id="bet-submit">Add bet</button>
+                  </div>
+                </div>
+                <p class="betting__odds" id="bet-odds" aria-live="polite">Select a slice to see the current odds.</p>
+              </form>
+              <p class="status" id="bet-status" role="status" aria-live="polite"></p>
+              <div class="betting__bets">
+                <h4 class="betting__heading">Active bets</h4>
+                <ul id="bet-list" class="betting__list"></ul>
+                <p class="betting__summary" id="bet-summary" aria-live="polite"></p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
