@@ -7,7 +7,7 @@ Turn your Letterboxd watchlist export into a dramatic wheel spin that chooses wh
 - **CSV import** – Upload the `watchlist.csv` that Letterboxd gives you and automatically load every title.
 - **Curate your picks** – Toggle individual films on or off before each spin. You can also select or clear the whole list in a click.
 - **Dynamic wheel** – A colorful wheel updates in real-time as you adjust your selection.
-- **Last movie standing mode** – Flip on the knockout spinner to automatically eliminate picks until a single winner remains, now tuned for a brisk rapid cadence by default.
+- **Movie Knockout mode** – Flip on the knockout spinner to automatically eliminate picks until a single winner remains, now tuned for a brisk rapid cadence by default.
 - **Sound and animation** – Arcade-style ticking while the wheel spins, followed by a celebratory chime when a movie is chosen.
 - **No build step** – Pure HTML, CSS, and vanilla JavaScript. 
 

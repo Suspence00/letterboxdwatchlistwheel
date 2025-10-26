@@ -56,32 +56,63 @@ let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
 
-const LAST_STANDING_SPEEDS = {
-  dramatic: {
-    eliminationSpin: { minSpins: 4, maxSpins: 6, minDuration: 2800, maxDuration: 3900 },
-    finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 6800 },
-    interRoundDelay: 1100,
-    knockoutRevealDelay: 1100,
-    finalRevealDelay: 1500,
-    winnerRevealDelay: 650
+const MOVIE_KNOCKOUT_SPEEDS = [
+  {
+    minCount: 13,
+    config: {
+      eliminationSpin: { minSpins: 1, maxSpins: 2, minDuration: 900, maxDuration: 1300 },
+      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3600, maxDuration: 4500 },
+      interRoundDelay: 350,
+      knockoutRevealDelay: 450,
+      finalRevealDelay: 900,
+      winnerRevealDelay: 600
+    }
   },
-  steady: {
-    eliminationSpin: { minSpins: 3, maxSpins: 5, minDuration: 2200, maxDuration: 3400 },
-    finalSpin: { minSpins: 6, maxSpins: 8, minDuration: 4200, maxDuration: 5600 },
-    interRoundDelay: 900,
-    knockoutRevealDelay: 900,
-    finalRevealDelay: 1200,
-    winnerRevealDelay: 500
+  {
+    minCount: 7,
+    config: {
+      eliminationSpin: { minSpins: 2, maxSpins: 3, minDuration: 1300, maxDuration: 1900 },
+      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3200, maxDuration: 4200 },
+      interRoundDelay: 500,
+      knockoutRevealDelay: 650,
+      finalRevealDelay: 1100,
+      winnerRevealDelay: 650
+    }
   },
-  rapid: {
-    eliminationSpin: { minSpins: 2, maxSpins: 4, minDuration: 1500, maxDuration: 2400 },
-    finalSpin: { minSpins: 4, maxSpins: 6, minDuration: 3100, maxDuration: 4300 },
-    interRoundDelay: 600,
-    knockoutRevealDelay: 750,
-    finalRevealDelay: 900,
-    winnerRevealDelay: 380
+  {
+    minCount: 4,
+    config: {
+      eliminationSpin: { minSpins: 3, maxSpins: 4, minDuration: 1900, maxDuration: 2600 },
+      finalSpin: { minSpins: 6, maxSpins: 7, minDuration: 4200, maxDuration: 5200 },
+      interRoundDelay: 720,
+      knockoutRevealDelay: 900,
+      finalRevealDelay: 1300,
+      winnerRevealDelay: 700
+    }
+  },
+  {
+    minCount: 2,
+    config: {
+      eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
+      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      interRoundDelay: 900,
+      knockoutRevealDelay: 1100,
+      finalRevealDelay: 1700,
+      winnerRevealDelay: 800
+    }
+  },
+  {
+    minCount: 1,
+    config: {
+      eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
+      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      interRoundDelay: 900,
+      knockoutRevealDelay: 1100,
+      finalRevealDelay: 1700,
+      winnerRevealDelay: 900
+    }
   }
-};
+];
 
 const metadataCache = new Map();
 
@@ -94,7 +125,7 @@ const filterState = {
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
 
-const palette = [
+const basePalette = [
   '#ff8600',
   '#3ab0ff',
   '#f25f5c',
@@ -104,8 +135,38 @@ const palette = [
   '#00bbf9',
   '#ffd23f',
   '#06d6a0',
-  '#ff70a6'
+  '#ff70a6',
+  '#f896d8',
+  '#1fab89',
+  '#ffbe0b',
+  '#577590',
+  '#ff5d8f'
 ];
+
+const DEFAULT_SLICE_COLOR = basePalette[0];
+
+function hslToHex(h, s, l) {
+  const hue = ((Number(h) % 360) + 360) % 360;
+  const saturation = Math.max(0, Math.min(100, Number.isFinite(s) ? s : 0)) / 100;
+  const lightness = Math.max(0, Math.min(100, Number.isFinite(l) ? l : 0)) / 100;
+  const a = saturation * Math.min(lightness, 1 - lightness);
+  const convert = (n) => {
+    const k = (n + hue / 30) % 12;
+    const color = lightness - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${convert(0)}${convert(8)}${convert(4)}`;
+}
+
+function generateDynamicColor(index) {
+  const goldenAngle = 137.508;
+  const hue = (index * goldenAngle) % 360;
+  const saturation = 65 + ((index * 7) % 18);
+  const lightness = 48 + ((index * 11) % 12);
+  return hslToHex(hue, saturation, lightness);
+}
 
 function debounce(fn, delay = 200) {
   let timeoutId;
@@ -122,9 +183,13 @@ function debounce(fn, delay = 200) {
 
 function getDefaultColorForIndex(index) {
   if (!Number.isFinite(index)) {
-    return palette[0];
+    return DEFAULT_SLICE_COLOR;
   }
-  return palette[((index % palette.length) + palette.length) % palette.length];
+  const normalizedIndex = Math.max(0, Math.floor(index));
+  if (normalizedIndex < basePalette.length) {
+    return basePalette[normalizedIndex];
+  }
+  return generateDynamicColor(normalizedIndex);
 }
 
 if (lizardForm) {
@@ -789,7 +854,7 @@ function updateSpinButtonLabel() {
   if (isLastStandingModeEnabled()) {
     const remaining = getFilteredSelectedMovies();
     if (remaining.length > 1) {
-      spinButton.textContent = 'Start last movie standing';
+      spinButton.textContent = 'Start Movie Knockout mode';
       return;
     }
   }
@@ -839,8 +904,13 @@ function isLastStandingModeEnabled() {
   return Boolean(lastStandingToggle && lastStandingToggle.checked);
 }
 
-function getLastStandingSpeedConfig() {
-  return LAST_STANDING_SPEEDS.rapid;
+function getLastStandingSpeedConfig(remainingCount) {
+  for (const stage of MOVIE_KNOCKOUT_SPEEDS) {
+    if (remainingCount >= stage.minCount) {
+      return stage.config;
+    }
+  }
+  return MOVIE_KNOCKOUT_SPEEDS[MOVIE_KNOCKOUT_SPEEDS.length - 1].config;
 }
 
 function clampWeight(value) {
@@ -867,7 +937,7 @@ function sanitizeColor(value, fallback) {
   if (typeof fallback === 'string' && /^#([0-9a-f]{6})$/i.test(fallback.trim())) {
     return fallback.trim().toLowerCase();
   }
-  return palette[0];
+  return DEFAULT_SLICE_COLOR;
 }
 
 function getStoredColor(movie, fallback) {
@@ -1248,14 +1318,15 @@ function performSpin(selectedMovies, options = {}) {
 async function runLastStandingMode(selectedMovies) {
   const eliminationPool = [...selectedMovies];
   let eliminationOrder = 1;
-  const speedConfig = getLastStandingSpeedConfig();
   isLastStandingInProgress = true;
   spinButton.disabled = true;
   updateSpinButtonLabel();
   updateVetoButtonState();
 
   while (eliminationPool.length > 1) {
-    const isFinalElimination = eliminationPool.length === 2;
+    const remainingBeforeSpin = eliminationPool.length;
+    const speedConfig = getLastStandingSpeedConfig(remainingBeforeSpin);
+    const isFinalElimination = remainingBeforeSpin === 2;
     const spinSettings = isFinalElimination
       ? speedConfig.finalSpin
       : speedConfig.eliminationSpin;
@@ -1282,7 +1353,8 @@ async function runLastStandingMode(selectedMovies) {
     drawWheel(eliminationPool);
 
     if (remainingCount <= 1) {
-      await delay(isFinalElimination ? speedConfig.finalRevealDelay : speedConfig.knockoutRevealDelay);
+      const revealDelay = isFinalElimination ? speedConfig.finalRevealDelay : speedConfig.knockoutRevealDelay;
+      await delay(revealDelay);
       break;
     }
 
@@ -1295,8 +1367,9 @@ async function runLastStandingMode(selectedMovies) {
   if (finalMovie) {
     winnerId = finalMovie.id;
     highlightWinner();
-    await delay(speedConfig.winnerRevealDelay);
-    resultEl.innerHTML = `🏆 Last movie standing: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
+    const finalTiming = getLastStandingSpeedConfig(1);
+    await delay(finalTiming.winnerRevealDelay);
+    resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
     playWinSound();
     drawWheel(eliminationPool);
     triggerConfetti();
