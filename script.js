@@ -115,6 +115,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
 ];
 
 const metadataCache = new Map();
+const knockoutResults = new Map();
 
 const filterState = {
   query: '',
@@ -498,6 +499,7 @@ function handleFileUpload(event) {
 
           return {
             id: `${index}-${idBase}`,
+            initialIndex: index,
             name: rawName,
             year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
             date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
@@ -514,6 +516,7 @@ function handleFileUpload(event) {
         return;
       }
 
+      knockoutResults.clear();
       selectedIds = new Set(allMovies.map((movie) => movie.id));
       winnerId = null;
       resultEl.textContent = '';
@@ -684,7 +687,42 @@ function updateMovieList() {
 
   const weightsEnabled = isAdvancedOptionsEnabled();
 
-  filteredMovies.forEach((movie, index) => {
+  const displayMovies = [...filteredMovies];
+  if (knockoutResults.size) {
+    displayMovies.sort((a, b) => {
+      const aStatus = knockoutResults.get(a.id);
+      const bStatus = knockoutResults.get(b.id);
+      const aOrder = aStatus && Number.isFinite(aStatus.order) ? aStatus.order : null;
+      const bOrder = bStatus && Number.isFinite(bStatus.order) ? bStatus.order : null;
+
+      if (aOrder !== null && bOrder !== null) {
+        if (aOrder !== bOrder) {
+          return aOrder - bOrder;
+        }
+        if (aStatus?.status === 'champion' && bStatus?.status !== 'champion') {
+          return 1;
+        }
+        if (aStatus?.status !== 'champion' && bStatus?.status === 'champion') {
+          return -1;
+        }
+        return 0;
+      }
+
+      if (aOrder !== null) return -1;
+      if (bOrder !== null) return 1;
+
+      const aIndex = getMovieOriginalIndex(a);
+      const bIndex = getMovieOriginalIndex(b);
+      if (aIndex === bIndex) {
+        return 0;
+      }
+      if (!Number.isFinite(aIndex)) return 1;
+      if (!Number.isFinite(bIndex)) return -1;
+      return aIndex - bIndex;
+    });
+  }
+
+  displayMovies.forEach((movie, index) => {
     const li = document.createElement('li');
     li.dataset.id = movie.id;
     if (winnerId === movie.id) {
@@ -694,12 +732,23 @@ function updateMovieList() {
       li.classList.add('show-weights');
     }
 
+    const originalIndex = getMovieOriginalIndex(movie);
+    if (Number.isFinite(originalIndex) && originalIndex >= 0) {
+      li.dataset.originalIndex = String(originalIndex);
+    } else {
+      li.removeAttribute('data-original-index');
+    }
+
     const sanitizedWeight = getStoredWeight(movie);
     if (movie.weight !== sanitizedWeight) {
       movie.weight = sanitizedWeight;
     }
 
-    const defaultColor = getDefaultColorForIndex(allMovies.indexOf(movie));
+    let colorIndex = originalIndex;
+    if (!Number.isFinite(colorIndex) || colorIndex < 0) {
+      colorIndex = allMovies.indexOf(movie);
+    }
+    const defaultColor = getDefaultColorForIndex(colorIndex);
     const sanitizedColor = getStoredColor(movie, defaultColor);
     if (movie.color !== sanitizedColor) {
       movie.color = sanitizedColor;
@@ -815,6 +864,9 @@ function updateMovieList() {
       li.appendChild(removeButton);
     }
 
+    const knockoutStatus = knockoutResults.get(movie.id);
+    applyKnockoutStatusToElement(li, knockoutStatus);
+
     movieListEl.appendChild(li);
   });
 
@@ -863,9 +915,15 @@ function updateSpinButtonLabel() {
 }
 
 function clearKnockoutStyles() {
+  if (resultEl) {
+    resultEl.classList.remove('result--champion', 'result--knockout');
+  }
+  knockoutResults.clear();
   if (!movieListEl) return;
-  movieListEl.querySelectorAll('.is-knocked-out').forEach((item) => {
-    item.classList.remove('is-knocked-out');
+  movieListEl.querySelectorAll('li').forEach((item) => {
+    item.classList.remove('is-champion', 'is-knocked-out');
+    item.removeAttribute('data-knockout-order');
+    item.removeAttribute('data-knockout-status');
     const badge = item.querySelector('.knockout-badge');
     if (badge) {
       badge.remove();
@@ -880,20 +938,119 @@ function escapeSelector(value) {
   return String(value).replace(/["\\]/g, '\\$&');
 }
 
-function markMovieKnockedOut(movieId, order) {
+function getMovieOriginalIndex(movie) {
+  if (!movie || typeof movie !== 'object') {
+    return -1;
+  }
+  if (Number.isFinite(movie.initialIndex)) {
+    return movie.initialIndex;
+  }
+  const index = allMovies.indexOf(movie);
+  return index >= 0 ? index : -1;
+}
+
+function applyKnockoutStatusToElement(element, status) {
+  if (!element) return;
+
+  if (!status) {
+    element.classList.remove('is-champion', 'is-knocked-out');
+    element.removeAttribute('data-knockout-order');
+    element.removeAttribute('data-knockout-status');
+    const existing = element.querySelector('.knockout-badge');
+    if (existing) {
+      existing.remove();
+    }
+    return;
+  }
+
+  element.dataset.knockoutOrder = String(status.order);
+  element.dataset.knockoutStatus = status.status;
+
+  element.classList.toggle('is-knocked-out', status.status === 'knocked-out');
+  element.classList.toggle('is-champion', status.status === 'champion');
+
+  let badge = element.querySelector('.knockout-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'knockout-badge';
+    const removeButton = element.querySelector('.remove-custom');
+    if (removeButton && removeButton.parentElement === element) {
+      element.insertBefore(badge, removeButton);
+    } else {
+      element.appendChild(badge);
+    }
+  } else {
+    const removeButton = element.querySelector('.remove-custom');
+    if (removeButton && removeButton.parentElement === element && badge.nextSibling !== removeButton) {
+      element.insertBefore(badge, removeButton);
+    }
+  }
+
+  if (status.status === 'champion') {
+    badge.textContent = 'Knockout champion';
+  } else {
+    badge.textContent = status.order ? `Knocked out #${status.order}` : 'Knocked out';
+  }
+}
+
+function applyKnockoutStatusToItem(movieId) {
   if (!movieListEl) return;
   const safeId = escapeSelector(movieId);
   const item = movieListEl.querySelector(`li[data-id="${safeId}"]`);
   if (!item) return;
+  const status = knockoutResults.get(movieId);
+  applyKnockoutStatusToElement(item, status);
+}
 
-  item.classList.add('is-knocked-out');
-  let badge = item.querySelector('.knockout-badge');
-  if (!badge) {
-    badge = document.createElement('span');
-    badge.className = 'knockout-badge';
-    item.appendChild(badge);
+function reorderMovieListForKnockout() {
+  if (!movieListEl || !knockoutResults.size) {
+    return;
   }
-  badge.textContent = order ? `Knocked out #${order}` : 'Knocked out';
+
+  const items = Array.from(movieListEl.children).filter((item) => !item.classList.contains('empty'));
+  if (!items.length) {
+    return;
+  }
+
+  const sorted = items.sort((a, b) => {
+    const aOrder = Number.parseInt(a.dataset.knockoutOrder, 10);
+    const bOrder = Number.parseInt(b.dataset.knockoutOrder, 10);
+    const aHasOrder = Number.isFinite(aOrder);
+    const bHasOrder = Number.isFinite(bOrder);
+
+    if (aHasOrder && bHasOrder) {
+      return aOrder - bOrder;
+    }
+    if (aHasOrder) {
+      return -1;
+    }
+    if (bHasOrder) {
+      return 1;
+    }
+
+    const aIndex = Number.parseInt(a.dataset.originalIndex, 10);
+    const bIndex = Number.parseInt(b.dataset.originalIndex, 10);
+    if (Number.isFinite(aIndex) && Number.isFinite(bIndex)) {
+      return aIndex - bIndex;
+    }
+    return 0;
+  });
+
+  sorted.forEach((item) => {
+    movieListEl.appendChild(item);
+  });
+}
+
+function markMovieKnockedOut(movieId, order) {
+  knockoutResults.set(movieId, { order, status: 'knocked-out' });
+  applyKnockoutStatusToItem(movieId);
+  reorderMovieListForKnockout();
+}
+
+function markMovieChampion(movieId, order) {
+  knockoutResults.set(movieId, { order, status: 'champion' });
+  applyKnockoutStatusToItem(movieId);
+  reorderMovieListForKnockout();
 }
 
 function isAdvancedOptionsEnabled() {
@@ -1323,6 +1480,15 @@ async function runLastStandingMode(selectedMovies) {
   updateSpinButtonLabel();
   updateVetoButtonState();
 
+  if (resultEl) {
+    resultEl.classList.add('result--knockout');
+    resultEl.classList.remove('result--champion');
+    const startingCount = eliminationPool.length;
+    resultEl.innerHTML = `🔥 Movie Knockout begins! <strong>${startingCount}</strong> movie${
+      startingCount === 1 ? '' : 's'
+    } enter the arena.`;
+  }
+
   while (eliminationPool.length > 1) {
     const remainingBeforeSpin = eliminationPool.length;
     const speedConfig = getLastStandingSpeedConfig(remainingBeforeSpin);
@@ -1366,10 +1532,14 @@ async function runLastStandingMode(selectedMovies) {
   const finalMovie = eliminationPool[0];
   if (finalMovie) {
     winnerId = finalMovie.id;
+    markMovieChampion(finalMovie.id, eliminationOrder);
     highlightWinner();
     const finalTiming = getLastStandingSpeedConfig(1);
     await delay(finalTiming.winnerRevealDelay);
-    resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
+    resultEl.classList.add('result--champion');
+    resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${
+      finalMovie.year ? ` (${finalMovie.year})` : ''
+    }`;
     playWinSound();
     drawWheel(eliminationPool);
     triggerConfetti();
@@ -1780,6 +1950,7 @@ function addCustomEntry() {
   customEntryCounter += 1;
   const customMovie = {
     id,
+    initialIndex: allMovies.length,
     name,
     year: '',
     date: '',
@@ -1804,6 +1975,7 @@ function removeCustomEntry(id) {
   if (!movie) return;
 
   allMovies = allMovies.filter((item) => item.id !== id);
+  knockoutResults.delete(id);
   selectedIds.delete(id);
   statusMessage.textContent = `Removed “${movie.name}” from the wheel.`;
   updateMovieList();

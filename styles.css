@@ -505,6 +505,25 @@ body {
   text-decoration: line-through;
 }
 
+.movie-list li.is-champion {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.24), rgba(255, 134, 0, 0.26));
+  box-shadow: 0 12px 22px rgba(255, 134, 0, 0.28);
+  opacity: 1;
+}
+
+.movie-list li.is-champion .movie-name {
+  text-decoration: none;
+}
+
+.movie-list li.is-champion .knockout-badge {
+  background: rgba(255, 215, 0, 0.32);
+  color: #fff5cc;
+}
+
+.movie-list li.is-champion .knockout-badge::before {
+  content: '👑';
+}
+
 .knockout-badge {
   display: inline-flex;
   align-items: center;
@@ -699,6 +718,57 @@ body {
   font-size: 1.1rem;
   font-weight: 600;
   text-align: center;
+}
+
+.result--knockout {
+  animation: knockoutPulse 1.6s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255, 134, 0, 0.22), rgba(255, 93, 87, 0.26));
+  border-radius: 16px;
+  box-shadow: 0 18px 30px rgba(255, 93, 87, 0.22);
+  color: #fff8f0;
+  display: inline-flex;
+  font-size: 1.35rem;
+  font-weight: 700;
+  gap: 0.5rem;
+  justify-content: center;
+  line-height: 1.4;
+  margin: 0.85rem auto 0;
+  padding: 0.85rem 1.4rem;
+  text-shadow: 0 4px 18px rgba(4, 18, 31, 0.55);
+}
+
+.result--knockout strong {
+  color: #ffe6c7;
+}
+
+.result--champion {
+  animation: championGlow 1.8s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.42), rgba(255, 134, 0, 0.52));
+  box-shadow: 0 24px 42px rgba(255, 134, 0, 0.32);
+  color: #fffbed;
+  text-shadow: 0 5px 20px rgba(255, 134, 0, 0.65);
+}
+
+@keyframes knockoutPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes championGlow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .app-footer {
