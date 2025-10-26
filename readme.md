@@ -9,31 +9,17 @@ Turn your Letterboxd watchlist export into a dramatic wheel spin that chooses wh
 - **Dynamic wheel** – A colorful wheel updates in real-time as you adjust your selection.
 - **Movie Knockout mode** – Flip on the knockout spinner to automatically eliminate picks until a single winner remains, now tuned for a brisk rapid cadence by default.
 - **Sound and animation** – Arcade-style ticking while the wheel spins, followed by a celebratory chime when a movie is chosen.
-- **No build step** – Pure HTML, CSS, and vanilla JavaScript. Drop it on GitHub Pages and you are ready to go.
+- **No build step** – Pure HTML, CSS, and vanilla JavaScript. 
 
 ## Getting started
 
 1. Export your data from Letterboxd: `Profile → Settings → Data → Export Your Data`. Once the archive arrives by email, unzip it and locate `watchlist.csv`.
    You can also export your watchlist from the watchlist page (https://letterboxd.com/[USERNAME]/watchlist/)
 2. Clone or download this repository.
-3. Open `index.html` in your browser, or push the repository to GitHub and enable GitHub Pages for instant hosting.
-4. Upload `watchlist.csv`, optionally deselect a few entries, and press **Spin the wheel**. Open the advanced options to enable **Movie Knockout mode** for an automatic knockout showdown.
+3. Open `index.html` in your browser.
+4. Upload `watchlist.csv`, optionally deselect a few entries, and press **Spin the wheel**. Open the advanced options to enable **Last movie standing** for an automatic knockout showdown.
 
 A small sample file (`sample-watchlist.csv`) is included for quick testing.
-
-## Development notes
-
-Everything runs locally in the browser, so there are no dependencies or frameworks to install. If you would like to tweak the styling or behaviour:
-
-- `index.html` contains the markup for the two-step interface (upload + spin).
-- `styles.css` defines the neon-inspired appearance of the page and the wheel.
-- `script.js` handles CSV parsing, list management, drawing the wheel on a `<canvas>`, and triggering sound effects through the Web Audio API.
-
-## Accessibility considerations
-
-- The spin button is automatically disabled until at least one movie is selected.
-- Status messages and the result announcement use `aria-live` regions so screen readers hear updates.
-- Canvas colours meet contrast requirements against the dark background, and the chosen movie is highlighted in the list.
 
 ## License
 
