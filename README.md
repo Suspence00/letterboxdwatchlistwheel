@@ -17,7 +17,7 @@ Turn your Letterboxd watchlist export into a dramatic wheel spin that chooses wh
    You can also export your watchlist from the watchlist page (https://letterboxd.com/[USERNAME]/watchlist/)
 2. Clone or download this repository.
 3. Open `index.html` in your browser.
-4. Upload `watchlist.csv`, optionally deselect a few entries, and press **Spin the wheel**. Open the advanced options to enable **Movie Knockout mode** for an automatic knockout showdown.
+4. Upload `watchlist.csv`, optionally deselect a few entries, and press **Spin the wheel**. Open the advanced options to enable **Last movie standing** for an automatic knockout showdown.
 
 A small sample file (`sample-watchlist.csv`) is included for quick testing.
 
