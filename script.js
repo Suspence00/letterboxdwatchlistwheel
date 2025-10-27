@@ -1516,7 +1516,7 @@ async function runLastStandingMode(selectedMovies) {
     const remainingCount = eliminationPool.length;
     const remainText = remainingCount === 1 ? 'Final showdown! One movie remains.' : `${remainingCount} movies remain.`;
     const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
-    resultEl.innerHTML = `💥 Knocked out: <strong>${eliminatedLabel}</strong>. ${remainText}`;
+    resultEl.innerHTML = `💥 Knocked out: <strong>${eliminatedLabel}</strong> ${remainText}`;
     drawWheel(eliminationPool);
 
     if (remainingCount <= 1) {
