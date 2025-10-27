@@ -95,55 +95,55 @@
           </form>
           <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd picks.</p>
         </div>
-        <div class="advanced-options">
-          <div class="advanced-options__header">
-            <label class="advanced-options__toggle" for="advanced-options-toggle">
-              <input type="checkbox" id="advanced-options-toggle" />
-              <span>Advanced options</span>
-            </label>
-            <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
-              Adjust slice weights, colors, and spin modes to boost your favorites and personalize the wheel.
-            </p>
-          </div>
-          <div class="advanced-options__panel" id="advanced-options-panel" hidden>
-            <label class="visually-hidden" for="movie-search">Search your picks</label>
-            <div class="selection-search">
-              <input
-                type="search"
-                id="movie-search"
-                class="text-input"
-                name="movie-search"
-                placeholder="Search titles or years"
-                autocomplete="off"
-              />
-            </div>
-            <div class="filter-toggles" role="group" aria-label="Filters">
-              <label class="filter-toggle" for="filter-show-customs">
-                <input type="checkbox" id="filter-show-customs" checked />
-                <span>Show customs</span>
-              </label>
-            </div>
-            <div class="spin-modes" role="group" aria-label="Spin modes">
-              <label class="filter-toggle spin-mode-toggle" for="last-standing-toggle">
-                <input type="checkbox" id="last-standing-toggle" />
-                <span>Movie Knockout mode</span>
-              </label>
-              <p class="helper-text helper-text--compact spin-mode-hint" id="last-standing-hint">
-                Automatically play Movie Knockout rounds until one movie survives.
-              </p>
-            </div>
-          </div>
-        </div>
         <div class="selection-area">
           <div class="wheel-section">
             <div class="wheel-wrapper">
               <p class="result" id="result" aria-live="polite"></p>
               <div class="wheel-stage">
-                <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
+                <canvas id="wheel" width="640" height="640" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
               <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+            </div>
+          </div>
+          <div class="advanced-options">
+            <div class="advanced-options__header">
+              <label class="advanced-options__toggle" for="advanced-options-toggle">
+                <input type="checkbox" id="advanced-options-toggle" />
+                <span>Advanced options</span>
+              </label>
+              <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
+                Adjust slice weights, colors, and spin modes to boost your favorites and personalize the wheel.
+              </p>
+            </div>
+            <div class="advanced-options__panel" id="advanced-options-panel" hidden>
+              <label class="visually-hidden" for="movie-search">Search your picks</label>
+              <div class="selection-search">
+                <input
+                  type="search"
+                  id="movie-search"
+                  class="text-input"
+                  name="movie-search"
+                  placeholder="Search titles or years"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="filter-toggles" role="group" aria-label="Filters">
+                <label class="filter-toggle" for="filter-show-customs">
+                  <input type="checkbox" id="filter-show-customs" checked />
+                  <span>Show customs</span>
+                </label>
+              </div>
+              <div class="spin-modes" role="group" aria-label="Spin modes">
+                <label class="filter-toggle spin-mode-toggle" for="last-standing-toggle">
+                  <input type="checkbox" id="last-standing-toggle" />
+                  <span>Movie Knockout mode</span>
+                </label>
+                <p class="helper-text helper-text--compact spin-mode-hint" id="last-standing-hint">
+                  Automatically play Movie Knockout rounds until one movie survives.
+                </p>
+              </div>
             </div>
           </div>
           <div class="movie-list-wrapper">
