@@ -135,15 +135,19 @@
           </div>
         </div>
         <div class="selection-area">
+          <div class="wheel-section">
+            <div class="wheel-wrapper">
+              <p class="result" id="result" aria-live="polite"></p>
+              <div class="wheel-stage">
+                <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
+                <div class="pointer" aria-hidden="true"></div>
+              </div>
+              <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
+              <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+            </div>
+          </div>
           <div class="movie-list-wrapper">
             <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
-          </div>
-          <div class="wheel-wrapper">
-            <canvas id="wheel" width="520" height="520" role="img" aria-label="Wheel of selected movies"></canvas>
-            <div class="pointer" aria-hidden="true"></div>
-            <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
-            <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
-            <p class="result" id="result" aria-live="polite"></p>
           </div>
         </div>
       </div>
