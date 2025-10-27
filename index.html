@@ -99,8 +99,17 @@
           <div class="wheel-section">
             <div class="wheel-wrapper">
               <p class="result" id="result" aria-live="polite"></p>
+              <div class="spin-modes" role="group" aria-label="Spin modes">
+                <label class="filter-toggle spin-mode-toggle" for="last-standing-toggle">
+                  <input type="checkbox" id="last-standing-toggle" />
+                  <span>Movie Knockout mode</span>
+                </label>
+                <p class="helper-text helper-text--compact spin-mode-hint" id="last-standing-hint">
+                  Automatically play Movie Knockout rounds until one movie survives.
+                </p>
+              </div>
               <div class="wheel-stage">
-                <canvas id="wheel" width="640" height="640" role="img" aria-label="Wheel of selected movies"></canvas>
+                <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
@@ -134,15 +143,6 @@
                   <input type="checkbox" id="filter-show-customs" checked />
                   <span>Show customs</span>
                 </label>
-              </div>
-              <div class="spin-modes" role="group" aria-label="Spin modes">
-                <label class="filter-toggle spin-mode-toggle" for="last-standing-toggle">
-                  <input type="checkbox" id="last-standing-toggle" />
-                  <span>Movie Knockout mode</span>
-                </label>
-                <p class="helper-text helper-text--compact spin-mode-hint" id="last-standing-hint">
-                  Automatically play Movie Knockout rounds until one movie survives.
-                </p>
               </div>
             </div>
           </div>
