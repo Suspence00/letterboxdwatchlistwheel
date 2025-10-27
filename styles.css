@@ -257,10 +257,12 @@ body {
 }
 
 .advanced-options {
+  align-self: center;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin: 0;
+  width: min(720px, 95vw);
 }
 
 .advanced-options__header {
@@ -446,15 +448,25 @@ body {
 }
 
 .selection-area {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+.wheel-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .movie-list-wrapper {
+  margin: 0 auto;
   max-height: 520px;
   overflow: auto;
   padding-right: 0.75rem;
+  width: min(960px, 100%);
 }
 
 .movie-list {
@@ -503,6 +515,25 @@ body {
 
 .movie-list li.is-knocked-out .movie-name {
   text-decoration: line-through;
+}
+
+.movie-list li.is-champion {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.24), rgba(255, 134, 0, 0.26));
+  box-shadow: 0 12px 22px rgba(255, 134, 0, 0.28);
+  opacity: 1;
+}
+
+.movie-list li.is-champion .movie-name {
+  text-decoration: none;
+}
+
+.movie-list li.is-champion .knockout-badge {
+  background: rgba(255, 215, 0, 0.32);
+  color: #fff5cc;
+}
+
+.movie-list li.is-champion .knockout-badge::before {
+  content: '👑';
 }
 
 .knockout-badge {
@@ -642,34 +673,54 @@ body {
 }
 
 .wheel-wrapper {
-  position: relative;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 1rem;
   justify-content: flex-start;
-  gap: 0.75rem;
-  margin-top: 4.5rem;
+  margin-top: 2.5rem;
+  position: relative;
+  width: min(720px, 95vw);
+}
+
+.wheel-stage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 100%;
 }
 
 #wheel {
-  width: min(520px, 90vw);
-  height: auto;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 50%;
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+  height: auto;
+  width: min(720px, 95vw);
+}
+
+.wheel-wrapper .spin-modes {
+  align-items: center;
+  margin: 0.35rem 0 0;
+  text-align: center;
+}
+
+.wheel-wrapper .spin-mode-hint {
+  max-width: 32ch;
+  text-align: center;
 }
 
 .pointer {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 58px;
-  height: 60px;
-  display: flex;
   align-items: flex-end;
+  bottom: 100%;
+  display: flex;
+  height: 60px;
   justify-content: center;
+  left: 50%;
   pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, 12px);
+  width: 58px;
 }
 
 .pointer::before {
@@ -695,10 +746,62 @@ body {
 }
 
 .result {
-  min-height: 1.4rem;
   font-size: 1.1rem;
   font-weight: 600;
+  margin: 0;
+  min-height: 1.4rem;
   text-align: center;
+}
+
+.result--knockout {
+  animation: knockoutPulse 1.6s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255, 134, 0, 0.22), rgba(255, 93, 87, 0.26));
+  border-radius: 16px;
+  box-shadow: 0 18px 30px rgba(255, 93, 87, 0.22);
+  color: #fff8f0;
+  display: inline-flex;
+  font-size: 1.35rem;
+  font-weight: 700;
+  gap: 0.5rem;
+  justify-content: center;
+  line-height: 1.4;
+  margin: 0.85rem auto 0;
+  padding: 0.85rem 1.4rem;
+  text-shadow: 0 4px 18px rgba(4, 18, 31, 0.55);
+}
+
+.result--knockout strong {
+  color: #ffe6c7;
+}
+
+.result--champion {
+  animation: championGlow 1.8s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.42), rgba(255, 134, 0, 0.52));
+  box-shadow: 0 24px 42px rgba(255, 134, 0, 0.32);
+  color: #fffbed;
+  text-shadow: 0 5px 20px rgba(255, 134, 0, 0.65);
+}
+
+@keyframes knockoutPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes championGlow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .app-footer {
