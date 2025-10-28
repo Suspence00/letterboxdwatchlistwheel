@@ -28,41 +28,37 @@
         >Hide steps</button>
       </div>
       <div class="card-body import-body" id="import-body">
-        <div class="import-guide" role="note">
-          <p>
-            Download your watchlist or any public list as a CSV, then upload it below. You can export directly from Letterboxd or use the download helper to build the file for you.
+        <div class="import-section import-section--primary">
+          <h3>Import directly from Letterboxd</h3>
+          <p class="helper-text">
+            Paste a Letterboxd list URL (like <code>https://letterboxd.com/suspence0/list/horror-2025-1/</code>) and we'll pull the entries right into the wheel.
           </p>
+          <form id="letterboxd-proxy-form" class="letterboxd-proxy-form">
+            <label for="letterboxd-proxy-input">Letterboxd URL or profile name</label>
+            <input
+              type="text"
+              id="letterboxd-proxy-input"
+              class="text-input text-input--slim"
+              name="letterboxd-proxy-input"
+              placeholder="letterboxd list url here"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn" id="letterboxd-proxy-open">Import to the wheel</button>
+            <p class="status" id="letterboxd-proxy-status" role="status" aria-live="polite"></p>
+          </form>
         </div>
         <div class="import-section">
-          <h3>Upload a CSV</h3>
+          <h3>Prefer to upload a CSV?</h3>
           <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
           <label class="file-input" for="csv-input">
             <span class="file-label">Choose CSV file</span>
             <input type="file" id="csv-input" accept=".csv" />
           </label>
           <p class="status" id="status-message" role="status" aria-live="polite"></p>
-        </div>
-        <div class="import-section">
-          <h3>Generate a CSV for your list</h3>
-          <p class="helper-text">
-            Paste a Letterboxd profile name or list URL (like <code>username/list/faves</code>). We&rsquo;ll open a new tab that prepares a CSV you can download for the wheel.
-          </p>
-          <form id="lizard-form" class="lizard-form">
-            <label for="lizard-input">Letterboxd URL or profile name</label>
-            <input
-              type="text"
-              id="lizard-input"
-              class="text-input text-input--slim"
-              name="lizard-input"
-              placeholder="e.g., fastfingertips or fastfingertips/list/faves"
-              autocomplete="off"
-            />
-            <button type="submit" class="btn" id="lizard-open">Open download helper</button>
-            <p class="status" id="lizard-status" role="status" aria-live="polite"></p>
-            <p class="helper-text helper-text--compact">
-              Once the tab opens, download the CSV there and upload it with the button above.
-            </p>
-          </form>
+          <div class="import-secondary-actions">
+            <p class="helper-text helper-text--compact">Need a CSV? Use the download helper to generate one from a list.</p>
+            <a class="btn" href="https://lizard.streamlit.app/" target="_blank" rel="noopener noreferrer">Open download helper</a>
+          </div>
         </div>
       </div>
     </section>

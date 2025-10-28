@@ -240,24 +240,15 @@ body {
   gap: 0.9rem;
 }
 
-.lizard-form {
+.import-section--primary {
+  gap: 1.1rem;
+}
+
+.import-secondary-actions {
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 100%;
-  align-items: flex-start;
-}
-
-.lizard-form label,
-.lizard-form .status,
-.lizard-form .helper-text {
-  align-self: stretch;
-}
-
-
-
-.lizard-form .btn {
-  align-self: flex-start;
 }
 
 .advanced-options {

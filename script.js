@@ -21,9 +21,7 @@ const winModalRuntime = document.getElementById('win-modal-runtime');
 const winModalSynopsis = document.getElementById('win-modal-synopsis');
 const winModalTrailer = document.getElementById('win-modal-trailer');
 const winModalCloseBtn = document.getElementById('win-modal-close');
-const lizardForm = document.getElementById('lizard-form');
-const lizardInput = document.getElementById('lizard-input');
-const lizardStatus = document.getElementById('lizard-status');
+const letterboxdProxyForm = document.getElementById('letterboxd-proxy-form');
 const importCard = document.getElementById('import-card');
 const importCardBody = document.getElementById('import-body');
 const importToggleBtn = document.getElementById('import-toggle');
@@ -34,7 +32,6 @@ const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const oneSpinToggle = document.getElementById('one-spin-toggle');
 
-const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
 
@@ -208,8 +205,8 @@ function getDefaultColorForIndex(index) {
   return generateDynamicColor(normalizedIndex);
 }
 
-if (lizardForm) {
-  lizardForm.addEventListener('submit', handleLizardOpen);
+if (letterboxdProxyForm) {
+  letterboxdProxyForm.addEventListener('submit', handleLetterboxdProxyImport);
 }
 
 const setImportCardCollapsed = (collapsed) => {
@@ -357,119 +354,97 @@ drawEmptyWheel();
 updateVetoButtonState();
 updateSpinButtonLabel();
 
-function handleLizardOpen(event) {
+async function handleLetterboxdProxyImport(event) {
   event.preventDefault();
-  if (!lizardInput) {
-    return;
-  }
 
-  const rawValue = lizardInput.value.trim();
+  const input = document.getElementById('letterboxd-proxy-input');
+  const status = document.getElementById('letterboxd-proxy-status');
+  if (!input || !status) return;
+
+  const rawValue = input.value.trim();
   if (!rawValue) {
-    setLizardStatus('Enter a Letterboxd profile or list to open the download helper.', { tone: 'error' });
-    lizardInput.focus();
+    status.textContent = 'Please enter a Letterboxd list URL.';
+    status.classList.add('status--error');
     return;
   }
 
-  let query;
+  // Normalize the entered URL
+  let listUrl = rawValue;
+  if (!/^https?:\/\//i.test(listUrl)) {
+    listUrl = `https://letterboxd.com/${listUrl.replace(/^\/+/, '')}/`;
+  }
+
+  const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}`;
+
+  status.textContent = 'Fetching list from Letterboxd…';
+  status.classList.remove('status--error', 'status--success');
+
   try {
-    query = buildLizardQuery(rawValue);
-  } catch (error) {
-    setLizardStatus(error.message || 'Please provide a valid value.', { tone: 'error' });
-    lizardInput.focus();
-    return;
-  }
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const csvText = await res.text();
 
-  const url = buildLizardManualUrl(query.mode, query.manualQuery);
-  if (!url) {
-    setLizardStatus('Unable to build a download helper link. Try again.', { tone: 'error' });
-    return;
-  }
+    // Parse CSV text using your custom parser
+    const rows = parseCSV(csvText, ',').filter(
+      (row) => row.length && row.some((cell) => cell.trim() !== '')
+    );
 
-  setLizardStatus('Opening the download helper in a new tab…');
-
-  const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!openedWindow) {
-    setLizardStatus('Pop-up blocked. Allow pop-ups for this site or open the helper manually.', { tone: 'error' });
-    return;
-  }
-
-  setLizardStatus('Opened the helper. Download the CSV there and upload it above.', { tone: 'success' });
-}
-
-function buildLizardQuery(rawInput) {
-  const trimmed = rawInput.trim();
-  if (!trimmed) {
-    throw new Error('Enter a Letterboxd profile or list to open the download helper.');
-  }
-
-  if (/^https?:\/\//i.test(trimmed) && !/^https?:\/\/(www\.)?letterboxd\.com\//i.test(trimmed)) {
-    throw new Error('Only Letterboxd links are supported.');
-  }
-
-  const withoutDomain = trimmed.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '');
-  const withoutQuery = withoutDomain.split(/[?#]/)[0];
-  const cleaned = withoutQuery
-    .replace(/^@/, '')
-    .replace(/^\/+/, '')
-    .replace(/\/+$/, '');
-  if (!cleaned) {
-    throw new Error('Enter a valid Letterboxd username or list.');
-  }
-
-  const segments = cleaned.split('/').filter(Boolean);
-  if (!segments.length) {
-    throw new Error('Enter a valid Letterboxd username or list.');
-  }
-
-  if (segments.length === 1 || (segments.length === 2 && segments[1].toLowerCase() === 'watchlist')) {
-    const username = segments[0];
-    if (!username || username.toLowerCase() === 'watchlist' || username.toLowerCase() === 'list') {
-      throw new Error('Enter a valid Letterboxd username.');
+    if (rows.length <= 1) {
+      status.textContent = 'The imported CSV appears to be empty.';
+      status.classList.add('status--error');
+      return;
     }
-    return {
-      mode: 'watchlist',
-      manualQuery: username
+
+    // Identify header indices
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const findColumn = (names) => {
+      for (const n of names) {
+        const idx = header.indexOf(n);
+        if (idx !== -1) return idx;
+      }
+      return -1;
     };
-  }
 
-  return {
-    mode: 'list',
-    manualQuery: cleaned
-  };
+    const titleIndex = findColumn(['title', 'name']);
+    const uriIndex = findColumn(['letterboxduri', 'url', 'uri']);
+
+    if (titleIndex === -1) {
+      status.textContent = 'Could not find a title column in the CSV.';
+      status.classList.add('status--error');
+      return;
+    }
+
+    // Map rows into your app’s expected movie structure
+    allMovies = rows.slice(1).map((row, i) => {
+      const title = row[titleIndex]?.trim() || '';
+      if (!title) return null;
+      const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
+      return {
+        id: `${i}-${title}`,
+        name: title,
+        uri,
+        year: '',
+        date: '',
+        weight: 1,
+        color: getDefaultColorForIndex(i),
+        initialIndex: i,
+      };
+    }).filter(Boolean);
+
+    selectedIds = new Set(allMovies.map((m) => m.id));
+    updateMovieList();
+    updateVetoButtonState();
+    setImportCardCollapsed(true);
+
+    status.textContent = `Imported ${allMovies.length} movies successfully!`;
+    status.classList.add('status--success');
+  } catch (err) {
+    console.error(err);
+    status.textContent = 'Failed to import list.';
+    status.classList.add('status--error');
+  }
 }
 
-function buildLizardManualUrl(mode, manualQuery) {
-  const safeQuery = manualQuery ? manualQuery.trim() : '';
-  if (!safeQuery) {
-    return '';
-  }
-
-  const params = new URLSearchParams();
-
-  if (mode === 'watchlist') {
-    params.set('username', safeQuery);
-    params.set('tab', 'watchlist');
-  }
-
-  params.set('q', safeQuery);
-
-  return `${LIZARD_BASE_URL}/?${params.toString()}`;
-}
-
-function setLizardStatus(message, { tone } = {}) {
-  if (!lizardStatus) {
-    return;
-  }
-
-  lizardStatus.textContent = message || '';
-  lizardStatus.classList.remove('status--error', 'status--success');
-
-  if (tone === 'error') {
-    lizardStatus.classList.add('status--error');
-  } else if (tone === 'success') {
-    lizardStatus.classList.add('status--success');
-  }
-}
 
 function handleFileUpload(event) {
   const file = event.target.files && event.target.files[0];
