@@ -22,9 +22,6 @@ const winModalSynopsis = document.getElementById('win-modal-synopsis');
 const winModalTrailer = document.getElementById('win-modal-trailer');
 const winModalCloseBtn = document.getElementById('win-modal-close');
 const letterboxdProxyForm = document.getElementById('letterboxd-proxy-form');
-const lizardForm = document.getElementById('lizard-form');
-const lizardInput = document.getElementById('lizard-input');
-const lizardStatus = document.getElementById('lizard-status');
 const importCard = document.getElementById('import-card');
 const importCardBody = document.getElementById('import-body');
 const importToggleBtn = document.getElementById('import-toggle');
@@ -35,7 +32,6 @@ const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const lastStandingToggle = document.getElementById('last-standing-toggle');
 
-const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
 
@@ -196,10 +192,6 @@ function getDefaultColorForIndex(index) {
 
 if (letterboxdProxyForm) {
   letterboxdProxyForm.addEventListener('submit', handleLetterboxdProxyImport);
-}
-
-if (lizardForm) {
-  lizardForm.addEventListener('submit', handleLizardOpen);
 }
 
 const setImportCardCollapsed = (collapsed) => {
@@ -416,120 +408,6 @@ async function handleLetterboxdProxyImport(event) {
   }
 }
 
-
-function handleLizardOpen(event) {
-  event.preventDefault();
-  if (!lizardInput) {
-    return;
-  }
-
-  const rawValue = lizardInput.value.trim();
-  if (!rawValue) {
-    setLizardStatus('Enter a Letterboxd profile or list to open the download helper.', { tone: 'error' });
-    lizardInput.focus();
-    return;
-  }
-
-  let query;
-  try {
-    query = buildLizardQuery(rawValue);
-  } catch (error) {
-    setLizardStatus(error.message || 'Please provide a valid value.', { tone: 'error' });
-    lizardInput.focus();
-    return;
-  }
-
-  const url = buildLizardManualUrl(query.mode, query.manualQuery);
-  if (!url) {
-    setLizardStatus('Unable to build a download helper link. Try again.', { tone: 'error' });
-    return;
-  }
-
-  setLizardStatus('Opening the download helper in a new tab…');
-
-  const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!openedWindow) {
-    setLizardStatus('Pop-up blocked. Allow pop-ups for this site or open the helper manually.', { tone: 'error' });
-    return;
-  }
-
-  setLizardStatus('Opened the helper. Download the CSV there and upload it above.', { tone: 'success' });
-}
-
-function buildLizardQuery(rawInput) {
-  const trimmed = rawInput.trim();
-  if (!trimmed) {
-    throw new Error('Enter a Letterboxd profile or list to open the download helper.');
-  }
-
-  if (/^https?:\/\//i.test(trimmed) && !/^https?:\/\/(www\.)?letterboxd\.com\//i.test(trimmed)) {
-    throw new Error('Only Letterboxd links are supported.');
-  }
-
-  const withoutDomain = trimmed.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '');
-  const withoutQuery = withoutDomain.split(/[?#]/)[0];
-  const cleaned = withoutQuery
-    .replace(/^@/, '')
-    .replace(/^\/+/, '')
-    .replace(/\/+$/, '');
-  if (!cleaned) {
-    throw new Error('Enter a valid Letterboxd username or list.');
-  }
-
-  const segments = cleaned.split('/').filter(Boolean);
-  if (!segments.length) {
-    throw new Error('Enter a valid Letterboxd username or list.');
-  }
-
-  if (segments.length === 1 || (segments.length === 2 && segments[1].toLowerCase() === 'watchlist')) {
-    const username = segments[0];
-    if (!username || username.toLowerCase() === 'watchlist' || username.toLowerCase() === 'list') {
-      throw new Error('Enter a valid Letterboxd username.');
-    }
-    return {
-      mode: 'watchlist',
-      manualQuery: username
-    };
-  }
-
-  return {
-    mode: 'list',
-    manualQuery: cleaned
-  };
-}
-
-function buildLizardManualUrl(mode, manualQuery) {
-  const safeQuery = manualQuery ? manualQuery.trim() : '';
-  if (!safeQuery) {
-    return '';
-  }
-
-  const params = new URLSearchParams();
-
-  if (mode === 'watchlist') {
-    params.set('username', safeQuery);
-    params.set('tab', 'watchlist');
-  }
-
-  params.set('q', safeQuery);
-
-  return `${LIZARD_BASE_URL}/?${params.toString()}`;
-}
-
-function setLizardStatus(message, { tone } = {}) {
-  if (!lizardStatus) {
-    return;
-  }
-
-  lizardStatus.textContent = message || '';
-  lizardStatus.classList.remove('status--error', 'status--success');
-
-  if (tone === 'error') {
-    lizardStatus.classList.add('status--error');
-  } else if (tone === 'success') {
-    lizardStatus.classList.add('status--success');
-  }
-}
 
 function handleFileUpload(event) {
   const file = event.target.files && event.target.files[0];
