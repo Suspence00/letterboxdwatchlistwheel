@@ -61,7 +61,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 13,
     config: {
       eliminationSpin: { minSpins: 1, maxSpins: 2, minDuration: 900, maxDuration: 1300 },
-      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3600, maxDuration: 4500 },
+      finalSpin: { minSpins: 18, maxSpins: 24, minDuration: 12000, maxDuration: 18000 },
       interRoundDelay: 350,
       knockoutRevealDelay: 450,
       finalRevealDelay: 900,
@@ -72,7 +72,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 7,
     config: {
       eliminationSpin: { minSpins: 2, maxSpins: 3, minDuration: 1300, maxDuration: 1900 },
-      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3200, maxDuration: 4200 },
+      finalSpin: { minSpins: 18, maxSpins: 24, minDuration: 11500, maxDuration: 17000 },
       interRoundDelay: 500,
       knockoutRevealDelay: 650,
       finalRevealDelay: 1100,
@@ -83,7 +83,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 4,
     config: {
       eliminationSpin: { minSpins: 3, maxSpins: 4, minDuration: 1900, maxDuration: 2600 },
-      finalSpin: { minSpins: 6, maxSpins: 7, minDuration: 4200, maxDuration: 5200 },
+      finalSpin: { minSpins: 19, maxSpins: 25, minDuration: 12500, maxDuration: 18500 },
       interRoundDelay: 720,
       knockoutRevealDelay: 900,
       finalRevealDelay: 1300,
@@ -94,7 +94,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 2,
     config: {
       eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
       interRoundDelay: 900,
       knockoutRevealDelay: 1100,
       finalRevealDelay: 1700,
@@ -105,7 +105,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 1,
     config: {
       eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
       interRoundDelay: 900,
       knockoutRevealDelay: 1100,
       finalRevealDelay: 1700,
@@ -118,17 +118,17 @@ const metadataCache = new Map();
 const knockoutResults = new Map();
 
 const DEFAULT_SPIN_SETTINGS = {
-  minSpins: 6,
-  maxSpins: 9,
-  minDuration: 4500,
-  maxDuration: 6500
+  minSpins: 8,
+  maxSpins: 12,
+  minDuration: 5200,
+  maxDuration: 7800
 };
 
 const DRAMATIC_SPIN_SETTINGS = {
-  minSpins: 12,
-  maxSpins: 16,
-  minDuration: 9000,
-  maxDuration: 13000
+  minSpins: 14,
+  maxSpins: 18,
+  minDuration: 9800,
+  maxDuration: 14000
 };
 
 const filterState = {
@@ -139,6 +139,7 @@ const filterState = {
 
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
+const TAU = 2 * Math.PI;
 
 const basePalette = [
   '#ff8600',
@@ -237,6 +238,29 @@ if (advancedOptionsToggle) {
     }
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
+    }
+    if (!enabled) {
+      if (oneSpinToggle && oneSpinToggle.checked) {
+        oneSpinToggle.checked = false;
+        clearKnockoutStyles();
+      }
+
+      if (showCustomsToggle && !showCustomsToggle.checked) {
+        showCustomsToggle.checked = true;
+      }
+
+      if (!filterState.showCustoms) {
+        filterState.showCustoms = true;
+      }
+
+      if (filterState.query) {
+        filterState.query = '';
+        filterState.normalizedQuery = '';
+      }
+
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+      }
     }
     updateMovieList();
     updateSpinButtonLabel();
@@ -1069,11 +1093,11 @@ function markMovieChampion(movieId, order) {
 }
 
 function isAdvancedOptionsEnabled() {
-  return Boolean(advancedOptionsToggle && advancedOptionsToggle.checked);
+  return advancedOptionsToggle ? Boolean(advancedOptionsToggle.checked) : true;
 }
 
 function isOneSpinModeEnabled() {
-  return Boolean(oneSpinToggle && oneSpinToggle.checked);
+  return Boolean(isAdvancedOptionsEnabled() && oneSpinToggle && oneSpinToggle.checked);
 }
 
 function isKnockoutModeEnabled() {
@@ -1401,17 +1425,17 @@ function tick(segments) {
 
 function performSpin(selectedMovies, options = {}) {
   const {
-    minSpins = 6,
-    maxSpins = 9,
-    minDuration = 4500,
-    maxDuration = 6500
+    minSpins = DEFAULT_SPIN_SETTINGS.minSpins,
+    maxSpins = DEFAULT_SPIN_SETTINGS.maxSpins,
+    minDuration = DEFAULT_SPIN_SETTINGS.minDuration,
+    maxDuration = DEFAULT_SPIN_SETTINGS.maxDuration
   } = options;
 
   const parsedMinSpins = Number(minSpins);
   const parsedMaxSpins = Number(maxSpins);
   const parsedMinDuration = Number(minDuration);
   const parsedMaxDuration = Number(maxDuration);
-  const normalizedMinSpins = Math.max(1, Number.isFinite(parsedMinSpins) ? parsedMinSpins : 1);
+  const normalizedMinSpins = Math.max(2, Number.isFinite(parsedMinSpins) ? parsedMinSpins : 2);
   const normalizedMaxSpins = Math.max(
     normalizedMinSpins,
     Number.isFinite(parsedMaxSpins) ? parsedMaxSpins : normalizedMinSpins
@@ -1452,7 +1476,11 @@ function performSpin(selectedMovies, options = {}) {
     const finalAngle = chosenSegment.startAngle + randomOffset;
     const turns = normalizedMinSpins + Math.random() * (normalizedMaxSpins - normalizedMinSpins);
     const currentPointerAngle = getPointerAngle();
-    const neededRotation = (turns * 2 * Math.PI) + finalAngle - currentPointerAngle;
+    const minimumRotation = normalizedMinSpins * TAU;
+    let neededRotation = turns * TAU + finalAngle - currentPointerAngle;
+    while (neededRotation < minimumRotation) {
+      neededRotation += TAU;
+    }
     targetRotation = rotationAngle + neededRotation;
     spinDuration = safeMinDuration + Math.random() * (safeMaxDuration - safeMinDuration);
     spinStartTimestamp = null;

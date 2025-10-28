@@ -99,12 +99,6 @@
           <div class="wheel-section">
             <div class="wheel-wrapper">
               <p class="result" id="result" aria-live="polite"></p>
-              <div class="spin-modes" role="group" aria-label="Spin modes">
-                <label class="filter-toggle spin-mode-toggle" for="one-spin-toggle">
-                  <input type="checkbox" id="one-spin-toggle" />
-                  <span>One Spin to Rule them all</span>
-                </label>
-              </div>
               <div class="wheel-stage">
                 <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
@@ -138,7 +132,13 @@
               <div class="filter-toggles" role="group" aria-label="Filters">
                 <label class="filter-toggle" for="filter-show-customs">
                   <input type="checkbox" id="filter-show-customs" checked />
-                  <span>Show customs</span>
+                  <span>Show custom selections</span>
+                </label>
+              </div>
+              <div class="spin-modes" role="group" aria-label="Spin modes">
+                <label class="filter-toggle spin-mode-toggle" for="one-spin-toggle">
+                  <input type="checkbox" id="one-spin-toggle" />
+                  <span>One Spin to Rule them all</span>
                 </label>
               </div>
             </div>
