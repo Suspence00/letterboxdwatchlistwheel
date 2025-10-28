@@ -1434,7 +1434,7 @@ function performSpin(selectedMovies, options = {}) {
   const parsedMaxSpins = Number(maxSpins);
   const parsedMinDuration = Number(minDuration);
   const parsedMaxDuration = Number(maxDuration);
-  const normalizedMinSpins = Math.max(1, Number.isFinite(parsedMinSpins) ? parsedMinSpins : 1);
+  const normalizedMinSpins = Math.max(2, Number.isFinite(parsedMinSpins) ? parsedMinSpins : 2);
   const normalizedMaxSpins = Math.max(
     normalizedMinSpins,
     Number.isFinite(parsedMaxSpins) ? parsedMaxSpins : normalizedMinSpins
