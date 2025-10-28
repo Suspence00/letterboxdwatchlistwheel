@@ -118,17 +118,17 @@ const metadataCache = new Map();
 const knockoutResults = new Map();
 
 const DEFAULT_SPIN_SETTINGS = {
-  minSpins: 6,
-  maxSpins: 9,
-  minDuration: 4500,
-  maxDuration: 6500
+  minSpins: 8,
+  maxSpins: 12,
+  minDuration: 5200,
+  maxDuration: 7800
 };
 
 const DRAMATIC_SPIN_SETTINGS = {
-  minSpins: 12,
-  maxSpins: 16,
-  minDuration: 9000,
-  maxDuration: 13000
+  minSpins: 14,
+  maxSpins: 18,
+  minDuration: 9800,
+  maxDuration: 14000
 };
 
 const filterState = {
@@ -1424,10 +1424,10 @@ function tick(segments) {
 
 function performSpin(selectedMovies, options = {}) {
   const {
-    minSpins = 6,
-    maxSpins = 9,
-    minDuration = 4500,
-    maxDuration = 6500
+    minSpins = DEFAULT_SPIN_SETTINGS.minSpins,
+    maxSpins = DEFAULT_SPIN_SETTINGS.maxSpins,
+    minDuration = DEFAULT_SPIN_SETTINGS.minDuration,
+    maxDuration = DEFAULT_SPIN_SETTINGS.maxDuration
   } = options;
 
   const parsedMinSpins = Number(minSpins);
