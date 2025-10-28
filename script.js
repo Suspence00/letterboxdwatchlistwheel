@@ -32,7 +32,7 @@ const advancedOptionsHint = document.getElementById('advanced-options-hint');
 const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
-const lastStandingToggle = document.getElementById('last-standing-toggle');
+const oneSpinToggle = document.getElementById('one-spin-toggle');
 
 const LIZARD_BASE_URL = 'https://lizard.streamlit.app';
 const METADATA_API_URL = 'https://www.omdbapi.com/';
@@ -116,6 +116,20 @@ const MOVIE_KNOCKOUT_SPEEDS = [
 
 const metadataCache = new Map();
 const knockoutResults = new Map();
+
+const DEFAULT_SPIN_SETTINGS = {
+  minSpins: 6,
+  maxSpins: 9,
+  minDuration: 4500,
+  maxDuration: 6500
+};
+
+const DRAMATIC_SPIN_SETTINGS = {
+  minSpins: 12,
+  maxSpins: 16,
+  minDuration: 9000,
+  maxDuration: 13000
+};
 
 const filterState = {
   query: '',
@@ -267,11 +281,9 @@ if (showCustomsToggle) {
   });
 }
 
-if (lastStandingToggle) {
-  lastStandingToggle.addEventListener('change', () => {
-    if (!lastStandingToggle.checked) {
-      clearKnockoutStyles();
-    }
+if (oneSpinToggle) {
+  oneSpinToggle.addEventListener('change', () => {
+    clearKnockoutStyles();
     updateSpinButtonLabel();
     updateVetoButtonState();
   });
@@ -903,12 +915,15 @@ function updateSpinButtonLabel() {
     return;
   }
 
-  if (isLastStandingModeEnabled()) {
-    const remaining = getFilteredSelectedMovies();
-    if (remaining.length > 1) {
-      spinButton.textContent = 'Start Movie Knockout mode';
-      return;
-    }
+  if (isOneSpinModeEnabled()) {
+    spinButton.textContent = 'Spin the One Spin to Rule them all';
+    return;
+  }
+
+  const remaining = getFilteredSelectedMovies();
+  if (remaining.length > 1) {
+    spinButton.textContent = 'Start Movie Knockout mode';
+    return;
   }
 
   spinButton.textContent = 'Spin the wheel';
@@ -1057,8 +1072,12 @@ function isAdvancedOptionsEnabled() {
   return Boolean(advancedOptionsToggle && advancedOptionsToggle.checked);
 }
 
-function isLastStandingModeEnabled() {
-  return Boolean(lastStandingToggle && lastStandingToggle.checked);
+function isOneSpinModeEnabled() {
+  return Boolean(oneSpinToggle && oneSpinToggle.checked);
+}
+
+function isKnockoutModeEnabled() {
+  return !isOneSpinModeEnabled();
 }
 
 function getLastStandingSpeedConfig(remainingCount) {
@@ -1341,17 +1360,14 @@ async function spinWheel() {
   updateSpinButtonLabel();
   ensureAudioContext();
 
-  if (isLastStandingModeEnabled() && selectedMovies.length > 1) {
+  if (isKnockoutModeEnabled() && selectedMovies.length > 1) {
     await runLastStandingMode(selectedMovies);
     return;
   }
 
-  const { winningMovie } = await performSpin(selectedMovies, {
-    minSpins: 6,
-    maxSpins: 9,
-    minDuration: 4500,
-    maxDuration: 6500
-  });
+  const spinSettings = isOneSpinModeEnabled() ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS;
+
+  const { winningMovie } = await performSpin(selectedMovies, spinSettings);
 
   if (!winningMovie) {
     updateVetoButtonState();
