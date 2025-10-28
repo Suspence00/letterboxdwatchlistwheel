@@ -61,7 +61,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 13,
     config: {
       eliminationSpin: { minSpins: 1, maxSpins: 2, minDuration: 900, maxDuration: 1300 },
-      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3600, maxDuration: 4500 },
+      finalSpin: { minSpins: 18, maxSpins: 24, minDuration: 12000, maxDuration: 18000 },
       interRoundDelay: 350,
       knockoutRevealDelay: 450,
       finalRevealDelay: 900,
@@ -72,7 +72,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 7,
     config: {
       eliminationSpin: { minSpins: 2, maxSpins: 3, minDuration: 1300, maxDuration: 1900 },
-      finalSpin: { minSpins: 5, maxSpins: 6, minDuration: 3200, maxDuration: 4200 },
+      finalSpin: { minSpins: 18, maxSpins: 24, minDuration: 11500, maxDuration: 17000 },
       interRoundDelay: 500,
       knockoutRevealDelay: 650,
       finalRevealDelay: 1100,
@@ -83,7 +83,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 4,
     config: {
       eliminationSpin: { minSpins: 3, maxSpins: 4, minDuration: 1900, maxDuration: 2600 },
-      finalSpin: { minSpins: 6, maxSpins: 7, minDuration: 4200, maxDuration: 5200 },
+      finalSpin: { minSpins: 19, maxSpins: 25, minDuration: 12500, maxDuration: 18500 },
       interRoundDelay: 720,
       knockoutRevealDelay: 900,
       finalRevealDelay: 1300,
@@ -94,7 +94,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 2,
     config: {
       eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
       interRoundDelay: 900,
       knockoutRevealDelay: 1100,
       finalRevealDelay: 1700,
@@ -105,7 +105,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     minCount: 1,
     config: {
       eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-      finalSpin: { minSpins: 7, maxSpins: 9, minDuration: 5200, maxDuration: 7000 },
+      finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
       interRoundDelay: 900,
       knockoutRevealDelay: 1100,
       finalRevealDelay: 1700,
