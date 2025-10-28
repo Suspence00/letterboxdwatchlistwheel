@@ -139,6 +139,7 @@ const filterState = {
 
 // Angle (in radians) representing the pointer direction (straight down from the top).
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
+const TAU = 2 * Math.PI;
 
 const basePalette = [
   '#ff8600',
@@ -1475,7 +1476,11 @@ function performSpin(selectedMovies, options = {}) {
     const finalAngle = chosenSegment.startAngle + randomOffset;
     const turns = normalizedMinSpins + Math.random() * (normalizedMaxSpins - normalizedMinSpins);
     const currentPointerAngle = getPointerAngle();
-    const neededRotation = (turns * 2 * Math.PI) + finalAngle - currentPointerAngle;
+    const minimumRotation = normalizedMinSpins * TAU;
+    let neededRotation = turns * TAU + finalAngle - currentPointerAngle;
+    while (neededRotation < minimumRotation) {
+      neededRotation += TAU;
+    }
     targetRotation = rotationAngle + neededRotation;
     spinDuration = safeMinDuration + Math.random() * (safeMaxDuration - safeMinDuration);
     spinStartTimestamp = null;
