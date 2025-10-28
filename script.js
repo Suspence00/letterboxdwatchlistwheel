@@ -238,6 +238,10 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
+    if (!enabled && oneSpinToggle && oneSpinToggle.checked) {
+      oneSpinToggle.checked = false;
+      clearKnockoutStyles();
+    }
     updateMovieList();
     updateSpinButtonLabel();
     updateVetoButtonState();
@@ -1069,11 +1073,11 @@ function markMovieChampion(movieId, order) {
 }
 
 function isAdvancedOptionsEnabled() {
-  return Boolean(advancedOptionsToggle && advancedOptionsToggle.checked);
+  return advancedOptionsToggle ? Boolean(advancedOptionsToggle.checked) : true;
 }
 
 function isOneSpinModeEnabled() {
-  return Boolean(oneSpinToggle && oneSpinToggle.checked);
+  return Boolean(isAdvancedOptionsEnabled() && oneSpinToggle && oneSpinToggle.checked);
 }
 
 function isKnockoutModeEnabled() {
