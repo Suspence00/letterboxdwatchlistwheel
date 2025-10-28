@@ -21,6 +21,7 @@ const winModalRuntime = document.getElementById('win-modal-runtime');
 const winModalSynopsis = document.getElementById('win-modal-synopsis');
 const winModalTrailer = document.getElementById('win-modal-trailer');
 const winModalCloseBtn = document.getElementById('win-modal-close');
+const letterboxdProxyForm = document.getElementById('letterboxd-proxy-form');
 const lizardForm = document.getElementById('lizard-form');
 const lizardInput = document.getElementById('lizard-input');
 const lizardStatus = document.getElementById('lizard-status');
@@ -193,6 +194,10 @@ function getDefaultColorForIndex(index) {
   return generateDynamicColor(normalizedIndex);
 }
 
+if (letterboxdProxyForm) {
+  letterboxdProxyForm.addEventListener('submit', handleLetterboxdProxyImport);
+}
+
 if (lizardForm) {
   lizardForm.addEventListener('submit', handleLizardOpen);
 }
@@ -320,6 +325,97 @@ document.addEventListener('keydown', (event) => {
 drawEmptyWheel();
 updateVetoButtonState();
 updateSpinButtonLabel();
+
+async function handleLetterboxdProxyImport(event) {
+  event.preventDefault();
+
+  const input = document.getElementById('letterboxd-proxy-input');
+  const status = document.getElementById('letterboxd-proxy-status');
+  if (!input || !status) return;
+
+  const rawValue = input.value.trim();
+  if (!rawValue) {
+    status.textContent = 'Please enter a Letterboxd list URL.';
+    status.classList.add('status--error');
+    return;
+  }
+
+  // Normalize the entered URL
+  let listUrl = rawValue;
+  if (!/^https?:\/\//i.test(listUrl)) {
+    listUrl = `https://letterboxd.com/${listUrl.replace(/^\/+/, '')}/`;
+  }
+
+  const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}`;
+
+  status.textContent = 'Fetching list from Letterboxd…';
+  status.classList.remove('status--error', 'status--success');
+
+  try {
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    const csvText = await res.text();
+
+    // Parse CSV text using your custom parser
+    const rows = parseCSV(csvText, ',').filter(
+      (row) => row.length && row.some((cell) => cell.trim() !== '')
+    );
+
+    if (rows.length <= 1) {
+      status.textContent = 'The imported CSV appears to be empty.';
+      status.classList.add('status--error');
+      return;
+    }
+
+    // Identify header indices
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const findColumn = (names) => {
+      for (const n of names) {
+        const idx = header.indexOf(n);
+        if (idx !== -1) return idx;
+      }
+      return -1;
+    };
+
+    const titleIndex = findColumn(['title', 'name']);
+    const uriIndex = findColumn(['letterboxduri', 'url', 'uri']);
+
+    if (titleIndex === -1) {
+      status.textContent = 'Could not find a title column in the CSV.';
+      status.classList.add('status--error');
+      return;
+    }
+
+    // Map rows into your app’s expected movie structure
+    allMovies = rows.slice(1).map((row, i) => {
+      const title = row[titleIndex]?.trim() || '';
+      if (!title) return null;
+      const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
+      return {
+        id: `${i}-${title}`,
+        name: title,
+        uri,
+        year: '',
+        date: '',
+        weight: 1,
+        color: getDefaultColorForIndex(i),
+        initialIndex: i,
+      };
+    }).filter(Boolean);
+
+    selectedIds = new Set(allMovies.map((m) => m.id));
+    updateMovieList();
+    updateVetoButtonState();
+
+    status.textContent = `Imported ${allMovies.length} movies successfully!`;
+    status.classList.add('status--success');
+  } catch (err) {
+    console.error(err);
+    status.textContent = 'Failed to import list.';
+    status.classList.add('status--error');
+  }
+}
+
 
 function handleLizardOpen(event) {
   event.preventDefault();

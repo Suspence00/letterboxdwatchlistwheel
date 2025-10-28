@@ -64,6 +64,24 @@
             </p>
           </form>
         </div>
+        <div class="import-section">
+          <h3>Alternatively, import your list directly to the wheel</h3>
+          <p class="helper-text">
+            Paste a Letterboxd list URL (like <code>https://letterboxd.com/suspence0/list/horror-2025-1/</code>) and we'll attempt to populate the wheel.
+          </p>
+          <form id="letterboxd-proxy-form" class="letterboxd-proxy-form">
+            <label for="letterboxd-proxy-input">Letterboxd URL or profile name</label>
+            <input
+              type="text"
+              id="letterboxd-proxy-input"
+              class="text-input text-input--slim"
+              name="letterboxd-proxy-input"
+              placeholder="letterboxd list url here"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn" id="letterboxd-proxy-open">Import to the wheel</button>
+            <p class="status" id="letterboxd-proxy-status" role="status" aria-live="polite"></p>
+        </div>
       </div>
     </section>
 
