@@ -238,9 +238,28 @@ if (advancedOptionsToggle) {
     if (advancedOptionsPanel) {
       advancedOptionsPanel.hidden = !enabled;
     }
-    if (!enabled && oneSpinToggle && oneSpinToggle.checked) {
-      oneSpinToggle.checked = false;
-      clearKnockoutStyles();
+    if (!enabled) {
+      if (oneSpinToggle && oneSpinToggle.checked) {
+        oneSpinToggle.checked = false;
+        clearKnockoutStyles();
+      }
+
+      if (showCustomsToggle && !showCustomsToggle.checked) {
+        showCustomsToggle.checked = true;
+      }
+
+      if (!filterState.showCustoms) {
+        filterState.showCustoms = true;
+      }
+
+      if (filterState.query) {
+        filterState.query = '';
+        filterState.normalizedQuery = '';
+      }
+
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+      }
     }
     updateMovieList();
     updateSpinButtonLabel();
