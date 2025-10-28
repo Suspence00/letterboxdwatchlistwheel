@@ -398,6 +398,7 @@ async function handleLetterboxdProxyImport(event) {
     selectedIds = new Set(allMovies.map((m) => m.id));
     updateMovieList();
     updateVetoButtonState();
+    setImportCardCollapsed(true);
 
     status.textContent = `Imported ${allMovies.length} movies successfully!`;
     status.classList.add('status--success');
