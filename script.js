@@ -40,6 +40,8 @@ const wheelFmVolumeValue = document.getElementById('wheel-fm-volume-value');
 const wheelFmSeek = document.getElementById('wheel-fm-seek');
 const wheelFmTrackTitle = document.getElementById('wheel-fm-track-title');
 const wheelFmTrackArtist = document.getElementById('wheel-fm-track-artist');
+const wheelFmPlaylistSelect = document.getElementById('wheel-fm-playlist');
+const wheelFmPlaylistMeta = document.getElementById('wheel-fm-playlist-meta');
 const wheelFmCurrentTime = document.getElementById('wheel-fm-current-time');
 const wheelFmDuration = document.getElementById('wheel-fm-duration');
 const wheelFmStatus = document.getElementById('wheel-fm-status');
@@ -2064,6 +2066,31 @@ function setWheelFmStatus(message) {
   wheelFmStatus.textContent = message;
 }
 
+function setWheelFmPlaylistSummary(message) {
+  if (wheelFmPlaylistMeta) {
+    wheelFmPlaylistMeta.textContent = message;
+  }
+}
+
+function showWheelFmPlaylistPlaceholder(message, optionLabel = 'No tracks available') {
+  if (wheelFmPlaylistSelect) {
+    wheelFmPlaylistSelect.disabled = true;
+    wheelFmPlaylistSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = optionLabel;
+    wheelFmPlaylistSelect.append(placeholder);
+  }
+  setWheelFmPlaylistSummary(message);
+}
+
+function setWheelFmPlaylistSelection(index) {
+  if (!wheelFmPlaylistSelect) {
+    return;
+  }
+  wheelFmPlaylistSelect.value = String(index);
+}
+
 function setWheelFmControlsDisabled(disabled) {
   [wheelFmPlayBtn, wheelFmNextBtn, wheelFmPrevBtn, wheelFmSeek]
     .filter(Boolean)
@@ -2132,6 +2159,32 @@ function updateWheelFmTrackDisplay(track) {
   if (wheelFmTrackArtist) {
     wheelFmTrackArtist.textContent = track?.artist || '';
   }
+}
+
+function renderWheelFmPlaylist() {
+  if (!wheelFmPlaylistSelect) {
+    return;
+  }
+
+  wheelFmPlaylistSelect.innerHTML = '';
+
+  if (!wheelFmState.playlist.length) {
+    showWheelFmPlaylistPlaceholder('No tracks loaded for Wheel.FM.');
+    return;
+  }
+
+  wheelFmPlaylistSelect.disabled = false;
+
+  wheelFmState.playlist.forEach((track, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = `${index + 1}. ${track.title}`;
+    wheelFmPlaylistSelect.append(option);
+  });
+
+  setWheelFmPlaylistSelection(wheelFmState.currentIndex);
+  const total = wheelFmState.playlist.length;
+  setWheelFmPlaylistSummary(`${total} track${total === 1 ? '' : 's'} loaded`);
 }
 
 function formatWheelFmTime(seconds) {
@@ -2217,6 +2270,7 @@ async function loadWheelFmTrack(index, options = {}) {
     wheelFmDuration.textContent = '0:00';
   }
   updateWheelFmTrackDisplay(track);
+  setWheelFmPlaylistSelection(safeIndex);
   if (autoplay) {
     try {
       await wheelFmAudio.play();
@@ -2286,6 +2340,15 @@ async function initWheelFm() {
   } else {
     setWheelFmVolume(DEFAULT_WHEEL_FM_VOLUME);
   }
+  if (wheelFmPlaylistSelect) {
+    wheelFmPlaylistSelect.addEventListener('change', (event) => {
+      const targetIndex = Number(event.target.value);
+      if (!Number.isFinite(targetIndex)) {
+        return;
+      }
+      loadWheelFmTrack(targetIndex, { autoplay: true });
+    });
+  }
 
   wheelFmAudio.addEventListener('timeupdate', updateWheelFmProgress);
   wheelFmAudio.addEventListener('loadedmetadata', handleWheelFmLoadedMetadata);
@@ -2302,6 +2365,7 @@ async function initWheelFm() {
 
   setWheelFmControlsDisabled(true);
   setWheelFmStatus('Looking for Wheel.FM tracks…');
+  showWheelFmPlaylistPlaceholder('Loading playlist…', 'Loading…');
 
   try {
     const response = await fetch(WHEEL_FM_PLAYLIST_PATH, { cache: 'no-store' });
@@ -2317,14 +2381,17 @@ async function initWheelFm() {
 
     if (!normalized.length) {
       setWheelFmStatus('Add MP3 files to wheel-fm/ and list them in playlist.json to start broadcasting.');
+      showWheelFmPlaylistPlaceholder('Add tracks to wheel-fm/ to build your playlist.');
       return;
     }
 
     wheelFmState.playlist = normalized;
     setWheelFmControlsDisabled(false);
+    renderWheelFmPlaylist();
     await loadWheelFmTrack(0);
   } catch (error) {
     setWheelFmStatus('Wheel.FM playlist missing or invalid.');
+    showWheelFmPlaylistPlaceholder('Wheel.FM playlist missing or invalid.');
   }
 }
 
