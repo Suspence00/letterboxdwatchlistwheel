@@ -46,6 +46,19 @@ const wheelFmCurrentTime = document.getElementById('wheel-fm-current-time');
 const wheelFmDuration = document.getElementById('wheel-fm-duration');
 const wheelFmStatus = document.getElementById('wheel-fm-status');
 const wheelSoundToggleBtn = document.getElementById('wheel-sound-toggle');
+const finalistsSection = document.getElementById('finalists');
+const finalistsGroups = {
+  5: document.getElementById('final-group-5'),
+  4: document.getElementById('final-group-4'),
+  3: document.getElementById('final-group-3'),
+  2: document.getElementById('final-group-2')
+};
+const finalistsLists = {
+  5: document.getElementById('final-list-5'),
+  4: document.getElementById('final-list-4'),
+  3: document.getElementById('final-list-3'),
+  2: document.getElementById('final-list-2')
+};
 
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
@@ -70,6 +83,8 @@ let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
 let wheelSoundsMuted = false;
+let finalStandingsMode = 'idle';
+let finalStandingsSnapshots = { 5: null, 4: null, 3: null, 2: null };
 const wheelFmState = {
   playlist: [],
   currentIndex: 0,
@@ -680,6 +695,75 @@ function getActiveFilterDescriptions() {
   return descriptions;
 }
 
+function formatMovieLabel(movie) {
+  if (!movie || typeof movie !== 'object') {
+    return '';
+  }
+  return `${movie.name ?? ''}${movie.year ? ` (${movie.year})` : ''}`.trim();
+}
+
+function resetFinalStandings(mode = 'idle') {
+  finalStandingsMode = mode;
+  finalStandingsSnapshots = { 5: null, 4: null, 3: null, 2: null };
+  renderFinalStandings();
+}
+
+function renderFinalStandings() {
+  if (!finalistsSection) {
+    return;
+  }
+
+  const hasEntries = Object.values(finalStandingsSnapshots).some((entry) => Array.isArray(entry) && entry.length);
+  finalistsSection.hidden = !hasEntries;
+
+  [5, 4, 3, 2].forEach((count) => {
+    const snapshot = finalStandingsSnapshots[count];
+    const groupEl = finalistsGroups[count];
+    const listEl = finalistsLists[count];
+
+    if (!groupEl || !listEl) {
+      return;
+    }
+
+    if (!snapshot || !snapshot.length) {
+      groupEl.hidden = true;
+      listEl.innerHTML = '';
+      return;
+    }
+
+    groupEl.hidden = false;
+    listEl.innerHTML = '';
+    snapshot.forEach((entry) => {
+      const li = document.createElement('li');
+      li.textContent = entry.label;
+      listEl.appendChild(li);
+    });
+  });
+}
+
+function recordFinalStandings(remainingMovies, options = {}) {
+  const { allowOverwrite = false } = options;
+
+  if (!Array.isArray(remainingMovies)) {
+    return;
+  }
+
+  const count = remainingMovies.length;
+  if (count < 2 || count > 5) {
+    return;
+  }
+
+  if (!allowOverwrite && finalStandingsSnapshots[count]) {
+    return;
+  }
+
+  finalStandingsSnapshots[count] = remainingMovies.map((movie) => ({
+    id: movie.id,
+    label: formatMovieLabel(movie)
+  }));
+  renderFinalStandings();
+}
+
 function updateMovieList() {
   movieListEl.innerHTML = '';
 
@@ -693,6 +777,7 @@ function updateMovieList() {
     closeWinnerPopup({ restoreFocus: false });
     updateVetoButtonState();
     updateSpinButtonLabel();
+    resetFinalStandings('idle');
     return;
   }
 
@@ -716,6 +801,7 @@ function updateMovieList() {
     spinButton.disabled = true;
     drawEmptyWheel();
     updateVetoButtonState();
+    resetFinalStandings('idle');
     return;
   }
 
@@ -912,6 +998,16 @@ function updateMovieList() {
   drawWheel(selectedMovies);
   updateVetoButtonState();
   updateSpinButtonLabel();
+
+  if (!isLastStandingInProgress && finalStandingsMode !== 'knockout') {
+    const shouldPreview = selectedMovies.length >= 2 && selectedMovies.length <= 5;
+    if (shouldPreview) {
+      resetFinalStandings('preview');
+      recordFinalStandings(selectedMovies, { allowOverwrite: true });
+    } else if (finalStandingsMode !== 'idle') {
+      resetFinalStandings('idle');
+    }
+  }
 }
 
 function drawEmptyWheel() {
@@ -1521,6 +1617,8 @@ async function runLastStandingMode(selectedMovies) {
   spinButton.disabled = true;
   updateSpinButtonLabel();
   updateVetoButtonState();
+  resetFinalStandings('knockout');
+  recordFinalStandings(eliminationPool);
 
   if (resultEl) {
     resultEl.classList.add('result--knockout');
@@ -1560,6 +1658,7 @@ async function runLastStandingMode(selectedMovies) {
     const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
     resultEl.innerHTML = `💥 Knocked out: <strong>${eliminatedLabel}</strong> ${remainText}`;
     drawWheel(eliminationPool);
+    recordFinalStandings(eliminationPool);
 
     if (remainingCount <= 1) {
       const revealDelay = isFinalElimination ? speedConfig.finalRevealDelay : speedConfig.knockoutRevealDelay;
