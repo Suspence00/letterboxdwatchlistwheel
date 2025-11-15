@@ -101,6 +101,13 @@
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
               <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+              <button
+                type="button"
+                class="btn"
+                id="wheel-sound-toggle"
+                aria-pressed="false"
+                aria-label="Toggle wheel sound effects"
+              >Mute wheel sounds</button>
               <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
                 <div class="wheel-fm__heading">
                   <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
@@ -129,6 +136,35 @@
                     <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
                     <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
                   </div>
+                </div>
+                <div class="wheel-fm__playlist">
+                  <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
+                  <select
+                    id="wheel-fm-playlist"
+                    class="wheel-fm__playlist-select"
+                    disabled
+                    aria-label="Pick a Wheel.FM track"
+                  >
+                    <option>Loading…</option>
+                  </select>
+                  <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
+                </div>
+                <div class="wheel-fm__volume">
+                  <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
+                  <input
+                    type="range"
+                    id="wheel-fm-volume"
+                    class="wheel-fm__volume-slider"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="80"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="80"
+                    aria-label="Wheel.FM volume"
+                  />
+                  <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
                 </div>
                 <div class="wheel-fm__progress">
                   <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>

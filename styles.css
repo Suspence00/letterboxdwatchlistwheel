@@ -675,6 +675,7 @@ body {
   gap: 0.85rem;
   justify-content: flex-start;
   margin-top: 1.5rem;
+  padding-bottom: 9rem;
   position: relative;
   width: min(720px, 95vw);
 }
@@ -719,6 +720,55 @@ body {
   display: flex;
   gap: 0.65rem;
   width: 100%;
+}
+
+.wheel-fm__playlist {
+  align-items: center;
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: auto 1fr;
+  margin-top: 0.8rem;
+}
+
+.wheel-fm__playlist-label {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.wheel-fm__playlist-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  color: #f4f7ff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.4rem 0.85rem;
+  width: 100%;
+}
+
+.wheel-fm__playlist-select option {
+  background-color: #0f1c32;
+  color: #f4f7ff;
+}
+
+.wheel-fm__playlist-select option:checked {
+  background-color: #1f3154;
+  color: #ffffff;
+}
+
+.wheel-fm__playlist-select:focus {
+  border-color: rgba(255, 255, 255, 0.32);
+  outline: 2px solid rgba(255, 255, 255, 0.24);
+  outline-offset: 2px;
+}
+
+.wheel-fm__playlist-meta {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.82rem;
+  grid-column: 1 / -1;
+  letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .wheel-fm__track {
@@ -796,6 +846,59 @@ body {
 
 .wheel-fm__control--next::before {
   content: '⏭';
+}
+
+.wheel-fm__volume {
+  align-items: center;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: auto minmax(120px, 180px) auto;
+  justify-content: flex-start;
+  margin-top: 0.75rem;
+}
+
+.wheel-fm__volume-label {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.wheel-fm__volume-slider {
+  accent-color: var(--accent);
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  height: 6px;
+  max-width: 180px;
+  min-width: 120px;
+  width: 100%;
+}
+
+.wheel-fm__volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  height: 14px;
+  margin-top: -4px;
+  width: 14px;
+}
+
+.wheel-fm__volume-slider::-moz-range-thumb {
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  height: 14px;
+  width: 14px;
+}
+
+.wheel-fm__volume-value {
+  color: rgba(255, 255, 255, 0.82);
+  font-feature-settings: 'tnum';
+  font-weight: 700;
+  margin: 0;
 }
 
 .wheel-fm__progress {
