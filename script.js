@@ -31,9 +31,20 @@ const advancedOptionsPanel = document.getElementById('advanced-options-panel');
 const searchInput = document.getElementById('movie-search');
 const showCustomsToggle = document.getElementById('filter-show-customs');
 const oneSpinToggle = document.getElementById('one-spin-toggle');
+const wheelFmAudio = document.getElementById('wheel-fm-audio');
+const wheelFmPlayBtn = document.getElementById('wheel-fm-play');
+const wheelFmPrevBtn = document.getElementById('wheel-fm-prev');
+const wheelFmNextBtn = document.getElementById('wheel-fm-next');
+const wheelFmSeek = document.getElementById('wheel-fm-seek');
+const wheelFmTrackTitle = document.getElementById('wheel-fm-track-title');
+const wheelFmTrackArtist = document.getElementById('wheel-fm-track-artist');
+const wheelFmCurrentTime = document.getElementById('wheel-fm-current-time');
+const wheelFmDuration = document.getElementById('wheel-fm-duration');
+const wheelFmStatus = document.getElementById('wheel-fm-status');
 
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
+const WHEEL_FM_PLAYLIST_PATH = 'wheel-fm/playlist.json';
 
 let allMovies = [];
 let selectedIds = new Set();
@@ -52,6 +63,11 @@ let lastFocusedBeforeModal = null;
 let customEntryCounter = 0;
 let currentModalMetadataKey = null;
 let isLastStandingInProgress = false;
+const wheelFmState = {
+  playlist: [],
+  currentIndex: 0,
+  isSeeking: false
+};
 
 const MOVIE_KNOCKOUT_SPEEDS = [
   {
@@ -2027,6 +2043,234 @@ function handleVeto() {
 function updateVetoButtonState() {
   if (!vetoButton) return;
   vetoButton.disabled = !winnerId || isSpinning || isLastStandingInProgress;
+}
+
+function setWheelFmStatus(message) {
+  if (!wheelFmStatus) return;
+  wheelFmStatus.textContent = message;
+}
+
+function setWheelFmControlsDisabled(disabled) {
+  [wheelFmPlayBtn, wheelFmNextBtn, wheelFmPrevBtn, wheelFmSeek]
+    .filter(Boolean)
+    .forEach((el) => {
+      el.disabled = Boolean(disabled);
+    });
+}
+
+function normalizeWheelFmTrack(entry, index) {
+  if (!entry || typeof entry.file !== 'string') {
+    return null;
+  }
+  const file = entry.file.trim();
+  if (!file) {
+    return null;
+  }
+  const title = (entry.title || '').trim();
+  const artist = (entry.artist || '').trim();
+  const fallbackName = file.split('/').pop() || `Track ${index + 1}`;
+  return {
+    file,
+    title: title || fallbackName,
+    artist: artist || 'Wheel.FM'
+  };
+}
+
+function updateWheelFmTrackDisplay(track) {
+  if (wheelFmTrackTitle) {
+    wheelFmTrackTitle.textContent = track?.title || 'Wheel.FM';
+  }
+  if (wheelFmTrackArtist) {
+    wheelFmTrackArtist.textContent = track?.artist || '';
+  }
+}
+
+function formatWheelFmTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return '0:00';
+  }
+  const rounded = Math.floor(seconds);
+  const minutes = Math.floor(rounded / 60);
+  const remaining = String(rounded % 60).padStart(2, '0');
+  return `${minutes}:${remaining}`;
+}
+
+function updateWheelFmProgress() {
+  if (!wheelFmAudio || !wheelFmSeek || !wheelFmCurrentTime) {
+    return;
+  }
+  if (!Number.isFinite(wheelFmAudio.duration) || wheelFmAudio.duration <= 0) {
+    wheelFmSeek.value = 0;
+    wheelFmCurrentTime.textContent = '0:00';
+    return;
+  }
+  if (!wheelFmState.isSeeking) {
+    const percent = (wheelFmAudio.currentTime / wheelFmAudio.duration) * 100;
+    wheelFmSeek.value = percent;
+  }
+  wheelFmCurrentTime.textContent = formatWheelFmTime(wheelFmAudio.currentTime);
+}
+
+function handleWheelFmLoadedMetadata() {
+  if (!wheelFmAudio || !wheelFmSeek || !wheelFmDuration) {
+    return;
+  }
+  wheelFmSeek.disabled = false;
+  wheelFmDuration.textContent = formatWheelFmTime(wheelFmAudio.duration);
+  updateWheelFmProgress();
+}
+
+function handleWheelFmSeekInput(event) {
+  if (!wheelFmAudio || !wheelFmSeek || !wheelFmDuration) {
+    return;
+  }
+  wheelFmState.isSeeking = true;
+  const value = Number(event.target.value);
+  if (!Number.isFinite(value) || !Number.isFinite(wheelFmAudio.duration)) {
+    return;
+  }
+  const seconds = (value / 100) * wheelFmAudio.duration;
+  if (wheelFmCurrentTime) {
+    wheelFmCurrentTime.textContent = formatWheelFmTime(seconds);
+  }
+}
+
+function handleWheelFmSeekChange(event) {
+  if (!wheelFmAudio || !Number.isFinite(wheelFmAudio.duration)) {
+    wheelFmState.isSeeking = false;
+    return;
+  }
+  const value = Number(event.target.value);
+  const seconds = (value / 100) * wheelFmAudio.duration;
+  wheelFmAudio.currentTime = seconds;
+  wheelFmState.isSeeking = false;
+}
+
+function loadWheelFmTrack(index) {
+  if (!wheelFmAudio || !wheelFmState.playlist.length) {
+    return;
+  }
+  const safeIndex = ((index % wheelFmState.playlist.length) + wheelFmState.playlist.length) % wheelFmState.playlist.length;
+  const track = wheelFmState.playlist[safeIndex];
+  wheelFmState.currentIndex = safeIndex;
+  wheelFmAudio.pause();
+  wheelFmAudio.src = track.file;
+  wheelFmAudio.currentTime = 0;
+  if (wheelFmSeek) {
+    wheelFmSeek.value = 0;
+    wheelFmSeek.disabled = true;
+  }
+  if (wheelFmCurrentTime) {
+    wheelFmCurrentTime.textContent = '0:00';
+  }
+  if (wheelFmDuration) {
+    wheelFmDuration.textContent = '0:00';
+  }
+  updateWheelFmTrackDisplay(track);
+  setWheelFmStatus(`Ready to play “${track.title}”.`);
+}
+
+async function handleWheelFmPlayToggle() {
+  if (!wheelFmAudio || !wheelFmState.playlist.length) {
+    return;
+  }
+  if (wheelFmAudio.paused) {
+    try {
+      await wheelFmAudio.play();
+      setWheelFmStatus(`Now playing “${wheelFmState.playlist[wheelFmState.currentIndex].title}”.`);
+    } catch (error) {
+      setWheelFmStatus('Unable to start Wheel.FM — browser blocked playback.');
+    }
+  } else {
+    wheelFmAudio.pause();
+    setWheelFmStatus('Paused Wheel.FM.');
+  }
+}
+
+function handleWheelFmNext() {
+  if (!wheelFmState.playlist.length) {
+    return;
+  }
+  const nextIndex = (wheelFmState.currentIndex + 1) % wheelFmState.playlist.length;
+  loadWheelFmTrack(nextIndex);
+  if (wheelFmAudio && !wheelFmAudio.paused) {
+    wheelFmAudio.play().catch(() => {
+      /* ignored */
+    });
+  }
+}
+
+function handleWheelFmPrevious() {
+  if (!wheelFmState.playlist.length) {
+    return;
+  }
+  const prevIndex = (wheelFmState.currentIndex - 1 + wheelFmState.playlist.length) % wheelFmState.playlist.length;
+  loadWheelFmTrack(prevIndex);
+  if (wheelFmAudio && !wheelFmAudio.paused) {
+    wheelFmAudio.play().catch(() => {
+      /* ignored */
+    });
+  }
+}
+
+async function initWheelFm() {
+  if (!wheelFmAudio || !wheelFmPlayBtn || !wheelFmSeek) {
+    return;
+  }
+
+  wheelFmPlayBtn.addEventListener('click', handleWheelFmPlayToggle);
+  if (wheelFmNextBtn) {
+    wheelFmNextBtn.addEventListener('click', handleWheelFmNext);
+  }
+  if (wheelFmPrevBtn) {
+    wheelFmPrevBtn.addEventListener('click', handleWheelFmPrevious);
+  }
+  wheelFmSeek.addEventListener('input', handleWheelFmSeekInput);
+  wheelFmSeek.addEventListener('change', handleWheelFmSeekChange);
+
+  wheelFmAudio.addEventListener('timeupdate', updateWheelFmProgress);
+  wheelFmAudio.addEventListener('loadedmetadata', handleWheelFmLoadedMetadata);
+  wheelFmAudio.addEventListener('ended', handleWheelFmNext);
+  wheelFmAudio.addEventListener('error', () => {
+    setWheelFmStatus('Could not load the current Wheel.FM track.');
+  });
+  wheelFmAudio.addEventListener('play', () => {
+    wheelFmPlayBtn.classList.add('is-playing');
+  });
+  wheelFmAudio.addEventListener('pause', () => {
+    wheelFmPlayBtn.classList.remove('is-playing');
+  });
+
+  setWheelFmControlsDisabled(true);
+  setWheelFmStatus('Looking for Wheel.FM tracks…');
+
+  try {
+    const response = await fetch(WHEEL_FM_PLAYLIST_PATH, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Playlist unavailable');
+    }
+    const data = await response.json();
+    const normalized = Array.isArray(data)
+      ? data
+          .map((entry, index) => normalizeWheelFmTrack(entry, index))
+          .filter(Boolean)
+      : [];
+
+    if (!normalized.length) {
+      setWheelFmStatus('Add MP3 files to wheel-fm/ and list them in playlist.json to start broadcasting.');
+      return;
+    }
+
+    wheelFmState.playlist = normalized;
+    setWheelFmControlsDisabled(false);
+    loadWheelFmTrack(0);
+  } catch (error) {
+    setWheelFmStatus('Wheel.FM playlist missing or invalid.');
+  }
+}
+
+if (wheelFmAudio && wheelFmPlayBtn) {
+  initWheelFm();
 }
 
 window.addEventListener('beforeunload', () => {

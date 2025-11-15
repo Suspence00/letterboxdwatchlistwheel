@@ -101,6 +101,53 @@
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
               <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+              <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
+                <div class="wheel-fm__heading">
+                  <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
+                  <p class="wheel-fm__tagline">A low-key radio for wheel-worthy vibes.</p>
+                </div>
+                <div class="wheel-fm__player" aria-live="polite">
+                  <button
+                    type="button"
+                    class="wheel-fm__control wheel-fm__control--prev"
+                    id="wheel-fm-prev"
+                    aria-label="Play previous track"
+                  ></button>
+                  <button
+                    type="button"
+                    class="wheel-fm__control wheel-fm__control--play"
+                    id="wheel-fm-play"
+                    aria-label="Play or pause Wheel.FM"
+                  ></button>
+                  <button
+                    type="button"
+                    class="wheel-fm__control wheel-fm__control--next"
+                    id="wheel-fm-next"
+                    aria-label="Skip to next track"
+                  ></button>
+                  <div class="wheel-fm__track">
+                    <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
+                    <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
+                  </div>
+                </div>
+                <div class="wheel-fm__progress">
+                  <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
+                  <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
+                  <input
+                    type="range"
+                    id="wheel-fm-seek"
+                    class="wheel-fm__seek"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="0"
+                    disabled
+                  />
+                  <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
+                </div>
+                <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start broadcasting.</p>
+                <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
+              </section>
             </div>
           </div>
           <div class="advanced-options">

@@ -11,6 +11,7 @@ Give your Letterboxd watchlist a dramatic spin to decide what to watch next. The
 - **Dynamic wheel** – A colorful wheel updates in real time as you adjust your selection.
 - **Movie Knockout mode** – Enable knockout spins to automatically eliminate picks until a single winner remains, tuned for a brisk cadence by default.
 - **Sound and animation** – Arcade-style ticking while the wheel spins, followed by a celebratory chime when a movie is chosen.
+- **Wheel.FM radio** – Drop MP3 files into `wheel-fm/`, list them in `playlist.json`, and let the built-in mini player set the vibes while you spin.
 - **No build step** – Pure HTML, CSS, and vanilla JavaScript that you can drop onto GitHub Pages or any static host.
 
 ## Getting started
@@ -22,6 +23,23 @@ Give your Letterboxd watchlist a dramatic spin to decide what to watch next. The
 3. Tweak the selection if needed, then press **Spin the wheel**. Open the advanced options to enable **Last movie standing** for an automatic knockout showdown.
 
 A small sample file (`sample-watchlist.csv`) is included for quick testing.
+
+## Wheel.FM playlist
+
+1. Add your MP3 files to the `wheel-fm/` folder.
+2. Edit `wheel-fm/playlist.json` and include an entry for each track:
+
+   ```json
+   [
+     {
+       "title": "Song title",
+       "artist": "Artist name",
+       "file": "wheel-fm/song-file.mp3"
+     }
+   ]
+   ```
+
+3. Reload the page. The Wheel.FM player below the wheel will read the playlist and let you play, pause, skip, and scrub through the audio.
 
 ## Acknowledgements
 
