@@ -747,6 +747,16 @@ body {
   width: 100%;
 }
 
+.wheel-fm__playlist-select option {
+  background-color: #0f1c32;
+  color: #f4f7ff;
+}
+
+.wheel-fm__playlist-select option:checked {
+  background-color: #1f3154;
+  color: #ffffff;
+}
+
 .wheel-fm__playlist-select:focus {
   border-color: rgba(255, 255, 255, 0.32);
   outline: 2px solid rgba(255, 255, 255, 0.24);

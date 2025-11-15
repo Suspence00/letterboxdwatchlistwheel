@@ -2178,7 +2178,7 @@ function renderWheelFmPlaylist() {
   wheelFmState.playlist.forEach((track, index) => {
     const option = document.createElement('option');
     option.value = String(index);
-    option.textContent = `${index + 1}. ${track.title}`;
+    option.textContent = `${index + 1}. ${track.title} — ${track.artist}`;
     wheelFmPlaylistSelect.append(option);
   });
 
