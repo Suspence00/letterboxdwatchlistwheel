@@ -675,6 +675,7 @@ body {
   gap: 0.85rem;
   justify-content: flex-start;
   margin-top: 1.5rem;
+  padding-bottom: 9rem;
   position: relative;
   width: min(720px, 95vw);
 }
@@ -688,6 +689,15 @@ body {
   margin-top: 0.5rem;
   padding: 1rem 1.25rem 1.2rem;
   width: 100%;
+}
+
+.wheel-fm--floating {
+  bottom: 1.25rem;
+  margin-top: 0;
+  position: fixed;
+  right: 1.25rem;
+  width: min(360px, 92vw);
+  z-index: 10;
 }
 
 .wheel-fm__heading {
@@ -796,6 +806,32 @@ body {
 
 .wheel-fm__control--next::before {
   content: '⏭';
+}
+
+.wheel-fm__volume {
+  align-items: center;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: auto 1fr auto;
+  margin-top: 0.75rem;
+}
+
+.wheel-fm__volume-label {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.wheel-fm__volume-slider {
+  accent-color: var(--accent);
+  width: 100%;
+}
+
+.wheel-fm__volume-value {
+  color: rgba(255, 255, 255, 0.82);
+  font-feature-settings: 'tnum';
+  font-weight: 700;
+  margin: 0;
 }
 
 .wheel-fm__progress {
