@@ -46,6 +46,15 @@ const wheelFmCurrentTime = document.getElementById('wheel-fm-current-time');
 const wheelFmDuration = document.getElementById('wheel-fm-duration');
 const wheelFmStatus = document.getElementById('wheel-fm-status');
 const wheelSoundToggleBtn = document.getElementById('wheel-sound-toggle');
+const historyBtn = document.getElementById('history-btn');
+const historyModal = document.getElementById('history-modal');
+const historyModalCloseBtn = document.getElementById('history-modal-close');
+const historyListEl = document.getElementById('history-list');
+const historyEmptyMsg = document.getElementById('history-empty-msg');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+const STORAGE_KEY = 'letterboxd_wheel_state';
+let history = [];
 
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
@@ -376,6 +385,135 @@ document.addEventListener('keydown', (event) => {
 drawEmptyWheel();
 updateVetoButtonState();
 updateSpinButtonLabel();
+loadState();
+
+function saveState() {
+  const state = {
+    allMovies,
+    selectedIds: Array.from(selectedIds),
+    history,
+    filterState
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+const debouncedSaveState = debounce(saveState, 1000);
+
+function loadState() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return;
+
+  try {
+    const state = JSON.parse(stored);
+    if (state.allMovies && Array.isArray(state.allMovies)) {
+      allMovies = state.allMovies;
+    }
+    if (state.selectedIds && Array.isArray(state.selectedIds)) {
+      selectedIds = new Set(state.selectedIds);
+    }
+    if (state.history && Array.isArray(state.history)) {
+      history = state.history;
+    }
+    if (state.filterState) {
+      Object.assign(filterState, state.filterState);
+      if (searchInput) searchInput.value = filterState.query || '';
+      if (showCustomsToggle) showCustomsToggle.checked = filterState.showCustoms;
+    }
+
+    if (allMovies.length > 0) {
+      updateMovieList();
+      setImportCardCollapsed(true);
+      statusMessage.textContent = `Restored ${allMovies.length} movies from last session.`;
+    }
+  } catch (e) {
+    console.error('Failed to load state', e);
+  }
+}
+
+function addToHistory(movie) {
+  const entry = {
+    id: crypto.randomUUID(),
+    movieId: movie.id,
+    name: movie.name,
+    year: movie.year,
+    timestamp: Date.now(),
+    uri: movie.uri
+  };
+  history.unshift(entry);
+  // Keep only last 50 entries
+  if (history.length > 50) {
+    history = history.slice(0, 50);
+  }
+  saveState();
+}
+
+function renderHistory() {
+  historyListEl.innerHTML = '';
+  if (!history.length) {
+    historyEmptyMsg.hidden = false;
+    return;
+  }
+  historyEmptyMsg.hidden = true;
+
+  history.forEach(entry => {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+
+    const date = new Date(entry.timestamp).toLocaleDateString(undefined, {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    li.innerHTML = `
+      <div class="history-item__info">
+        <span class="history-item__name">${entry.name} ${entry.year ? `(${entry.year})` : ''}</span>
+        <span class="history-item__date">${date}</span>
+      </div>
+      <div class="history-item__actions">
+        ${entry.uri ? `<a href="${entry.uri}" target="_blank" class="btn btn--small" rel="noopener noreferrer">View</a>` : ''}
+      </div>
+    `;
+    historyListEl.appendChild(li);
+  });
+}
+
+if (historyBtn) {
+  historyBtn.addEventListener('click', () => {
+    renderHistory();
+    historyModal.hidden = false;
+    requestAnimationFrame(() => historyModal.classList.add('show'));
+  });
+}
+
+if (historyModalCloseBtn) {
+  historyModalCloseBtn.addEventListener('click', () => {
+    historyModal.classList.remove('show');
+    setTimeout(() => {
+      historyModal.hidden = true;
+    }, 250);
+  });
+}
+
+if (clearHistoryBtn) {
+  clearHistoryBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear the history?')) {
+      history = [];
+      saveState();
+      renderHistory();
+    }
+  });
+}
+
+// Close history modal on outside click
+if (historyModal) {
+  historyModal.addEventListener('click', (event) => {
+    if (event.target === historyModal) {
+      historyModal.classList.remove('show');
+      setTimeout(() => {
+        historyModal.hidden = true;
+      }, 250);
+    }
+  });
+}
 
 async function handleLetterboxdProxyImport(event) {
   event.preventDefault();
@@ -458,6 +596,7 @@ async function handleLetterboxdProxyImport(event) {
     updateMovieList();
     updateVetoButtonState();
     setImportCardCollapsed(true);
+    saveState();
 
     status.textContent = `Imported ${allMovies.length} movies successfully!`;
     status.classList.add('status--success');
@@ -558,6 +697,7 @@ function handleFileUpload(event) {
       updateMovieList();
       updateVetoButtonState();
       setImportCardCollapsed(true);
+      saveState();
     } catch (error) {
       console.error(error);
       statusMessage.textContent = 'Something went wrong while reading the CSV.';
@@ -912,6 +1052,7 @@ function updateMovieList() {
   drawWheel(selectedMovies);
   updateVetoButtonState();
   updateSpinButtonLabel();
+  debouncedSaveState();
 }
 
 function drawEmptyWheel() {
@@ -1404,6 +1545,7 @@ async function spinWheel() {
   drawWheel(selectedMovies);
   triggerConfetti();
   showWinnerPopup(winningMovie);
+  addToHistory(winningMovie);
   updateVetoButtonState();
   updateSpinButtonLabel();
 }
@@ -1526,9 +1668,8 @@ async function runLastStandingMode(selectedMovies) {
     resultEl.classList.add('result--knockout');
     resultEl.classList.remove('result--champion');
     const startingCount = eliminationPool.length;
-    resultEl.innerHTML = `🔥 Movie Knockout begins! <strong>${startingCount}</strong> movie${
-      startingCount === 1 ? '' : 's'
-    } enter the arena.`;
+    resultEl.innerHTML = `🔥 Movie Knockout begins! <strong>${startingCount}</strong> movie${startingCount === 1 ? '' : 's'
+      } enter the arena.`;
   }
 
   while (eliminationPool.length > 1) {
@@ -1580,13 +1721,13 @@ async function runLastStandingMode(selectedMovies) {
     const finalTiming = getLastStandingSpeedConfig(1);
     await delay(finalTiming.winnerRevealDelay);
     resultEl.classList.add('result--champion');
-    resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${
-      finalMovie.year ? ` (${finalMovie.year})` : ''
-    }`;
+    resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''
+      }`;
     playWinSound();
     drawWheel(eliminationPool);
     triggerConfetti();
     showWinnerPopup(finalMovie);
+    addToHistory(finalMovie);
   }
 
   isLastStandingInProgress = false;
@@ -2375,8 +2516,8 @@ async function initWheelFm() {
     const data = await response.json();
     const normalized = Array.isArray(data)
       ? data
-          .map((entry, index) => normalizeWheelFmTrack(entry, index))
-          .filter(Boolean)
+        .map((entry, index) => normalizeWheelFmTrack(entry, index))
+        .filter(Boolean)
       : [];
 
     if (!normalized.length) {

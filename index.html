@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
   <header class="app-header">
     <h1>Letterboxd Watchlist Wheel</h1>
@@ -19,45 +21,38 @@
     <section class="card" id="import-card" aria-labelledby="import-heading">
       <div class="card-header">
         <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
-        <button
-          type="button"
-          class="btn card-toggle"
-          id="import-toggle"
-          aria-expanded="true"
-          aria-controls="import-body"
-        >Hide steps</button>
+        <button type="button" class="btn card-toggle" id="import-toggle" aria-expanded="true"
+          aria-controls="import-body">Hide steps</button>
       </div>
       <div class="card-body import-body" id="import-body">
         <div class="import-section import-section--primary">
           <h3>Import directly from Letterboxd</h3>
           <p class="helper-text">
-            Paste a Letterboxd list URL (like <code>https://letterboxd.com/suspence0/list/horror-2025-1/</code>) and we'll pull the entries right into the wheel.
+            Paste a Letterboxd list URL (like <code>https://letterboxd.com/suspence0/list/horror-2025-1/</code>) and
+            we'll pull the entries right into the wheel.
           </p>
           <form id="letterboxd-proxy-form" class="letterboxd-proxy-form">
             <label for="letterboxd-proxy-input">Letterboxd URL or profile name</label>
-            <input
-              type="text"
-              id="letterboxd-proxy-input"
-              class="text-input text-input--slim"
-              name="letterboxd-proxy-input"
-              placeholder="letterboxd list url here"
-              autocomplete="off"
-            />
+            <input type="text" id="letterboxd-proxy-input" class="text-input text-input--slim"
+              name="letterboxd-proxy-input" placeholder="letterboxd list url here" autocomplete="off" />
             <button type="submit" class="btn" id="letterboxd-proxy-open">Import to the wheel</button>
             <p class="status" id="letterboxd-proxy-status" role="status" aria-live="polite"></p>
           </form>
         </div>
         <div class="import-section">
           <h3>Prefer to upload a CSV?</h3>
-          <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data) and upload the <code>watchlist.csv</code> file here.</p>
+          <p class="helper-text">Export your watchlist from Letterboxd (Profile → Settings → Data → Export Your Data)
+            and upload the <code>watchlist.csv</code> file here.</p>
           <label class="file-input" for="csv-input">
             <span class="file-label">Choose CSV file</span>
             <input type="file" id="csv-input" accept=".csv" />
           </label>
           <p class="status" id="status-message" role="status" aria-live="polite"></p>
           <div class="import-secondary-actions">
-            <p class="helper-text helper-text--compact">Need a CSV? Use the download helper to generate one from a list.</p>
-            <a class="btn" href="https://lizard.streamlit.app/" target="_blank" rel="noopener noreferrer">Open download helper</a>
+            <p class="helper-text helper-text--compact">Need a CSV? Use the download helper to generate one from a list.
+            </p>
+            <a class="btn" href="https://lizard.streamlit.app/" target="_blank" rel="noopener noreferrer">Open download
+              helper</a>
           </div>
         </div>
       </div>
@@ -70,6 +65,7 @@
           <div class="controls">
             <button type="button" class="btn" id="select-all">Select all</button>
             <button type="button" class="btn" id="clear-selection">Clear all</button>
+            <button type="button" class="btn" id="history-btn">History</button>
           </div>
         </div>
       </div>
@@ -78,18 +74,13 @@
           <form id="custom-entry-form" class="custom-entry__form">
             <label for="custom-entry-name">Add a custom entry</label>
             <div class="custom-entry__controls">
-              <input
-                type="text"
-                id="custom-entry-name"
-                class="text-input"
-                name="custom-entry-name"
-                placeholder="Anything goes — add a wildcard pick"
-                autocomplete="off"
-              />
+              <input type="text" id="custom-entry-name" class="text-input" name="custom-entry-name"
+                placeholder="Anything goes — add a wildcard pick" autocomplete="off" />
               <button type="submit" class="btn" id="add-custom-entry">Add to wheel</button>
             </div>
           </form>
-          <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd picks.</p>
+          <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd
+            picks.</p>
         </div>
         <div class="selection-area">
           <div class="wheel-section">
@@ -101,37 +92,20 @@
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
               <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
-              <button
-                type="button"
-                class="btn"
-                id="wheel-sound-toggle"
-                aria-pressed="false"
-                aria-label="Toggle wheel sound effects"
-              >Mute wheel sounds</button>
+              <button type="button" class="btn" id="wheel-sound-toggle" aria-pressed="false"
+                aria-label="Toggle wheel sound effects">Mute wheel sounds</button>
               <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
                 <div class="wheel-fm__heading">
                   <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
                   <p class="wheel-fm__tagline">Praise the Wheel!</p>
                 </div>
                 <div class="wheel-fm__player" aria-live="polite">
-                  <button
-                    type="button"
-                    class="wheel-fm__control wheel-fm__control--prev"
-                    id="wheel-fm-prev"
-                    aria-label="Play previous track"
-                  ></button>
-                  <button
-                    type="button"
-                    class="wheel-fm__control wheel-fm__control--play"
-                    id="wheel-fm-play"
-                    aria-label="Play or pause Wheel.FM"
-                  ></button>
-                  <button
-                    type="button"
-                    class="wheel-fm__control wheel-fm__control--next"
-                    id="wheel-fm-next"
-                    aria-label="Skip to next track"
-                  ></button>
+                  <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
+                    aria-label="Play previous track"></button>
+                  <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
+                    aria-label="Play or pause Wheel.FM"></button>
+                  <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
+                    aria-label="Skip to next track"></button>
                   <div class="wheel-fm__track">
                     <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
                     <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
@@ -139,49 +113,27 @@
                 </div>
                 <div class="wheel-fm__playlist">
                   <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
-                  <select
-                    id="wheel-fm-playlist"
-                    class="wheel-fm__playlist-select"
-                    disabled
-                    aria-label="Pick a Wheel.FM track"
-                  >
+                  <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled
+                    aria-label="Pick a Wheel.FM track">
                     <option>Loading…</option>
                   </select>
                   <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
                 </div>
                 <div class="wheel-fm__volume">
                   <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
-                  <input
-                    type="range"
-                    id="wheel-fm-volume"
-                    class="wheel-fm__volume-slider"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value="80"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow="80"
-                    aria-label="Wheel.FM volume"
-                  />
+                  <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1"
+                    value="80" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
                   <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
                 </div>
                 <div class="wheel-fm__progress">
                   <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
                   <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
-                  <input
-                    type="range"
-                    id="wheel-fm-seek"
-                    class="wheel-fm__seek"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value="0"
-                    disabled
-                  />
+                  <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0"
+                    disabled />
                   <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
                 </div>
-                <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start broadcasting.</p>
+                <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start
+                  broadcasting.</p>
                 <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
               </section>
             </div>
@@ -199,14 +151,8 @@
             <div class="advanced-options__panel" id="advanced-options-panel" hidden>
               <label class="visually-hidden" for="movie-search">Search your picks</label>
               <div class="selection-search">
-                <input
-                  type="search"
-                  id="movie-search"
-                  class="text-input"
-                  name="movie-search"
-                  placeholder="Search titles or years"
-                  autocomplete="off"
-                />
+                <input type="search" id="movie-search" class="text-input" name="movie-search"
+                  placeholder="Search titles or years" autocomplete="off" />
               </div>
               <div class="filter-toggles" role="group" aria-label="Filters">
                 <label class="filter-toggle" for="filter-show-customs">
@@ -236,16 +182,10 @@
 
   <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
 
-  <div
-    id="win-modal"
-    class="win-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="win-modal-title"
-    hidden
-  >
+  <div id="win-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="win-modal-title" hidden>
     <div class="win-modal__content">
-      <button type="button" class="win-modal__close" id="win-modal-close" aria-label="Close winner dialog">&times;</button>
+      <button type="button" class="win-modal__close" id="win-modal-close"
+        aria-label="Close winner dialog">&times;</button>
       <h3 id="win-modal-title" class="win-modal__title"></h3>
       <p id="win-modal-details" class="win-modal__details"></p>
       <div class="win-modal__body">
@@ -258,24 +198,31 @@
         </div>
       </div>
       <div class="win-modal__actions">
-        <a
-          id="win-modal-link"
-          class="win-modal__action win-modal__action--letterboxd hidden"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-        >View on Letterboxd</a>
-        <a
-          id="win-modal-trailer"
-          class="win-modal__action win-modal__action--trailer hidden"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Find a trailer</a>
+        <a id="win-modal-link" class="win-modal__action win-modal__action--letterboxd hidden" href="#" target="_blank"
+          rel="noopener noreferrer">View on Letterboxd</a>
+        <a id="win-modal-trailer" class="win-modal__action win-modal__action--trailer hidden" href="#" target="_blank"
+          rel="noopener noreferrer">Find a trailer</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="history-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title"
+    hidden>
+    <div class="win-modal__content history-modal__content">
+      <button type="button" class="win-modal__close" id="history-modal-close"
+        aria-label="Close history dialog">&times;</button>
+      <h3 id="history-modal-title" class="win-modal__title">Spin History</h3>
+      <div class="history-list-wrapper">
+        <ul id="history-list" class="history-list"></ul>
+        <p id="history-empty-msg" class="helper-text" hidden>No history yet. Spin the wheel!</p>
+      </div>
+      <div class="win-modal__actions">
+        <button type="button" class="btn danger" id="clear-history-btn">Clear History</button>
       </div>
     </div>
   </div>
 
   <script src="script.js"></script>
 </body>
+
 </html>
