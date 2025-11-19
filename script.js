@@ -543,10 +543,43 @@ async function handleLetterboxdProxyImport(event) {
   try {
     const res = await fetch(proxyUrl);
     if (!res.ok) throw new Error(`Worker returned ${res.status}`);
-    const csvText = await res.text();
 
+    let csvText = await res.text();
+    const contentType = res.headers.get('content-type') || '';
+
+    if (!csvText.trim()) {
+      throw new Error('Proxy returned an empty response');
+    }
+
+    // Some worker deployments return JSON with the CSV embedded; detect and unwrap it.
+    if (contentType.includes('application/json') || /^\s*[\[{]/.test(csvText)) {
+      try {
+        const parsed = JSON.parse(csvText);
+        if (typeof parsed?.csv === 'string') {
+          csvText = parsed.csv;
+        } else if (typeof parsed?.data === 'string') {
+          csvText = parsed.data;
+        }
+      } catch (jsonError) {
+        console.warn('Failed to parse JSON payload from proxy', jsonError);
+      }
+    }
+
+    // Handle data: URLs to keep compatibility with alternate proxy responses.
+    if (csvText.startsWith('data:')) {
+      const commaIndex = csvText.indexOf(',');
+      if (commaIndex !== -1) {
+        const payload = csvText.slice(commaIndex + 1);
+        const isBase64 = csvText.slice(5, commaIndex).includes('base64');
+        csvText = isBase64
+          ? atob(payload)
+          : decodeURIComponent(payload);
+      }
+    }
+
+    const delimiter = detectDelimiter(csvText);
     // Parse CSV text using your custom parser
-    const rows = parseCSV(csvText, ',').filter(
+    const rows = parseCSV(csvText, delimiter).filter(
       (row) => row.length && row.some((cell) => cell.trim() !== '')
     );
 
