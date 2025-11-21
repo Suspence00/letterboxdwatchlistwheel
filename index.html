@@ -86,9 +86,18 @@
           <div class="wheel-section">
             <div class="wheel-wrapper">
               <p class="result" id="result" aria-live="polite"></p>
-              <div class="wheel-stage">
-                <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
-                <div class="pointer" aria-hidden="true"></div>
+              <div class="wheel-layout">
+                <section class="knockout-remaining" id="knockout-remaining" aria-live="polite" hidden>
+                  <div class="knockout-remaining__header">
+                    <p class="knockout-remaining__title">Final five lineup</p>
+                    <p class="knockout-remaining__hint">Keeping tabs on the last contenders while the wheel spins.</p>
+                  </div>
+                  <ol class="knockout-remaining__list" id="knockout-remaining-list"></ol>
+                </section>
+                <div class="wheel-stage">
+                  <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
+                  <div class="pointer" aria-hidden="true"></div>
+                </div>
               </div>
               <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
               <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>

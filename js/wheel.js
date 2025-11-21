@@ -101,7 +101,9 @@ let ui = {
     updateVetoButtonState: () => { },
     markMovieKnockedOut: () => { },
     markMovieChampion: () => { },
-    updateKnockoutResultText: () => { }
+    updateKnockoutResultText: () => { },
+    updateKnockoutRemainingBox: () => { },
+    highlightKnockoutCandidate: () => { }
 };
 
 export function initWheel(canvasElement, callbacks = {}) {
@@ -398,6 +400,12 @@ function tick(segments) {
     if (index !== lastTickIndex) {
         playTickSound();
         lastTickIndex = index;
+        if (isLastStandingInProgress && typeof ui.highlightKnockoutCandidate === 'function') {
+            const focusedSegment = segments[index];
+            if (focusedSegment?.movie?.id) {
+                ui.highlightKnockoutCandidate(focusedSegment.movie.id);
+            }
+        }
     }
 }
 
@@ -499,6 +507,12 @@ export async function spinWheel(isOneSpinMode = false) {
     }
 
     winnerId = null;
+    if (typeof ui.highlightKnockoutCandidate === 'function') {
+        ui.highlightKnockoutCandidate(null);
+    }
+    if (typeof ui.updateKnockoutRemainingBox === 'function') {
+        ui.updateKnockoutRemainingBox([]);
+    }
     ui.updateVetoButtonState();
     ui.updateSpinButtonLabel();
 
@@ -549,6 +563,7 @@ async function runLastStandingMode(selectedMovies) {
     ui.updateSpinButtonLabel();
     ui.updateVetoButtonState();
 
+    ui.updateKnockoutRemainingBox(eliminationPool);
     ui.updateKnockoutResultText('start', eliminationPool.length);
 
     while (eliminationPool.length > 1) {
@@ -577,6 +592,7 @@ async function runLastStandingMode(selectedMovies) {
         eliminationPool.splice(removalIndex, 1);
         const remainingCount = eliminationPool.length;
 
+        ui.updateKnockoutRemainingBox(eliminationPool);
         ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
 
         drawWheel(eliminationPool);
@@ -607,6 +623,8 @@ async function runLastStandingMode(selectedMovies) {
         addToHistory(finalMovie);
     }
 
+    ui.highlightKnockoutCandidate(null);
+    ui.updateKnockoutRemainingBox([]);
     isLastStandingInProgress = false;
     ui.updateVetoButtonState();
     ui.updateSpinButtonLabel();

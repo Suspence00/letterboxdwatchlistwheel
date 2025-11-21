@@ -16,7 +16,9 @@ import {
     markMovieKnockedOut,
     markMovieChampion,
     updateKnockoutResultText,
-    renderHistory
+    renderHistory,
+    updateKnockoutRemainingBox,
+    highlightKnockoutCandidate
 } from './ui.js';
 import { initImport } from './import.js';
 import { debounce } from './utils.js';
@@ -42,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessage: document.getElementById('status-message'),
         resultEl: document.getElementById('result'),
         confettiContainer: document.getElementById('confetti-container'),
+        knockoutBox: document.getElementById('knockout-remaining'),
+        knockoutList: document.getElementById('knockout-remaining-list'),
 
         // Filters & Options
         searchInput: document.getElementById('movie-search'), // Check HTML
@@ -105,7 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVetoButtonState,
         markMovieKnockedOut,
         markMovieChampion,
-        updateKnockoutResultText
+        updateKnockoutResultText,
+        updateKnockoutRemainingBox,
+        highlightKnockoutCandidate
     });
 
     // Initialize UI

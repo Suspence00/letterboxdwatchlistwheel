@@ -844,6 +844,56 @@ export function markMovieChampion(movieId, order) {
     reorderMovieListForKnockout();
 }
 
+export function updateKnockoutRemainingBox(remainingMovies = []) {
+    if (!elements.knockoutBox || !elements.knockoutList) return;
+
+    elements.knockoutList.innerHTML = '';
+
+    if (!Array.isArray(remainingMovies) || !remainingMovies.length || remainingMovies.length > 5) {
+        elements.knockoutBox.hidden = true;
+        return;
+    }
+
+    elements.knockoutBox.hidden = false;
+
+    remainingMovies.forEach((movie) => {
+        const item = document.createElement('li');
+        item.className = 'knockout-remaining__item';
+        item.dataset.id = movie.id;
+
+        const title = document.createElement('span');
+        title.className = 'knockout-remaining__name';
+        title.textContent = movie.name;
+        item.appendChild(title);
+
+        const metaParts = [];
+        if (movie.year) metaParts.push(movie.year);
+        if (movie.isCustom) metaParts.push('Custom');
+        if (metaParts.length) {
+            const meta = document.createElement('span');
+            meta.className = 'knockout-remaining__meta';
+            meta.textContent = metaParts.join(' · ');
+            item.appendChild(meta);
+        }
+
+        elements.knockoutList.appendChild(item);
+    });
+}
+
+export function highlightKnockoutCandidate(movieId) {
+    if (!elements.knockoutList) return;
+    const items = elements.knockoutList.querySelectorAll('.knockout-remaining__item');
+    items.forEach((item) => {
+        const isActive = Boolean(movieId && item.dataset.id === movieId);
+        item.classList.toggle('is-active', isActive);
+        if (isActive) {
+            item.setAttribute('aria-current', 'true');
+        } else {
+            item.removeAttribute('aria-current');
+        }
+    });
+}
+
 export function updateKnockoutResultText(type, countOrMovie, extra) {
     if (!elements.resultEl) return;
 
