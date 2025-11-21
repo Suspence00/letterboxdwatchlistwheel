@@ -3,7 +3,7 @@
  */
 
 import { appState, saveState } from './state.js';
-import { getDefaultColorForIndex } from './utils.js';
+import { getDefaultColorForIndex, decodeHtmlEntities } from './utils.js';
 import { updateMovieList, updateVetoButtonState, closeWinnerPopup } from './ui.js';
 
 let elements = {};
@@ -102,8 +102,9 @@ async function handleLetterboxdProxyImport(event) {
 
         // Map rows into your app’s expected movie structure
         appState.movies = rows.slice(1).map((row, i) => {
-            const title = row[titleIndex]?.trim() || '';
-            if (!title) return null;
+            const rawTitle = row[titleIndex]?.trim() || '';
+            if (!rawTitle) return null;
+            const title = decodeHtmlEntities(rawTitle);
             const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
             return {
                 id: `${i}-${title}`,
@@ -184,10 +185,11 @@ function handleFileUpload(event) {
             appState.movies = rows
                 .slice(1)
                 .map((row, index) => {
-                    const rawName = nameIndex >= 0 && row[nameIndex] ? row[nameIndex].trim() : '';
-                    if (!rawName) {
+                    const rawNameInput = nameIndex >= 0 && row[nameIndex] ? row[nameIndex].trim() : '';
+                    if (!rawNameInput) {
                         return null;
                     }
+                    const rawName = decodeHtmlEntities(rawNameInput);
 
                     const uri = uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : '';
                     const idBase = uri || rawName || index;

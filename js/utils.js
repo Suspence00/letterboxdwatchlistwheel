@@ -156,3 +156,14 @@ export function getMovieOriginalIndex(movie, allMovies) {
     const index = allMovies.indexOf(movie);
     return index >= 0 ? index : -1;
 }
+
+/**
+ * Decodes HTML entities in a string (e.g. "Freddy&#039;s" -> "Freddy's")
+ * @param {string} text 
+ * @returns {string}
+ */
+export function decodeHtmlEntities(text) {
+    if (!text) return '';
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    return doc.documentElement.textContent;
+}
