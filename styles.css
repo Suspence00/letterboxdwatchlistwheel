@@ -29,7 +29,8 @@ body {
   padding: 2rem 1rem 3rem;
 }
 
-.app-header, .app-footer {
+.app-header,
+.app-footer {
   text-align: center;
   max-width: 960px;
 }
@@ -461,8 +462,11 @@ body {
   margin: 0 auto;
   max-height: 520px;
   overflow: auto;
-  padding-right: 0.75rem;
+  padding: 1rem;
   width: min(960px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .movie-list {
@@ -1059,19 +1063,23 @@ body {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.04);
   }
+
   100% {
     transform: scale(1);
   }
 }
 
 @keyframes championGlow {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -1113,6 +1121,7 @@ body {
     transform: translate3d(0, 0, 0) rotate(0deg);
     opacity: 1;
   }
+
   100% {
     transform: translate3d(var(--confetti-x-move), 110vh, 0) rotate(720deg);
     opacity: 0;
