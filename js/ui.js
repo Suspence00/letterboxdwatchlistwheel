@@ -857,14 +857,36 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     elements.knockoutBox.hidden = false;
 
     remainingMovies.forEach((movie) => {
+        const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+        let colorIndex = originalIndex;
+        if (!Number.isFinite(colorIndex) || colorIndex < 0) {
+            colorIndex = appState.movies.indexOf(movie);
+        }
+        const defaultColor = getDefaultColorForIndex(colorIndex);
+        const sanitizedColor = getStoredColor(movie, defaultColor);
+        if (movie.color !== sanitizedColor) {
+            movie.color = sanitizedColor;
+        }
+
         const item = document.createElement('li');
         item.className = 'knockout-remaining__item';
         item.dataset.id = movie.id;
 
+        const titleRow = document.createElement('div');
+        titleRow.className = 'knockout-remaining__line';
+
+        const colorSwatch = document.createElement('span');
+        colorSwatch.className = 'knockout-remaining__color';
+        colorSwatch.style.backgroundColor = sanitizedColor;
+        colorSwatch.setAttribute('aria-hidden', 'true');
+
         const title = document.createElement('span');
         title.className = 'knockout-remaining__name';
         title.textContent = movie.name;
-        item.appendChild(title);
+
+        titleRow.appendChild(colorSwatch);
+        titleRow.appendChild(title);
+        item.appendChild(titleRow);
 
         const metaParts = [];
         if (movie.year) metaParts.push(movie.year);

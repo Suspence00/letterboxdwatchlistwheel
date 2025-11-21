@@ -1111,6 +1111,15 @@ body {
   padding-left: 1.2rem;
 }
 
+.knockout-remaining__color {
+  background-color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  flex-shrink: 0;
+  height: 0.85rem;
+  width: 0.85rem;
+}
+
 .knockout-remaining__item {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -1127,6 +1136,12 @@ body {
   border-color: rgba(255, 93, 87, 0.7);
   box-shadow: 0 12px 24px rgba(255, 93, 87, 0.26);
   transform: translateY(-1px);
+}
+
+.knockout-remaining__line {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
 }
 
 .knockout-remaining__name {
