@@ -105,32 +105,31 @@ export function initUI(domElements) {
         });
     }
 
-    if (elements.searchInput) {
-        elements.searchInput.addEventListener('input', (event) => {
-            // Search logic handled in main or here?
-            // Let's handle it here or in main.
-            // Since we need debounce, we can import it.
-            // But for now let's just expose updateMovieList and let main handle search input listener if complex.
-            // Or just do it here.
+    if (elements.selectionToggleBtn) {
+        elements.selectionToggleBtn.addEventListener('click', () => {
+            const willCollapse = !elements.selectionCard.classList.contains('card--collapsed');
+            setSelectionCardCollapsed(willCollapse);
         });
     }
+
+
 }
 
 export function getFilteredMovies() {
     const { movies, filter } = appState;
-    if (filter.showCustoms && !filter.normalizedQuery) {
-        return [...movies];
-    }
 
     return movies.filter((movie) => {
         if (!filter.showCustoms && movie.isCustom) return false;
+
         if (filter.normalizedQuery) {
             const haystack = [movie.name, movie.year, movie.date]
                 .filter((part) => typeof part === 'string' && part.trim())
                 .join(' ')
                 .toLowerCase();
+
             if (!haystack.includes(filter.normalizedQuery)) return false;
         }
+
         return true;
     });
 }
@@ -423,6 +422,15 @@ export function isAdvancedOptionsEnabled() {
 
 export function isOneSpinModeEnabled() {
     return Boolean(isAdvancedOptionsEnabled() && elements.oneSpinToggle && elements.oneSpinToggle.checked);
+}
+
+export function setSelectionCardCollapsed(collapsed) {
+    if (!elements.selectionToggleBtn || !elements.selectionCard || !elements.selectionBody) return;
+
+    elements.selectionCard.classList.toggle('card--collapsed', collapsed);
+    elements.selectionBody.hidden = collapsed;
+    elements.selectionToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    elements.selectionToggleBtn.textContent = collapsed ? 'Show Steps' : 'Hide Steps';
 }
 
 function handleVeto() {

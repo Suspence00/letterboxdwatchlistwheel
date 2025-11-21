@@ -27,7 +27,7 @@
       <div class="card-header">
         <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
         <button type="button" class="btn card-toggle" id="import-toggle" aria-expanded="true"
-          aria-controls="import-body">Hide steps</button>
+          aria-controls="import-body">Hide Steps</button>
       </div>
       <div class="card-body import-body" id="import-body">
         <div class="import-section import-section--primary">
@@ -63,18 +63,22 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="selection-heading">
+    <section class="card" id="selection-card" aria-labelledby="selection-heading">
       <div class="card-header card-header--selection">
         <div class="card-header__section">
           <h2 id="selection-heading">2. Curate your wheel</h2>
+        </div>
+        <div class="card-header__section">
           <div class="controls">
             <button type="button" class="btn" id="select-all">Select all</button>
             <button type="button" class="btn" id="clear-selection">Clear all</button>
             <button type="button" class="btn" id="history-btn">History</button>
           </div>
+          <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
+            aria-controls="selection-body">Hide Steps</button>
         </div>
       </div>
-      <div class="card-body">
+      <div class="card-body" id="selection-body">
         <div class="custom-entry">
           <form id="custom-entry-form" class="custom-entry__form">
             <label for="custom-entry-name">Add a custom entry</label>
@@ -88,69 +92,6 @@
             picks.</p>
         </div>
         <div class="selection-area">
-          <div class="wheel-section">
-            <div class="wheel-wrapper">
-              <p class="result" id="result" aria-live="polite"></p>
-              <div class="wheel-layout">
-                <section class="knockout-remaining" id="knockout-remaining" aria-live="polite" hidden>
-                  <div class="knockout-remaining__header">
-                    <p class="knockout-remaining__title">Final Contenders!</p>
-                  </div>
-                  <ol class="knockout-remaining__list" id="knockout-remaining-list"></ol>
-                </section>
-                <div class="wheel-stage">
-                  <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
-                  <div class="pointer" aria-hidden="true"></div>
-                </div>
-              </div>
-              <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
-              <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
-              <button type="button" class="btn" id="wheel-sound-toggle" aria-pressed="false"
-                aria-label="Toggle wheel sound effects">Mute wheel sounds</button>
-              <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
-                <div class="wheel-fm__heading">
-                  <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
-                  <p class="wheel-fm__tagline">Praise the Wheel!</p>
-                </div>
-                <div class="wheel-fm__player" aria-live="polite">
-                  <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
-                    aria-label="Play previous track"></button>
-                  <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
-                    aria-label="Play or pause Wheel.FM"></button>
-                  <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
-                    aria-label="Skip to next track"></button>
-                  <div class="wheel-fm__track">
-                    <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
-                    <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
-                  </div>
-                </div>
-                <div class="wheel-fm__playlist">
-                  <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
-                  <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled
-                    aria-label="Pick a Wheel.FM track">
-                    <option>Loading…</option>
-                  </select>
-                  <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
-                </div>
-                <div class="wheel-fm__volume">
-                  <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
-                  <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1"
-                    value="80" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
-                  <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
-                </div>
-                <div class="wheel-fm__progress">
-                  <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
-                  <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
-                  <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0"
-                    disabled />
-                  <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
-                </div>
-                <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start
-                  broadcasting.</p>
-                <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
-              </section>
-            </div>
-          </div>
           <div class="advanced-options">
             <div class="advanced-options__header">
               <label class="advanced-options__toggle" for="advanced-options-toggle">
@@ -183,6 +124,77 @@
           </div>
           <div class="movie-list-wrapper">
             <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="spin-heading">
+      <div class="card-header">
+        <h2 id="spin-heading">3. Spin the wheel</h2>
+      </div>
+      <div class="card-body">
+        <div class="wheel-section">
+          <div class="wheel-wrapper">
+            <p class="result" id="result" aria-live="polite"></p>
+            <div class="wheel-layout">
+              <section class="knockout-remaining" id="knockout-remaining" aria-live="polite" hidden>
+                <div class="knockout-remaining__header">
+                  <p class="knockout-remaining__title">Final Contenders!</p>
+                </div>
+                <ol class="knockout-remaining__list" id="knockout-remaining-list"></ol>
+              </section>
+              <div class="wheel-stage">
+                <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
+                <div class="pointer" aria-hidden="true"></div>
+              </div>
+            </div>
+            <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
+            <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
+            <button type="button" class="btn" id="wheel-sound-toggle" aria-pressed="false"
+              aria-label="Toggle wheel sound effects">Mute wheel sounds</button>
+            <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
+              <div class="wheel-fm__heading">
+                <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
+                <p class="wheel-fm__tagline">Praise the Wheel!</p>
+              </div>
+              <div class="wheel-fm__player" aria-live="polite">
+                <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
+                  aria-label="Play previous track"></button>
+                <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
+                  aria-label="Play or pause Wheel.FM"></button>
+                <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
+                  aria-label="Skip to next track"></button>
+                <div class="wheel-fm__track">
+                  <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
+                  <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
+                </div>
+              </div>
+              <div class="wheel-fm__playlist">
+                <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
+                <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled
+                  aria-label="Pick a Wheel.FM track">
+                  <option>Loading…</option>
+                </select>
+                <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
+              </div>
+              <div class="wheel-fm__volume">
+                <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
+                <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1"
+                  value="80" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
+                <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
+              </div>
+              <div class="wheel-fm__progress">
+                <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
+                <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
+                <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0"
+                  disabled />
+                <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
+              </div>
+              <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start
+                broadcasting.</p>
+              <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
+            </section>
           </div>
         </div>
       </div>

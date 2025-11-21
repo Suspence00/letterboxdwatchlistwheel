@@ -47,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
         knockoutBox: document.getElementById('knockout-remaining'),
         knockoutList: document.getElementById('knockout-remaining-list'),
 
+        // Selection Section
+        selectionCard: document.getElementById('selection-card'),
+        selectionBody: document.getElementById('selection-body'),
+        selectionToggleBtn: document.getElementById('selection-toggle'),
+
         // Filters & Options
         searchInput: document.getElementById('movie-search'), // Check HTML
         advancedOptionsToggle: document.getElementById('advanced-options-toggle'),

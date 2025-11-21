@@ -36,7 +36,7 @@ export function setImportCardCollapsed(collapsed) {
     elements.importCard.classList.toggle('card--collapsed', collapsed);
     elements.importCardBody.hidden = collapsed;
     elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.importToggleBtn.textContent = collapsed ? 'Show steps' : 'Hide steps';
+    elements.importToggleBtn.textContent = collapsed ? 'Show Steps' : 'Hide Steps';
 }
 
 async function handleLetterboxdProxyImport(event) {
