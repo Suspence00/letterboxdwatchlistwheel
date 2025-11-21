@@ -1069,10 +1069,10 @@ body {
 
 .knockout-remaining {
   align-items: stretch;
-  background: linear-gradient(135deg, rgba(255, 93, 87, 0.2), rgba(255, 53, 38, 0.16));
-  border: 1px solid rgba(255, 93, 87, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  box-shadow: 0 16px 28px rgba(255, 93, 87, 0.22);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.28);
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -1090,7 +1090,7 @@ body {
 }
 
 .knockout-remaining__title {
-  color: #ffc3b8;
+  color: #ffddb9;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
   margin: 0;
@@ -1098,7 +1098,7 @@ body {
 }
 
 .knockout-remaining__hint {
-  color: rgba(255, 229, 224, 0.8);
+  color: rgba(255, 255, 255, 0.68);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -1113,7 +1113,7 @@ body {
 
 .knockout-remaining__item {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 93, 87, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
   display: flex;
   flex-direction: column;

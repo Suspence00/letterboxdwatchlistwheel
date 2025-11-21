@@ -849,7 +849,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
 
     elements.knockoutList.innerHTML = '';
 
-    if (!Array.isArray(remainingMovies) || !remainingMovies.length || remainingMovies.length > 5) {
+    if (!Array.isArray(remainingMovies) || !remainingMovies.length || remainingMovies.length > 10) {
         elements.knockoutBox.hidden = true;
         return;
     }
