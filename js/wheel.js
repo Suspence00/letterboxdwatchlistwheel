@@ -86,6 +86,7 @@ let ctx;
 let isSpinning = false;
 let isLastStandingInProgress = false;
 let rotationAngle = 0;
+let useInverseWeights = false;
 let animationFrameId = null;
 let spinStartTimestamp = null;
 let spinDuration = 0;
@@ -99,6 +100,7 @@ let ui = {
     triggerConfetti: () => { },
     updateSpinButtonLabel: () => { },
     updateVetoButtonState: () => { },
+    handleSliceClick: () => { },
     markMovieKnockedOut: () => { },
     markMovieChampion: () => { },
     updateKnockoutResultText: () => { },
@@ -110,6 +112,9 @@ export function initWheel(canvasElement, callbacks = {}) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
     ui = { ...ui, ...callbacks };
+    if (canvas) {
+        canvas.addEventListener('click', handleCanvasClick);
+    }
 }
 
 export function getIsSpinning() {
@@ -126,6 +131,10 @@ export function getWinnerId() {
 
 export function setWinnerId(id) {
     winnerId = id;
+}
+
+export function setWeightMode(mode) {
+    useInverseWeights = mode === 'inverse';
 }
 
 function getFilteredSelectedMovies() {
@@ -145,7 +154,11 @@ function getFilteredSelectedMovies() {
 }
 
 function getEffectiveWeight(movie) {
-    return movie.weight || 1;
+    const weight = Number.isFinite(movie.weight) && movie.weight > 0 ? movie.weight : 1;
+    if (isLastStandingInProgress || useInverseWeights) {
+        return 1 / weight;
+    }
+    return weight;
 }
 
 function getStoredColor(movie, fallback) {
@@ -390,6 +403,42 @@ function findSegmentIndexForAngle(segments, angle) {
 
 function easeOutCubic(x) {
     return 1 - Math.pow(1 - x, 3);
+}
+
+function handleCanvasClick(event) {
+    if (!canvas || isSpinning || isLastStandingInProgress) {
+        return;
+    }
+
+    const selectedMovies = getFilteredSelectedMovies();
+    const { segments } = computeWheelModel(selectedMovies);
+    if (!segments.length) {
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const offsetX = (event.clientX - rect.left) * scaleX - canvas.width / 2;
+    const offsetY = (event.clientY - rect.top) * scaleY - canvas.height / 2;
+    const radius = canvas.width / 2.1;
+    const distance = Math.hypot(offsetX, offsetY);
+    if (distance > radius) {
+        return;
+    }
+
+    const clickAngle = Math.atan2(offsetY, offsetX);
+    const normalized = ((clickAngle - rotationAngle) % TAU + TAU) % TAU;
+    const segmentIndex = findSegmentIndexForAngle(segments, normalized);
+    if (segmentIndex === -1) {
+        return;
+    }
+
+    const segment = segments[segmentIndex];
+    if (segment?.movie && typeof ui.handleSliceClick === 'function') {
+        ui.handleSliceClick(segment.movie);
+    }
 }
 
 function tick(segments) {

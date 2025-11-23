@@ -692,6 +692,133 @@ body {
   width: 100%;
 }
 
+.wheel-layout.is-centered {
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.wheel-aside.is-hidden {
+  display: none;
+}
+
+.slice-editor {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+  padding: 1rem 1.1rem;
+  width: 100%;
+}
+
+.slice-editor__body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.slice-editor__color {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  height: 38px;
+  padding: 0;
+  width: 100%;
+}
+
+.slice-editor__color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.slice-editor__color::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.slice-editor__color::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.slice-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.slice-editor__header {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.slice-editor__hint {
+  color: var(--muted);
+  margin: 0;
+}
+
+.slice-editor__label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.slice-editor__label-group {
+  align-items: baseline;
+  display: flex;
+  gap: 0.35rem;
+  justify-content: space-between;
+}
+
+.slice-editor__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.slice-editor__range {
+  accent-color: var(--accent);
+  width: 100%;
+}
+
+.slice-editor__row {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.slice-editor__swatch {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  height: 26px;
+  width: 42px;
+}
+
+.slice-editor__title {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.slice-editor__weight-value {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 .wheel-fm {
   background: linear-gradient(135deg, rgba(11, 18, 36, 0.88), rgba(18, 32, 56, 0.86));
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1164,11 +1291,15 @@ body {
     gap: 1.4rem;
   }
 
-  .knockout-remaining {
+  .wheel-aside {
     max-width: 360px;
     min-width: 300px;
     position: sticky;
     top: 1rem;
+  }
+
+  .wheel-layout.is-centered {
+    justify-content: center;
   }
 }
 
@@ -1489,6 +1620,200 @@ body {
   color: rgba(255, 255, 255, 0.6);
 }
 
+.win-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.win-modal__poster {
+  margin: 0;
+  align-self: center;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  width: min(240px, 65vw);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.win-modal__poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.win-modal__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.win-modal__runtime {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.win-modal__synopsis {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.win-modal__runtime.is-loading,
+.win-modal__synopsis.is-loading {
+  color: rgba(245, 247, 250, 0.7);
+  font-style: italic;
+}
+
+.win-modal__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.win-modal__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
+}
+
+.win-modal__action--letterboxd {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+}
+
+.win-modal__action--letterboxd:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.win-modal__action--trailer {
+  background: var(--accent);
+  color: #0b1622;
+}
+
+.win-modal__action--trailer:hover {
+  background: #ff9d33;
+  transform: translateY(-1px);
+}
+
+.win-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.win-modal__close:hover {
+  transform: scale(1.1);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 1.5rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .win-modal__body {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .win-modal__poster {
+    flex: 0 0 210px;
+  }
+
+  .win-modal__meta {
+    flex: 1 1 auto;
+  }
+
+  .win-modal__actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .win-modal__action {
+    min-width: 180px;
+  }
+}
+
+/* History Modal Styles */
+.history-modal__content {
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-list-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  margin: 1rem 0;
+  padding-right: 0.5rem;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.history-item__name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.history-item__date {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .history-item__actions {
   display: flex;
   gap: 0.5rem;
@@ -1511,4 +1836,19 @@ body {
 
 .history-list-wrapper::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.btn--small {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.btn--danger {
+  background: rgba(255, 93, 87, 0.16);
+  color: #ffb3ad;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: rgba(255, 93, 87, 0.28);
 }

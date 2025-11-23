@@ -2,7 +2,7 @@
  * UI management for the Letterboxd Watchlist Wheel
  */
 
-import { appState, saveState, debouncedSaveState, clearHistory, addToHistory } from './state.js';
+import { appState, saveState, debouncedSaveState, clearHistory, addToHistory, removeHistoryEntry } from './state.js';
 import {
     getDefaultColorForIndex,
     getStoredColor,
@@ -12,10 +12,21 @@ import {
     escapeSelector,
     getMovieOriginalIndex
 } from './utils.js';
-import { drawWheel, drawEmptyWheel, spinWheel, getIsSpinning, getIsLastStandingInProgress, getWinnerId, setWinnerId } from './wheel.js';
+import {
+    drawWheel,
+    drawEmptyWheel,
+    spinWheel,
+    getIsSpinning,
+    getIsLastStandingInProgress,
+    getWinnerId,
+    setWinnerId,
+    setWeightMode
+} from './wheel.js';
 
 // DOM Elements
 const elements = {};
+let activeSliceId = null;
+let updateWheelAsideLayout = () => { };
 
 export function initUI(domElements) {
     Object.assign(elements, domElements);
@@ -36,11 +47,17 @@ export function initUI(domElements) {
     }
 
     if (elements.spinButton) {
-        elements.spinButton.addEventListener('click', () => spinWheel(isOneSpinModeEnabled()));
+        elements.spinButton.addEventListener('click', () => {
+            handleSpinPrep();
+            spinWheel(isOneSpinModeEnabled());
+        });
     }
 
     if (elements.vetoButton) {
-        elements.vetoButton.addEventListener('click', handleVeto);
+        elements.vetoButton.addEventListener('click', () => {
+            handleSpinPrep();
+            handleVeto();
+        });
     }
 
     if (elements.winModalCloseBtn) {
@@ -112,7 +129,20 @@ export function initUI(domElements) {
         });
     }
 
+    if (elements.sliceColorInput) {
+        elements.sliceColorInput.addEventListener('input', handleSliceColorInput);
+    }
 
+    if (elements.sliceWeightInput) {
+        elements.sliceWeightInput.addEventListener('input', handleSliceWeightInput);
+    }
+
+    if (elements.sliceEditorClearBtn) {
+        elements.sliceEditorClearBtn.addEventListener('click', () => resetSliceEditor());
+    }
+
+    updateWheelAsideLayout = createWheelAsideUpdater(elements);
+    resetSliceEditor();
 }
 
 export function getFilteredMovies() {
@@ -164,6 +194,7 @@ export function updateMovieList() {
         closeWinnerPopup({ restoreFocus: false });
         updateVetoButtonState();
         updateSpinButtonLabel();
+        resetSliceEditor();
         return;
     }
 
@@ -188,6 +219,7 @@ export function updateMovieList() {
         if (elements.spinButton) elements.spinButton.disabled = true;
         drawEmptyWheel();
         updateVetoButtonState();
+        resetSliceEditor();
         return;
     }
 
@@ -328,8 +360,9 @@ export function updateMovieList() {
             weightSelect.addEventListener('change', (event) => {
                 const selectedValue = Number(event.target.value);
                 movie.weight = clampWeight(selectedValue);
-                const selectedMoviesSnapshot = getFilteredSelectedMovies();
-                drawWheel(selectedMoviesSnapshot);
+                event.target.value = String(movie.weight);
+                redrawWheelAndPersist();
+                syncSliceEditorWithSelection(getFilteredSelectedMovies());
             });
 
             weightWrapper.appendChild(weightLabel);
@@ -352,8 +385,9 @@ export function updateMovieList() {
             colorInput.addEventListener('input', (event) => {
                 const selectedColor = sanitizeColor(event.target.value, defaultColor);
                 movie.color = selectedColor;
-                const selectedMoviesSnapshot = getFilteredSelectedMovies();
-                drawWheel(selectedMoviesSnapshot);
+                event.target.value = selectedColor;
+                redrawWheelAndPersist();
+                syncSliceEditorWithSelection(getFilteredSelectedMovies());
             });
 
             colorWrapper.appendChild(colorLabel);
@@ -383,6 +417,9 @@ export function updateMovieList() {
     if (!selectedMovies.length) {
         closeWinnerPopup({ restoreFocus: false });
     }
+    const inverseMode = !isOneSpinModeEnabled();
+    setWeightMode(inverseMode ? 'inverse' : 'normal');
+    syncSliceEditorWithSelection(selectedMovies);
     drawWheel(selectedMovies);
     updateVetoButtonState();
     updateSpinButtonLabel();
@@ -391,6 +428,8 @@ export function updateMovieList() {
 
 export function updateSpinButtonLabel() {
     if (!elements.spinButton) return;
+    const inverseMode = !isOneSpinModeEnabled();
+    setWeightMode(inverseMode ? 'inverse' : 'normal');
     if (getIsLastStandingInProgress()) {
         elements.spinButton.textContent = 'Eliminating…';
         return;
@@ -431,6 +470,176 @@ export function setSelectionCardCollapsed(collapsed) {
     elements.selectionBody.hidden = collapsed;
     elements.selectionToggleBtn.setAttribute('aria-expanded', String(!collapsed));
     elements.selectionToggleBtn.textContent = collapsed ? 'Show Steps' : 'Hide Steps';
+}
+
+export function handleSliceSelection(movie) {
+    if (!movie || getIsSpinning() || getIsLastStandingInProgress()) {
+        return;
+    }
+    setActiveSlice(movie);
+}
+
+function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
+    if (!movie || !elements.sliceEditor) {
+        return;
+    }
+
+    const { color, fallback, weight } = getSliceDefaults(movie);
+    movie.color = color;
+    movie.weight = weight;
+    activeSliceId = movie.id;
+
+    elements.sliceEditor.hidden = false;
+    if (elements.sliceEditorBody) {
+        elements.sliceEditorBody.hidden = false;
+    }
+    if (elements.sliceEditorHint) {
+        elements.sliceEditorHint.textContent = 'Adjust slice color and weight.';
+    }
+    if (elements.sliceEditorName) {
+        elements.sliceEditorName.textContent = movie.name;
+    }
+    if (elements.sliceColorInput) {
+        elements.sliceColorInput.value = color;
+    }
+    if (elements.sliceColorSwatch) {
+        elements.sliceColorSwatch.style.backgroundColor = color;
+    }
+    updateSliceWeightDisplay(weight);
+    syncListControlsWithMovie(movie, color);
+    updateWheelAsideLayout();
+    if (!skipWheelUpdate) {
+        redrawWheelAndPersist();
+    }
+}
+
+function resetSliceEditor() {
+    activeSliceId = null;
+    if (elements.sliceEditor) {
+        elements.sliceEditor.hidden = true;
+    }
+    if (elements.sliceEditorBody) {
+        elements.sliceEditorBody.hidden = true;
+    }
+    if (elements.sliceEditorHint) {
+        elements.sliceEditorHint.textContent = 'Click a wheel slice to adjust its color and weight.';
+    }
+    if (elements.sliceEditorName) {
+        elements.sliceEditorName.textContent = '';
+    }
+    if (elements.sliceColorSwatch) {
+        elements.sliceColorSwatch.style.backgroundColor = 'transparent';
+    }
+    if (elements.sliceColorInput) {
+        elements.sliceColorInput.value = '#ff8600';
+    }
+    updateSliceWeightDisplay(1);
+    updateWheelAsideLayout();
+}
+
+function getSliceDefaults(movie) {
+    const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+    let paletteIndex = originalIndex;
+    if (!Number.isFinite(paletteIndex) || paletteIndex < 0) {
+        paletteIndex = appState.movies.indexOf(movie);
+    }
+    const fallback = getDefaultColorForIndex(paletteIndex);
+    const color = getStoredColor(movie, fallback);
+    const weight = getStoredWeight(movie);
+    return { color, fallback, weight };
+}
+
+function getActiveSliceMovie() {
+    if (!activeSliceId) {
+        return null;
+    }
+    return appState.movies.find((movie) => movie.id === activeSliceId) || null;
+}
+
+function updateSliceWeightDisplay(weight) {
+    if (elements.sliceWeightInput) {
+        elements.sliceWeightInput.value = String(weight);
+        elements.sliceWeightInput.setAttribute('aria-valuenow', String(weight));
+    }
+    if (elements.sliceWeightValue) {
+        elements.sliceWeightValue.textContent = `${weight}x`;
+    }
+}
+
+function handleSliceColorInput(event) {
+    const movie = getActiveSliceMovie();
+    if (!movie) {
+        return;
+    }
+    const { fallback } = getSliceDefaults(movie);
+    const sanitized = sanitizeColor(event.target.value, fallback);
+    movie.color = sanitized;
+    event.target.value = sanitized;
+    if (elements.sliceColorSwatch) {
+        elements.sliceColorSwatch.style.backgroundColor = sanitized;
+    }
+    syncListControlsWithMovie(movie, sanitized);
+    redrawWheelAndPersist();
+}
+
+function handleSliceWeightInput(event) {
+    const movie = getActiveSliceMovie();
+    if (!movie) {
+        return;
+    }
+    const numericValue = Number(event.target.value);
+    const clamped = clampWeight(numericValue);
+    movie.weight = clamped;
+    event.target.value = String(clamped);
+    updateSliceWeightDisplay(clamped);
+    syncListControlsWithMovie(movie);
+    redrawWheelAndPersist();
+}
+
+function syncListControlsWithMovie(movie, colorOverride = null) {
+    if (!elements.movieListEl) return;
+    const safeId = escapeSelector(movie.id);
+    const row = elements.movieListEl.querySelector(`li[data-id="${safeId}"]`);
+    if (!row) return;
+
+    const weightSelect = row.querySelector('.movie-weight__select');
+    if (weightSelect) {
+        weightSelect.value = String(getStoredWeight(movie));
+    }
+
+    const colorInput = row.querySelector('.movie-color__input');
+    if (colorInput) {
+        const resolvedColor = colorOverride || getSliceDefaults(movie).color;
+        colorInput.value = resolvedColor;
+    }
+}
+
+function redrawWheelAndPersist() {
+    const selectedMoviesSnapshot = getFilteredSelectedMovies();
+    drawWheel(selectedMoviesSnapshot);
+    debouncedSaveState();
+}
+
+function syncSliceEditorWithSelection(currentSelection = []) {
+    if (!elements.sliceEditor) {
+        return;
+    }
+    if (!activeSliceId) {
+        resetSliceEditor();
+        return;
+    }
+    const movie = appState.movies.find((item) => item.id === activeSliceId);
+    const stillVisible = movie && currentSelection.some((entry) => entry.id === activeSliceId);
+    if (!stillVisible) {
+        resetSliceEditor();
+        return;
+    }
+    setActiveSlice(movie, { skipWheelUpdate: true });
+    updateWheelAsideLayout();
+}
+
+function handleSpinPrep() {
+    resetSliceEditor();
 }
 
 function handleVeto() {
@@ -809,6 +1018,7 @@ export function triggerConfetti() {
 }
 
 // History
+// History
 export function renderHistory() {
     if (!elements.historyListEl) return;
     elements.historyListEl.innerHTML = '';
@@ -833,8 +1043,20 @@ export function renderHistory() {
       </div>
       <div class="history-item__actions">
         ${entry.uri ? `<a href="${entry.uri}" target="_blank" class="btn btn--small" rel="noopener noreferrer">View</a>` : ''}
+        <button type="button" class="btn btn--small btn--danger remove-history-btn" aria-label="Remove from history">×</button>
       </div>
     `;
+
+        const removeBtn = li.querySelector('.remove-history-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                if (confirm(`Remove “${entry.name}” from history?`)) {
+                    removeHistoryEntry(entry.id);
+                    renderHistory();
+                }
+            });
+        }
+
         elements.historyListEl.appendChild(li);
     });
 }
@@ -859,6 +1081,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
 
     if (!Array.isArray(remainingMovies) || !remainingMovies.length || remainingMovies.length > 10) {
         elements.knockoutBox.hidden = true;
+        updateWheelAsideLayout();
         return;
     }
 
@@ -908,6 +1131,8 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
 
         elements.knockoutList.appendChild(item);
     });
+
+    updateWheelAsideLayout();
 }
 
 export function highlightKnockoutCandidate(movieId) {
@@ -1034,4 +1259,16 @@ function reorderMovieListForKnockout() {
     sorted.forEach((item) => {
         elements.movieListEl.appendChild(item);
     });
+}
+
+function createWheelAsideUpdater(domElements) {
+    const { wheelAside, wheelLayout, knockoutBox, sliceEditor } = domElements;
+    return () => {
+        if (!wheelAside || !wheelLayout) {
+            return;
+        }
+        const asideVisible = (knockoutBox && !knockoutBox.hidden) || (sliceEditor && !sliceEditor.hidden);
+        wheelAside.classList.toggle('is-hidden', !asideVisible);
+        wheelLayout.classList.toggle('is-centered', !asideVisible);
+    };
 }

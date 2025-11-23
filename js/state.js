@@ -91,3 +91,12 @@ export function clearHistory() {
     appState.history = [];
     saveState();
 }
+
+/**
+ * Removes a single history entry by ID
+ * @param {string} id 
+ */
+export function removeHistoryEntry(id) {
+    appState.history = appState.history.filter(entry => entry.id !== id);
+    saveState();
+}

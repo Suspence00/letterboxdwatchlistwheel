@@ -18,7 +18,8 @@ import {
     updateKnockoutResultText,
     renderHistory,
     updateKnockoutRemainingBox,
-    highlightKnockoutCandidate
+    highlightKnockoutCandidate,
+    handleSliceSelection
 } from './ui.js';
 import { initImport } from './import.js';
 import { debounce } from './utils.js';
@@ -46,6 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
         confettiContainer: document.getElementById('confetti-container'),
         knockoutBox: document.getElementById('knockout-remaining'),
         knockoutList: document.getElementById('knockout-remaining-list'),
+        wheelAside: document.getElementById('wheel-aside'),
+        wheelLayout: document.getElementById('wheel-layout'),
+        sliceEditor: document.getElementById('slice-editor'),
+        sliceEditorBody: document.getElementById('slice-editor-body'),
+        sliceEditorHint: document.getElementById('slice-editor-hint'),
+        sliceEditorName: document.getElementById('slice-editor-name'),
+        sliceEditorClearBtn: document.getElementById('slice-editor-clear'),
+        sliceColorInput: document.getElementById('slice-color'),
+        sliceColorSwatch: document.getElementById('slice-color-swatch'),
+        sliceWeightInput: document.getElementById('slice-weight'),
+        sliceWeightValue: document.getElementById('slice-weight-value'),
 
         // Selection Section
         selectionCard: document.getElementById('selection-card'),
@@ -116,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
         markMovieChampion,
         updateKnockoutResultText,
         updateKnockoutRemainingBox,
-        highlightKnockoutCandidate
+        highlightKnockoutCandidate,
+        handleSliceClick: handleSliceSelection
     });
 
     // Initialize UI
@@ -175,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.oneSpinToggle) {
         elements.oneSpinToggle.addEventListener('change', () => {
             updateSpinButtonLabel();
+            updateMovieList();
         });
     }
 
