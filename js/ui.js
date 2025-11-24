@@ -48,6 +48,18 @@ export function initUI(domElements) {
         });
     }
 
+    if (elements.resetWeightsBtn) {
+        elements.resetWeightsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all weights to 1x?')) {
+                appState.movies.forEach((movie) => {
+                    movie.weight = 1;
+                });
+                updateMovieList();
+                resetSliceEditor();
+            }
+        });
+    }
+
     if (elements.spinButton) {
         elements.spinButton.addEventListener('click', () => {
             handleSpinPrep();
