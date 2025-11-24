@@ -33,7 +33,8 @@
         <div class="import-section import-section--primary">
           <h3>Import directly from Letterboxd</h3>
           <p class="helper-text">
-            Paste a Letterboxd list URL (like <code>https://letterboxd.com/suspence0/list/the-wheel/</code>) and
+            Paste a Letterboxd list URL (like <code id="example-url" class="clickable-example"
+              title="Click to use this URL">https://letterboxd.com/suspence0/list/the-wheel/</code>) and
             we'll pull the entries right into the wheel.
           </p>
           <form id="letterboxd-proxy-form" class="letterboxd-proxy-form">
@@ -134,17 +135,17 @@
         <h2 id="spin-heading">3. Spin the wheel</h2>
         <div class="card-header__section">
           <button type="button" class="btn" id="history-btn">History</button>
-        <button type="button" class="btn sound-toggle" id="wheel-sound-toggle" aria-pressed="false"
-          aria-label="Toggle wheel sound effects">
-          <span class="sound-toggle__icon" aria-hidden="true">
-            <svg class="sound-toggle__svg" viewBox="0 0 32 32" role="presentation" focusable="false">
-              <path class="sound-toggle__speaker" d="M6 12h6l8-6v20l-8-6H6z" />
-              <path class="sound-toggle__waves" d="M21 11c2.2 2.2 2.2 7.8 0 10m4-13c3.2 3.6 3.2 12.4 0 16" />
-              <path class="sound-toggle__slash" d="M7 7l18 18" />
-            </svg>
-          </span>
-          <span class="sound-toggle__text">Mute wheel sounds</span>
-        </button>
+          <button type="button" class="btn sound-toggle" id="wheel-sound-toggle" aria-pressed="false"
+            aria-label="Toggle wheel sound effects">
+            <span class="sound-toggle__icon" aria-hidden="true">
+              <svg class="sound-toggle__svg" viewBox="0 0 32 32" role="presentation" focusable="false">
+                <path class="sound-toggle__speaker" d="M6 12h6l8-6v20l-8-6H6z" />
+                <path class="sound-toggle__waves" d="M21 11c2.2 2.2 2.2 7.8 0 10m4-13c3.2 3.6 3.2 12.4 0 16" />
+                <path class="sound-toggle__slash" d="M7 7l18 18" />
+              </svg>
+            </span>
+            <span class="sound-toggle__text">Mute wheel sounds</span>
+          </button>
         </div>
       </div>
       <div class="card-body">
@@ -181,7 +182,8 @@
                         <div class="slice-editor__label-stack">
                           <span class="slice-editor__label" id="slice-weight-label">Slice weight</span>
                           <span class="weight-help" id="slice-weight-help" role="img"
-                            aria-label="Adjust how often this slice appears." title="Adjust how often this slice appears.">?</span>
+                            aria-label="Adjust how often this slice appears."
+                            title="Adjust how often this slice appears.">?</span>
                         </div>
                         <span class="slice-editor__weight-value" id="slice-weight-value">1x</span>
                       </div>

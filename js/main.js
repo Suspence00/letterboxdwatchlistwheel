@@ -198,6 +198,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Example URL Click Handler
+    const exampleUrlEl = document.getElementById('example-url');
+    if (exampleUrlEl) {
+        exampleUrlEl.addEventListener('click', () => {
+            if (elements.letterboxdProxyInput) {
+                elements.letterboxdProxyInput.value = exampleUrlEl.textContent;
+                elements.letterboxdProxyInput.focus();
+                // Optional: trigger input event if there's validation attached to it
+                elements.letterboxdProxyInput.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+
     // Initial Render
     updateMovieList();
     renderHistory();
