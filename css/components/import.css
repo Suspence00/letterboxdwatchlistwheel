@@ -1,0 +1,36 @@
+.import-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.import-guide {
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.import-guide p {
+    margin: 0;
+}
+
+.import-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.import-section--primary {
+    gap: 1.1rem;
+}
+
+.import-secondary-actions {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}

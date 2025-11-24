@@ -1,0 +1,39 @@
+.btn {
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #1b0a00;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+}
+
+.btn.danger {
+    background: rgba(255, 93, 87, 0.16);
+    color: #ffb3ad;
+}
+
+.btn.danger:hover:not(:disabled) {
+    background: rgba(255, 93, 87, 0.28);
+}

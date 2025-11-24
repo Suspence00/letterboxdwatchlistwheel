@@ -1,0 +1,219 @@
+.selection-search {
+    flex: 1 1 240px;
+    min-width: 200px;
+}
+
+.selection-search .text-input {
+    width: 100%;
+}
+
+.filter-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+}
+
+.filter-toggle {
+    display: inline-flex;
+    gap: 0.45rem;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-toggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+}
+
+.spin-modes {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.spin-mode-toggle {
+    align-self: flex-start;
+}
+
+.spin-mode-hint {
+    margin: 0;
+    color: var(--muted);
+}
+
+@media (min-width: 720px) {
+    .selection-search {
+        max-width: 360px;
+    }
+}
+
+.file-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.file-input:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+.file-input input {
+    display: none;
+}
+
+.file-label {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.advanced-options {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+    width: min(720px, 95vw);
+}
+
+.advanced-options__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    width: 100%;
+}
+
+.advanced-options__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.advanced-options__toggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+}
+
+.advanced-options__panel {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+@media (min-width: 720px) {
+    .advanced-options__panel {
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .advanced-options__panel .filter-toggles {
+        justify-content: flex-end;
+    }
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.custom-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.custom-entry__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.custom-entry__form label {
+    font-weight: 600;
+    display: block;
+}
+
+.custom-entry__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.text-input {
+    flex: 1 1 220px;
+    min-width: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    font: inherit;
+}
+
+.text-input::placeholder {
+    color: var(--muted);
+}
+
+.text-input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.text-input--slim {
+    width: min(100%, 320px);
+    max-width: 100%;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.95rem;
+    line-height: 1.25;
+    min-height: 2.5rem;
+    height: 2.5rem;
+    max-height: 2.5rem;
+    border-radius: 6px;
+}
+
+.text-input--select {
+    width: min(100%, 220px);
+    padding: 0 1.85rem 0 0.75rem;
+    min-height: 2.3rem;
+    height: 2.3rem;
+    line-height: 1.15;
+    font-size: 0.95rem;
+    appearance: none;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(7, 16, 27, 0.9);
+    background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.7) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.7) 50%, transparent 50%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18));
+    background-position: calc(100% - 1.2rem) 50%, calc(100% - 0.85rem) 50%, calc(100% - 1.85rem) 50%;
+    background-size: 0.35rem 0.35rem, 0.35rem 0.35rem, 1px calc(100% - 0.9rem);
+    background-repeat: no-repeat;
+}
+
+.text-input--select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.text-input--select option {
+    color: var(--text);
+    background: #101d2c;
+}

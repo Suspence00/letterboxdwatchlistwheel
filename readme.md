@@ -9,10 +9,11 @@ Give your Letterboxd watchlist a dramatic spin to decide what to watch next. The
 - **Download helper shortcut** – Launch the community “lizard” CSV generator in a new tab whenever you need a fresh export.
 - **Curate your picks** – Toggle individual films on or off before each spin, or select/clear the whole list in one click.
 - **Dynamic wheel** – A colorful wheel updates in real time as you adjust your selection.
-- **Movie Knockout mode** – Enable knockout spins to automatically eliminate picks until a single winner remains, tuned for a brisk cadence by default.
-- **Sound and animation** – Arcade-style ticking while the wheel spins, followed by a celebratory chime when a movie is chosen.
-- **Wheel.FM radio** – Drop MP3 files into `wheel-fm/`, list them in `playlist.json`, and let the built-in mini player set the vibes while you spin.
-- **No build step** – Pure HTML, CSS, and vanilla JavaScript that you can drop onto GitHub Pages or any static host.
+- **Movie Knockout mode** - Enable knockout spins to automatically eliminate picks until a single winner remains, tuned for a brisk cadence by default.
+- **Sound and animation** - Arcade-style ticking while the wheel spins, followed by a celebratory chime when a movie is chosen.
+- **Wheel.FM radio** - Drop MP3 files into `wheel-fm/`, list them in `playlist.json`, and let the built-in mini player set the vibes while you spin.
+- **No build step** - Pure HTML, CSS, and vanilla JavaScript that you can drop onto GitHub Pages or any static host.
+- **Local-first UI** - State, selections, and history are stored in the browser only; nothing is uploaded beyond the fetch you initiate for imports.
 
 ## Getting started
 
@@ -23,6 +24,21 @@ Give your Letterboxd watchlist a dramatic spin to decide what to watch next. The
 3. Tweak the selection if needed, then press **Spin the wheel**. Open the advanced options to enable **Last movie standing** for an automatic knockout showdown.
 
 A small sample file (`sample-watchlist.csv`) is included for quick testing.
+
+## Advanced controls worth using
+
+- Switch **Advanced options** on to reveal weights and colors. Weighting is inverse in Knockout mode (higher weight survives longer) and direct in One Spin mode (higher weight is more likely to be picked).
+- Toggle **One Spin to Rule them all** when you want a single dramatic spin; leave it off for the elimination bracket.
+- Click any slice on the wheel to open the slice editor, where you can fine-tune color, weight, and view odds for that selection.
+- Use **Select all / Clear all / Reset all weights** to quickly set up a new round without re-importing.
+- Open **History** to revisit winners; entries are stored locally and can be cleared from the modal.
+
+## Testing and troubleshooting
+
+- Load `sample-watchlist.csv` and confirm titles, odds, and wheel slices render without HTML artifacts.
+- Try both spin modes with at least a handful of titles to confirm weight adjustments behave as expected in Knockout and One Spin modes.
+- If the wheel sounds or Wheel.FM audio refuse to start, ensure you've interacted with the page first; browsers block autoplay until a user gesture.
+- Clear history or local storage if you need to reset the app state between tests.
 
 ## Wheel.FM playlist
 

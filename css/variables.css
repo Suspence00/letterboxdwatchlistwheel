@@ -1,0 +1,11 @@
+:root {
+    color-scheme: light dark;
+    --background: #0b1622;
+    --card-bg: rgba(15, 26, 39, 0.9);
+    --text: #f5f7fa;
+    --muted: #b5c2d1;
+    --accent: #ff8600;
+    --accent-strong: #ff5d57;
+    --shadow: rgba(0, 0, 0, 0.25);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}

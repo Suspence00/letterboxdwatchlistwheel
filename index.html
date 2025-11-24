@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Letterboxd Watchlist Wheel</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/main.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@
           <div class="controls">
             <button type="button" class="btn" id="select-all">Select all</button>
             <button type="button" class="btn" id="clear-selection">Clear all</button>
-            <button type="button" class="btn" id="history-btn">History</button>
+            <button type="button" class="btn" id="reset-weights">Reset all weights</button>
           </div>
           <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
             aria-controls="selection-body">Hide Steps</button>
@@ -130,8 +130,22 @@
     </section>
 
     <section class="card" aria-labelledby="spin-heading">
-      <div class="card-header">
+      <div class="card-header card-header--spin">
         <h2 id="spin-heading">3. Spin the wheel</h2>
+        <div class="card-header__section">
+          <button type="button" class="btn" id="history-btn">History</button>
+        <button type="button" class="btn sound-toggle" id="wheel-sound-toggle" aria-pressed="false"
+          aria-label="Toggle wheel sound effects">
+          <span class="sound-toggle__icon" aria-hidden="true">
+            <svg class="sound-toggle__svg" viewBox="0 0 32 32" role="presentation" focusable="false">
+              <path class="sound-toggle__speaker" d="M6 12h6l8-6v20l-8-6H6z" />
+              <path class="sound-toggle__waves" d="M21 11c2.2 2.2 2.2 7.8 0 10m4-13c3.2 3.6 3.2 12.4 0 16" />
+              <path class="sound-toggle__slash" d="M7 7l18 18" />
+            </svg>
+          </span>
+          <span class="sound-toggle__text">Mute wheel sounds</span>
+        </button>
+        </div>
       </div>
       <div class="card-body">
         <div class="wheel-section">
@@ -150,7 +164,8 @@
                     <h3 class="slice-editor__title">Slice editor</h3>
                     <button type="button" class="btn" id="slice-editor-clear">Close</button>
                   </div>
-                  <p class="slice-editor__hint" id="slice-editor-hint">Click a wheel slice to adjust its color and weight.</p>
+                  <p class="slice-editor__hint" id="slice-editor-hint">Click a wheel slice to adjust its color and
+                    weight.</p>
                   <div class="slice-editor__body" id="slice-editor-body" hidden>
                     <div class="slice-editor__row">
                       <p class="slice-editor__name" id="slice-editor-name"></p>
@@ -158,15 +173,32 @@
                     </div>
                     <label class="slice-editor__field" for="slice-color">
                       <span class="slice-editor__label">Slice color</span>
-                      <input type="color" id="slice-color" class="slice-editor__color" name="slice-color" value="#ff8600" />
+                      <input type="color" id="slice-color" class="slice-editor__color" name="slice-color"
+                        value="#ff8600" />
                     </label>
                     <label class="slice-editor__field" for="slice-weight">
                       <div class="slice-editor__label-group">
-                        <span class="slice-editor__label">Slice weight</span>
+                        <div class="slice-editor__label-stack">
+                          <span class="slice-editor__label" id="slice-weight-label">Slice weight</span>
+                          <span class="weight-help" id="slice-weight-help" role="img"
+                            aria-label="Adjust how often this slice appears." title="Adjust how often this slice appears.">?</span>
+                        </div>
                         <span class="slice-editor__weight-value" id="slice-weight-value">1x</span>
                       </div>
-                      <input type="range" id="slice-weight" class="slice-editor__range" name="slice-weight" min="1" max="10" step="1" value="1" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" />
+                      <input type="range" id="slice-weight" class="slice-editor__range" name="slice-weight" min="1"
+                        max="10" step="1" value="1" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" />
                     </label>
+                    <div class="slice-editor__odds">
+                      <div class="slice-editor__odds-row">
+                        <span class="slice-editor__label" id="slice-odds-label-risk">Pick risk this spin</span>
+                        <span class="slice-editor__odds-value" id="slice-odds-value-risk">0%</span>
+                      </div>
+                      <div class="slice-editor__odds-row">
+                        <span class="slice-editor__label" id="slice-odds-label-win">Odds to be final winner</span>
+                        <span class="slice-editor__odds-value slice-editor__odds-value--secondary"
+                          id="slice-odds-value-win">0%</span>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -176,51 +208,6 @@
               </div>
             </div>
             <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>
-            <button type="button" class="btn danger" id="veto-button" disabled>Veto &amp; spin again</button>
-            <button type="button" class="btn" id="wheel-sound-toggle" aria-pressed="false"
-              aria-label="Toggle wheel sound effects">Mute wheel sounds</button>
-            <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
-              <div class="wheel-fm__heading">
-                <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
-                <p class="wheel-fm__tagline">Praise the Wheel!</p>
-              </div>
-              <div class="wheel-fm__player" aria-live="polite">
-                <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
-                  aria-label="Play previous track"></button>
-                <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
-                  aria-label="Play or pause Wheel.FM"></button>
-                <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
-                  aria-label="Skip to next track"></button>
-                <div class="wheel-fm__track">
-                  <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
-                  <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
-                </div>
-              </div>
-              <div class="wheel-fm__playlist">
-                <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
-                <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled
-                  aria-label="Pick a Wheel.FM track">
-                  <option>Loading…</option>
-                </select>
-                <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
-              </div>
-              <div class="wheel-fm__volume">
-                <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
-                <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1"
-                  value="80" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
-                <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
-              </div>
-              <div class="wheel-fm__progress">
-                <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
-                <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
-                <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0"
-                  disabled />
-                <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
-              </div>
-              <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start
-                broadcasting.</p>
-              <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
-            </section>
           </div>
         </div>
       </div>
@@ -272,6 +259,52 @@
       </div>
     </div>
   </div>
+
+  <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
+    <div class="wheel-fm__heading">
+      <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
+      <div class="wheel-fm__header-controls">
+        <button type="button" class="wheel-fm__minimize" id="wheel-fm-minimize" aria-label="Minimize Wheel.FM"
+          aria-expanded="true">_</button>
+      </div>
+    </div>
+    <div class="wheel-fm__content" id="wheel-fm-content">
+      <p class="wheel-fm__tagline">Praise the Wheel!</p>
+      <div class="wheel-fm__player" aria-live="polite">
+        <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
+          aria-label="Play previous track"></button>
+        <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
+          aria-label="Play or pause Wheel.FM"></button>
+        <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
+          aria-label="Skip to next track"></button>
+        <div class="wheel-fm__track">
+          <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
+          <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
+        </div>
+      </div>
+      <div class="wheel-fm__playlist">
+        <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
+        <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled aria-label="Pick a Wheel.FM track">
+          <option>Loading…</option>
+        </select>
+        <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
+      </div>
+      <div class="wheel-fm__volume">
+        <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
+        <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1" value="80"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
+        <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
+      </div>
+      <div class="wheel-fm__progress">
+        <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
+        <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
+        <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0" disabled />
+        <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
+      </div>
+      <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start broadcasting.</p>
+      <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
+    </div>
+  </section>
 
   <script>console.log('Inline script executed');</script>
   <script type="module" src="js/main.js"></script>

@@ -99,13 +99,13 @@ let ui = {
     showWinnerPopup: () => { },
     triggerConfetti: () => { },
     updateSpinButtonLabel: () => { },
-    updateVetoButtonState: () => { },
     handleSliceClick: () => { },
     markMovieKnockedOut: () => { },
     markMovieChampion: () => { },
     updateKnockoutResultText: () => { },
     updateKnockoutRemainingBox: () => { },
-    highlightKnockoutCandidate: () => { }
+    highlightKnockoutCandidate: () => { },
+    updateOdds: () => { }
 };
 
 export function initWheel(canvasElement, callbacks = {}) {
@@ -153,9 +153,12 @@ function getFilteredSelectedMovies() {
     });
 }
 
-function getEffectiveWeight(movie) {
+function getEffectiveWeight(movie, inverseOverride = null) {
     const weight = Number.isFinite(movie.weight) && movie.weight > 0 ? movie.weight : 1;
-    if (isLastStandingInProgress || useInverseWeights) {
+    const useInverse = typeof inverseOverride === 'boolean'
+        ? inverseOverride
+        : isLastStandingInProgress || useInverseWeights;
+    if (useInverse) {
         return 1 / weight;
     }
     return weight;
@@ -165,12 +168,13 @@ function getStoredColor(movie, fallback) {
     return movie.color || fallback;
 }
 
-function computeWheelModel(selectedMovies) {
+function computeWheelModel(selectedMovies, options = {}) {
+    const { inverseModeOverride = null } = options;
     if (!selectedMovies.length) {
         return { segments: [], totalWeight: 0 };
     }
 
-    const weights = selectedMovies.map((movie) => getEffectiveWeight(movie));
+    const weights = selectedMovies.map((movie) => getEffectiveWeight(movie, inverseModeOverride));
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     if (!totalWeight) {
         return { segments: [], totalWeight: 0 };
@@ -190,6 +194,15 @@ function computeWheelModel(selectedMovies) {
     });
 
     return { segments, totalWeight };
+}
+
+export function getSelectionOdds(selectedMovies = getFilteredSelectedMovies(), options = {}) {
+    const { inverseModeOverride = null } = options;
+    const { segments, totalWeight } = computeWheelModel(selectedMovies, { inverseModeOverride });
+    if (!segments.length || totalWeight <= 0) {
+        return new Map();
+    }
+    return new Map(segments.map((segment) => [segment.movie.id, segment.weight / totalWeight]));
 }
 
 export function drawWheel(selectedMovies = getFilteredSelectedMovies()) {
@@ -491,6 +504,9 @@ function performSpin(selectedMovies, options = {}) {
 
         isSpinning = true;
         lastTickIndex = null;
+        if (typeof ui.updateOdds === 'function') {
+            ui.updateOdds();
+        }
 
         const targetWeight = Math.random() * totalWeight;
         let chosenSegment = segments[segments.length - 1];
@@ -562,7 +578,6 @@ export async function spinWheel(isOneSpinMode = false) {
     if (typeof ui.updateKnockoutRemainingBox === 'function') {
         ui.updateKnockoutRemainingBox([]);
     }
-    ui.updateVetoButtonState();
     ui.updateSpinButtonLabel();
 
     if (!isOneSpinMode && selectedMovies.length > 1) {
@@ -575,7 +590,6 @@ export async function spinWheel(isOneSpinMode = false) {
     const { winningMovie } = await performSpin(selectedMovies, spinSettings);
 
     if (!winningMovie) {
-        ui.updateVetoButtonState();
         ui.updateSpinButtonLabel();
         return;
     }
@@ -586,7 +600,6 @@ export async function spinWheel(isOneSpinMode = false) {
     ui.triggerConfetti();
     ui.showWinnerPopup(winningMovie);
     addToHistory(winningMovie);
-    ui.updateVetoButtonState();
     ui.updateSpinButtonLabel();
 }
 
@@ -610,7 +623,7 @@ async function runLastStandingMode(selectedMovies) {
     let eliminationOrder = 1;
     isLastStandingInProgress = true;
     ui.updateSpinButtonLabel();
-    ui.updateVetoButtonState();
+    ui.updateOdds?.(eliminationPool);
 
     ui.updateKnockoutRemainingBox(eliminationPool);
     ui.updateKnockoutResultText('start', eliminationPool.length);
@@ -643,6 +656,7 @@ async function runLastStandingMode(selectedMovies) {
 
         ui.updateKnockoutRemainingBox(eliminationPool);
         ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
+        ui.updateOdds?.(eliminationPool);
 
         drawWheel(eliminationPool);
 
@@ -675,6 +689,6 @@ async function runLastStandingMode(selectedMovies) {
     ui.highlightKnockoutCandidate(null);
     ui.updateKnockoutRemainingBox([]);
     isLastStandingInProgress = false;
-    ui.updateVetoButtonState();
+    ui.updateOdds?.();
     ui.updateSpinButtonLabel();
 }

@@ -12,14 +12,14 @@ import {
     showWinnerPopup,
     triggerConfetti,
     updateSpinButtonLabel,
-    updateVetoButtonState,
     markMovieKnockedOut,
     markMovieChampion,
     updateKnockoutResultText,
     renderHistory,
     updateKnockoutRemainingBox,
     highlightKnockoutCandidate,
-    handleSliceSelection
+    handleSliceSelection,
+    updateDisplayedOdds
 } from './ui.js';
 import { initImport } from './import.js';
 import { debounce } from './utils.js';
@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Main UI
         movieListEl: document.getElementById('movie-list'),
         spinButton: document.getElementById('spin-button'),
-        vetoButton: document.getElementById('veto-button'),
         selectAllBtn: document.getElementById('select-all'),
         clearSelectionBtn: document.getElementById('clear-selection'),
+        resetWeightsBtn: document.getElementById('reset-weights'),
         statusMessage: document.getElementById('status-message'),
         resultEl: document.getElementById('result'),
         confettiContainer: document.getElementById('confetti-container'),
@@ -54,10 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
         sliceEditorHint: document.getElementById('slice-editor-hint'),
         sliceEditorName: document.getElementById('slice-editor-name'),
         sliceEditorClearBtn: document.getElementById('slice-editor-clear'),
+        sliceWeightLabel: document.getElementById('slice-weight-label'),
+        sliceWeightHelp: document.getElementById('slice-weight-help'),
         sliceColorInput: document.getElementById('slice-color'),
         sliceColorSwatch: document.getElementById('slice-color-swatch'),
         sliceWeightInput: document.getElementById('slice-weight'),
         sliceWeightValue: document.getElementById('slice-weight-value'),
+        sliceOddsLabelRisk: document.getElementById('slice-odds-label-risk'),
+        sliceOddsValueRisk: document.getElementById('slice-odds-value-risk'),
+        sliceOddsLabelWin: document.getElementById('slice-odds-label-win'),
+        sliceOddsValueWin: document.getElementById('slice-odds-value-win'),
 
         // Selection Section
         selectionCard: document.getElementById('selection-card'),
@@ -123,13 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showWinnerPopup,
         triggerConfetti,
         updateSpinButtonLabel,
-        updateVetoButtonState,
         markMovieKnockedOut,
         markMovieChampion,
         updateKnockoutResultText,
         updateKnockoutRemainingBox,
         highlightKnockoutCandidate,
-        handleSliceClick: handleSliceSelection
+        handleSliceClick: handleSliceSelection,
+        updateOdds: updateDisplayedOdds
     });
 
     // Initialize UI

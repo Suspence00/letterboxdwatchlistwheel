@@ -4,7 +4,7 @@
 
 import { appState, saveState } from './state.js';
 import { getDefaultColorForIndex, decodeHtmlEntities } from './utils.js';
-import { updateMovieList, updateVetoButtonState, closeWinnerPopup } from './ui.js';
+import { updateMovieList, closeWinnerPopup } from './ui.js';
 
 let elements = {};
 
@@ -120,7 +120,6 @@ async function handleLetterboxdProxyImport(event) {
 
         appState.selectedIds = new Set(appState.movies.map((m) => m.id));
         updateMovieList();
-        updateVetoButtonState();
         setImportCardCollapsed(true);
         saveState();
 
@@ -219,7 +218,6 @@ function handleFileUpload(event) {
             if (elements.resultEl) elements.resultEl.textContent = '';
             if (elements.statusMessage) elements.statusMessage.textContent = `${appState.movies.length} movies imported. Ready to spin!`;
             updateMovieList();
-            updateVetoButtonState();
             setImportCardCollapsed(true);
             saveState();
         } catch (error) {

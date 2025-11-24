@@ -2,7 +2,7 @@
  * UI management for the Letterboxd Watchlist Wheel
  */
 
-import { appState, saveState, debouncedSaveState, clearHistory, addToHistory, removeHistoryEntry } from './state.js';
+import { appState, debouncedSaveState, clearHistory, removeHistoryEntry } from './state.js';
 import {
     getDefaultColorForIndex,
     getStoredColor,
@@ -20,13 +20,15 @@ import {
     getIsLastStandingInProgress,
     getWinnerId,
     setWinnerId,
-    setWeightMode
+    setWeightMode,
+    getSelectionOdds
 } from './wheel.js';
 
 // DOM Elements
 const elements = {};
 let activeSliceId = null;
 let updateWheelAsideLayout = () => { };
+let currentWeightCopy = getModeCopy(true);
 
 export function initUI(domElements) {
     Object.assign(elements, domElements);
@@ -50,13 +52,6 @@ export function initUI(domElements) {
         elements.spinButton.addEventListener('click', () => {
             handleSpinPrep();
             spinWheel(isOneSpinModeEnabled());
-        });
-    }
-
-    if (elements.vetoButton) {
-        elements.vetoButton.addEventListener('click', () => {
-            handleSpinPrep();
-            handleVeto();
         });
     }
 
@@ -171,7 +166,7 @@ export function getFilteredSelectedMovies() {
 function getActiveFilterDescriptions() {
     const descriptions = [];
     if (appState.filter.query) {
-        descriptions.push(`search “${appState.filter.query}”`);
+        descriptions.push(`search "${appState.filter.query}"`);
     }
     if (!appState.filter.showCustoms) {
         descriptions.push('Custom entries hidden');
@@ -179,10 +174,65 @@ function getActiveFilterDescriptions() {
     return descriptions;
 }
 
+function formatOddsPercent(value = 0) {
+    const numeric = Number(value) * 100;
+    const safePercent = Number.isFinite(numeric) ? Math.min(100, Math.max(0, numeric)) : 0;
+    if (safePercent === 0 || safePercent === 100 || safePercent >= 10) {
+        return `${Math.round(safePercent)}%`;
+    }
+    return `${safePercent.toFixed(1)}%`;
+}
+
+function getModeCopy(isInverseMode) {
+    if (isInverseMode) {
+        return {
+            riskLabel: 'Pick risk this spin',
+            winLabel: 'Odds to be final winner',
+            weightHelp: 'Knockout mode: higher weight makes a movie harder to be picked in elimination spins (better odds to reach the end).',
+            weightLabel: 'Knockout weight (safer)'
+        };
+    }
+    return {
+        riskLabel: 'Odds to win',
+        winLabel: 'Final winner odds',
+        weightHelp: 'One Spin mode: higher weight increases the chance this movie is picked on the single spin.',
+        weightLabel: 'Spin weight (more likely)'
+    };
+}
+
+function applyWeightCopy(copy) {
+    if (elements.sliceWeightLabel) {
+        elements.sliceWeightLabel.textContent = copy.weightLabel;
+    }
+    if (elements.sliceWeightHelp) {
+        elements.sliceWeightHelp.title = copy.weightHelp;
+        elements.sliceWeightHelp.setAttribute('aria-label', copy.weightHelp);
+    }
+    if (elements.sliceOddsLabelRisk) {
+        elements.sliceOddsLabelRisk.textContent = copy.riskLabel;
+    }
+    if (elements.sliceOddsLabelWin) {
+        elements.sliceOddsLabelWin.textContent = copy.winLabel;
+    }
+}
+
+function buildMovieOddsLabel(oddsValue = 0, isSelected = false, label = '') {
+    if (!isSelected) {
+        return `${label}: 0% (not selected)`;
+    }
+    return `${label}: ${formatOddsPercent(oddsValue)}`;
+}
+
 export function updateMovieList() {
     if (!elements.movieListEl) return;
 
     elements.movieListEl.innerHTML = '';
+
+    const inverseMode = !isOneSpinModeEnabled();
+    setWeightMode(inverseMode ? 'inverse' : 'normal');
+    currentWeightCopy = getModeCopy(inverseMode);
+    applyWeightCopy(currentWeightCopy);
+    const weightsEnabled = isAdvancedOptionsEnabled();
 
     if (!appState.movies.length) {
         const emptyItem = document.createElement('li');
@@ -192,9 +242,9 @@ export function updateMovieList() {
         if (elements.spinButton) elements.spinButton.disabled = true;
         drawEmptyWheel();
         closeWinnerPopup({ restoreFocus: false });
-        updateVetoButtonState();
         updateSpinButtonLabel();
         resetSliceEditor();
+        updateDisplayedOdds();
         return;
     }
 
@@ -218,12 +268,14 @@ export function updateMovieList() {
         elements.movieListEl.appendChild(emptyItem);
         if (elements.spinButton) elements.spinButton.disabled = true;
         drawEmptyWheel();
-        updateVetoButtonState();
         resetSliceEditor();
+        updateDisplayedOdds();
         return;
     }
 
-    const weightsEnabled = isAdvancedOptionsEnabled();
+    const selectedMovies = filteredMovies.filter((movie) => appState.selectedIds.has(movie.id));
+    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: inverseMode });
+    const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
 
     const displayMovies = [...filteredMovies];
     if (appState.knockoutResults.size) {
@@ -294,7 +346,8 @@ export function updateMovieList() {
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = appState.selectedIds.has(movie.id);
+        const isSelected = appState.selectedIds.has(movie.id);
+        checkbox.checked = isSelected;
         checkbox.id = `movie-${movie.id}`;
         checkbox.addEventListener('change', (event) => {
             if (event.target.checked) {
@@ -325,6 +378,29 @@ export function updateMovieList() {
             label.appendChild(metaEl);
         }
 
+        const hasRiskOdds = oddsMap.has(movie.id);
+        const hasWinOdds = winOddsMap.has(movie.id);
+        const oddsValue = hasRiskOdds ? oddsMap.get(movie.id) || 0 : 0;
+        const winOddsValue = hasWinOdds ? winOddsMap.get(movie.id) || 0 : 0;
+        const isActive = isSelected && hasRiskOdds;
+        const isWinActive = isSelected && hasWinOdds;
+        const oddsGroup = document.createElement('div');
+        oddsGroup.className = 'movie-odds-group';
+
+        const oddsEl = document.createElement('span');
+        oddsEl.className = 'movie-odds movie-odds--risk';
+        oddsEl.classList.toggle('movie-odds--inactive', !isActive);
+        oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
+
+        const winOddsEl = document.createElement('span');
+        winOddsEl.className = 'movie-odds movie-odds--secondary movie-odds--win';
+        winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
+        winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
+
+        oddsGroup.appendChild(oddsEl);
+        oddsGroup.appendChild(winOddsEl);
+        label.appendChild(oddsGroup);
+
         if (movie.uri) {
             const link = document.createElement('a');
             link.href = movie.uri;
@@ -345,7 +421,15 @@ export function updateMovieList() {
             const weightSelectId = `weight-${index}`;
             const weightLabel = document.createElement('label');
             weightLabel.setAttribute('for', weightSelectId);
-            weightLabel.textContent = 'Slice weight';
+            weightLabel.textContent = currentWeightCopy.weightLabel;
+
+            const weightHelp = document.createElement('span');
+            weightHelp.className = 'weight-help';
+            weightHelp.setAttribute('role', 'img');
+            weightHelp.setAttribute('aria-label', currentWeightCopy.weightHelp);
+            weightHelp.title = currentWeightCopy.weightHelp;
+            weightHelp.textContent = '?';
+            weightLabel.appendChild(weightHelp);
 
             const weightSelect = document.createElement('select');
             weightSelect.id = weightSelectId;
@@ -410,20 +494,77 @@ export function updateMovieList() {
         elements.movieListEl.appendChild(li);
     });
 
-    const selectedMovies = filteredMovies.filter((movie) => appState.selectedIds.has(movie.id));
     if (elements.spinButton) {
         elements.spinButton.disabled = selectedMovies.length === 0 || getIsSpinning();
     }
     if (!selectedMovies.length) {
         closeWinnerPopup({ restoreFocus: false });
     }
-    const inverseMode = !isOneSpinModeEnabled();
-    setWeightMode(inverseMode ? 'inverse' : 'normal');
     syncSliceEditorWithSelection(selectedMovies);
     drawWheel(selectedMovies);
-    updateVetoButtonState();
+    updateDisplayedOdds();
     updateSpinButtonLabel();
     debouncedSaveState();
+}
+
+export function updateDisplayedOdds(selectionOverride = null) {
+    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
+    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: !isOneSpinModeEnabled() });
+    const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+    if (elements.movieListEl) {
+        const items = elements.movieListEl.querySelectorAll('li[data-id]');
+        items.forEach((item) => {
+            const oddsEl = item.querySelector('.movie-odds');
+            if (!oddsEl) return;
+            const id = item.dataset.id;
+            const isSelected = appState.selectedIds.has(id);
+            const hasRisk = oddsMap.has(id);
+            const hasWin = winOddsMap.has(id);
+            const isActive = isSelected && hasRisk;
+            const isWinActive = isSelected && hasWin;
+            const oddsValue = isActive ? oddsMap.get(id) || 0 : 0;
+            oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
+            oddsEl.classList.toggle('movie-odds--inactive', !isActive);
+            const winOddsEl = item.querySelector('.movie-odds--win');
+            if (winOddsEl) {
+                const winOddsValue = isWinActive ? winOddsMap.get(id) || 0 : 0;
+                winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
+                winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
+            }
+        });
+    }
+    updateSliceOddsDisplay(oddsMap, selectedMovies);
+}
+
+function updateSliceOddsDisplay(oddsMap = null, selectionOverride = null) {
+    if (!elements.sliceOddsValueRisk || !elements.sliceOddsValueWin) {
+        return;
+    }
+    if (elements.sliceOddsLabelRisk) {
+        elements.sliceOddsLabelRisk.textContent = currentWeightCopy.riskLabel;
+    }
+    if (elements.sliceOddsLabelWin) {
+        elements.sliceOddsLabelWin.textContent = currentWeightCopy.winLabel;
+    }
+    const movie = getActiveSliceMovie();
+    if (!movie || !appState.selectedIds.has(movie.id)) {
+        elements.sliceOddsValueRisk.textContent = '0%';
+        elements.sliceOddsValueRisk.classList.add('slice-editor__odds-value--inactive');
+        elements.sliceOddsValueWin.textContent = '0%';
+        elements.sliceOddsValueWin.classList.add('slice-editor__odds-value--inactive');
+        return;
+    }
+    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
+    const resolvedMap = oddsMap || getSelectionOdds(selectedMovies);
+    const winMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+    const hasRiskOdds = resolvedMap.has(movie.id);
+    const hasWinOdds = winMap.has(movie.id);
+    const oddsValue = hasRiskOdds ? resolvedMap.get(movie.id) || 0 : 0;
+    const winOddsValue = hasWinOdds ? winMap.get(movie.id) || 0 : 0;
+    elements.sliceOddsValueRisk.textContent = formatOddsPercent(oddsValue);
+    elements.sliceOddsValueRisk.classList.toggle('slice-editor__odds-value--inactive', !hasRiskOdds || oddsValue <= 0);
+    elements.sliceOddsValueWin.textContent = formatOddsPercent(winOddsValue);
+    elements.sliceOddsValueWin.classList.toggle('slice-editor__odds-value--inactive', !hasWinOdds || winOddsValue <= 0);
 }
 
 export function updateSpinButtonLabel() {
@@ -447,12 +588,6 @@ export function updateSpinButtonLabel() {
     }
 
     elements.spinButton.textContent = 'Spin the wheel';
-}
-
-export function updateVetoButtonState() {
-    if (!elements.vetoButton) return;
-    const winnerId = getWinnerId();
-    elements.vetoButton.disabled = !winnerId || getIsSpinning() || getIsLastStandingInProgress();
 }
 
 export function isAdvancedOptionsEnabled() {
@@ -506,6 +641,7 @@ function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
         elements.sliceColorSwatch.style.backgroundColor = color;
     }
     updateSliceWeightDisplay(weight);
+    updateSliceOddsDisplay();
     syncListControlsWithMovie(movie, color);
     updateWheelAsideLayout();
     if (!skipWheelUpdate) {
@@ -532,6 +668,14 @@ function resetSliceEditor() {
     }
     if (elements.sliceColorInput) {
         elements.sliceColorInput.value = '#ff8600';
+    }
+    if (elements.sliceOddsValueRisk) {
+        elements.sliceOddsValueRisk.textContent = '0%';
+        elements.sliceOddsValueRisk.classList.add('slice-editor__odds-value--inactive');
+    }
+    if (elements.sliceOddsValueWin) {
+        elements.sliceOddsValueWin.textContent = '0%';
+        elements.sliceOddsValueWin.classList.add('slice-editor__odds-value--inactive');
     }
     updateSliceWeightDisplay(1);
     updateWheelAsideLayout();
@@ -617,6 +761,7 @@ function syncListControlsWithMovie(movie, colorOverride = null) {
 function redrawWheelAndPersist() {
     const selectedMoviesSnapshot = getFilteredSelectedMovies();
     drawWheel(selectedMoviesSnapshot);
+    updateDisplayedOdds();
     debouncedSaveState();
 }
 
@@ -640,30 +785,6 @@ function syncSliceEditorWithSelection(currentSelection = []) {
 
 function handleSpinPrep() {
     resetSliceEditor();
-}
-
-function handleVeto() {
-    const winnerId = getWinnerId();
-    if (!winnerId || getIsSpinning()) {
-        return;
-    }
-
-    const vetoedMovie = appState.movies.find((movie) => movie.id === winnerId);
-    if (!vetoedMovie) {
-        return;
-    }
-
-    appState.selectedIds.delete(winnerId);
-    if (elements.statusMessage) elements.statusMessage.textContent = `Vetoed “${vetoedMovie.name}”.`;
-    updateMovieList();
-
-    const remaining = getFilteredSelectedMovies();
-    if (!remaining.length) {
-        if (elements.statusMessage) elements.statusMessage.textContent += ' No more entries remain to spin with the current filters.';
-        return;
-    }
-
-    spinWheel();
 }
 
 function addCustomEntry() {
@@ -1086,6 +1207,8 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     }
 
     elements.knockoutBox.hidden = false;
+    const oddsMap = getSelectionOdds(remainingMovies, { inverseModeOverride: true });
+    const winOddsMap = getSelectionOdds(remainingMovies, { inverseModeOverride: false });
 
     remainingMovies.forEach((movie) => {
         const originalIndex = getMovieOriginalIndex(movie, appState.movies);
@@ -1125,17 +1248,21 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
         if (metaParts.length) {
             const meta = document.createElement('span');
             meta.className = 'knockout-remaining__meta';
-            meta.textContent = metaParts.join(' · ');
+            meta.textContent = metaParts.join(' | ');
             item.appendChild(meta);
         }
+
+        const winOddsValue = winOddsMap.get(movie.id) || oddsMap.get(movie.id) || 0;
+        const odds = document.createElement('span');
+        odds.className = 'knockout-remaining__odds';
+        odds.textContent = `Odds: ${formatOddsPercent(winOddsValue)}`;
+        item.appendChild(odds);
 
         elements.knockoutList.appendChild(item);
     });
 
     updateWheelAsideLayout();
-}
-
-export function highlightKnockoutCandidate(movieId) {
+} export function highlightKnockoutCandidate(movieId) {
     if (!elements.knockoutList) return;
     const items = elements.knockoutList.querySelectorAll('.knockout-remaining__item');
     items.forEach((item) => {

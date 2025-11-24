@@ -125,8 +125,14 @@ export function playKnockoutSound() {
 
 function updateWheelSoundToggle() {
     if (!elements.wheelSoundToggleBtn) return;
+    const label = wheelSoundsMuted ? 'Unmute wheel sounds' : 'Mute wheel sounds';
     elements.wheelSoundToggleBtn.setAttribute('aria-pressed', String(wheelSoundsMuted));
-    elements.wheelSoundToggleBtn.textContent = wheelSoundsMuted ? 'Unmute wheel sounds' : 'Mute wheel sounds';
+    elements.wheelSoundToggleBtn.setAttribute('aria-label', label);
+    elements.wheelSoundToggleBtn.classList.toggle('is-muted', wheelSoundsMuted);
+    const text = elements.wheelSoundToggleBtn.querySelector('.sound-toggle__text');
+    if (text) {
+        text.textContent = label;
+    }
 }
 
 function handleWheelSoundToggle() {
@@ -348,6 +354,19 @@ function handleWheelFmPrevious() {
 }
 
 async function initWheelFm() {
+    // Minimize Toggle Logic
+    const wheelFmContainer = document.querySelector('.wheel-fm');
+    const minimizeBtn = document.getElementById('wheel-fm-minimize');
+
+    if (minimizeBtn && wheelFmContainer) {
+        minimizeBtn.addEventListener('click', () => {
+            const isMinimized = wheelFmContainer.classList.toggle('is-minimized');
+            minimizeBtn.textContent = isMinimized ? '+' : '_';
+            minimizeBtn.setAttribute('aria-expanded', !isMinimized);
+            minimizeBtn.setAttribute('aria-label', isMinimized ? 'Expand Wheel.FM' : 'Minimize Wheel.FM');
+        });
+    }
+
     elements.wheelFmPlayBtn.addEventListener('click', handleWheelFmPlayToggle);
     if (elements.wheelFmNextBtn) elements.wheelFmNextBtn.addEventListener('click', handleWheelFmNext);
     if (elements.wheelFmPrevBtn) elements.wheelFmPrevBtn.addEventListener('click', handleWheelFmPrevious);
