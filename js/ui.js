@@ -31,6 +31,7 @@ let updateWheelAsideLayout = () => { };
 let currentWeightCopy = getModeCopy(true);
 let knockoutLaunchPrimed = false;
 let knockoutLaunchEngaged = false;
+let lastKnockoutRemaining = [];
 
 export function initUI(domElements) {
     Object.assign(elements, domElements);
@@ -1423,19 +1424,30 @@ export function markMovieChampion(movieId, order) {
 export function updateKnockoutRemainingBox(remainingMovies = []) {
     if (!elements.knockoutBox || !elements.knockoutList) return;
 
+    lastKnockoutRemaining = Array.isArray(remainingMovies) ? [...remainingMovies] : [];
     elements.knockoutList.innerHTML = '';
 
-    if (!Array.isArray(remainingMovies) || !remainingMovies.length || remainingMovies.length > 10) {
+    const preferences = appState.preferences || {};
+    const hideFinalistsBox = Boolean(preferences.hideFinalistsBox);
+    const showFromStart = Boolean(preferences.showFinalistsFromStart);
+
+    if (hideFinalistsBox || !Array.isArray(remainingMovies) || !remainingMovies.length) {
+        elements.knockoutBox.hidden = true;
+        updateWheelAsideLayout();
+        return;
+    }
+
+    if (!showFromStart && remainingMovies.length > 10) {
         elements.knockoutBox.hidden = true;
         updateWheelAsideLayout();
         return;
     }
 
     elements.knockoutBox.hidden = false;
-    const oddsMap = getSelectionOdds(remainingMovies, { inverseModeOverride: true });
-    const winOddsMap = getSelectionOdds(remainingMovies, { inverseModeOverride: false });
+    const oddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: true });
+    const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
 
-    remainingMovies.forEach((movie) => {
+    lastKnockoutRemaining.forEach((movie) => {
         const originalIndex = getMovieOriginalIndex(movie, appState.movies);
         let colorIndex = originalIndex;
         if (!Number.isFinite(colorIndex) || colorIndex < 0) {
@@ -1487,7 +1499,13 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     });
 
     updateWheelAsideLayout();
-} export function highlightKnockoutCandidate(movieId) {
+}
+
+export function refreshKnockoutBoxVisibility() {
+    updateKnockoutRemainingBox(lastKnockoutRemaining);
+}
+
+export function highlightKnockoutCandidate(movieId) {
     if (!elements.knockoutList) return;
     const items = elements.knockoutList.querySelectorAll('.knockout-remaining__item');
     items.forEach((item) => {

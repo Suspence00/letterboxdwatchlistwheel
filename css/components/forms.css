@@ -49,6 +49,17 @@
     color: var(--muted);
 }
 
+.finalists-preferences {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-width: 360px;
+}
+
+.finalists-preferences .helper-text {
+    margin: 0;
+}
+
 @media (min-width: 720px) {
     .selection-search {
         max-width: 360px;

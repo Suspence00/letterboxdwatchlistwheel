@@ -17,6 +17,7 @@ import {
     updateKnockoutResultText,
     renderHistory,
     updateKnockoutRemainingBox,
+    refreshKnockoutBoxVisibility,
     highlightKnockoutCandidate,
     handleSliceSelection,
     updateDisplayedOdds
@@ -79,6 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput: document.getElementById('movie-search'), // Check HTML
         oneSpinToggle: document.getElementById('one-spin-toggle'),
         randomBoostToggle: document.getElementById('random-boost-toggle'),
+        finalistsAlwaysVisibleToggle: document.getElementById('finalists-always-visible'),
+        finalistsHideToggle: document.getElementById('finalists-hide-box'),
         showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
         customEntryForm: document.getElementById('custom-entry-form'),
         customEntryInput: document.getElementById('custom-entry-name'), // Check HTML
@@ -202,6 +205,25 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSpinButtonLabel();
     };
 
+    const syncFinalistsToggles = () => {
+        const hideBox = Boolean(appState.preferences?.hideFinalistsBox);
+        const showFromStart = Boolean(appState.preferences?.showFinalistsFromStart);
+
+        if (elements.finalistsHideToggle) {
+            elements.finalistsHideToggle.checked = hideBox;
+        }
+        if (elements.finalistsAlwaysVisibleToggle) {
+            elements.finalistsAlwaysVisibleToggle.checked = showFromStart;
+            elements.finalistsAlwaysVisibleToggle.disabled = hideBox;
+        }
+    };
+
+    const handleFinalistsPreferenceChange = () => {
+        syncFinalistsToggles();
+        saveState();
+        refreshKnockoutBoxVisibility();
+    };
+
     // Global Event Listeners for Search and Filters
     if (elements.searchInput) {
         elements.searchInput.addEventListener('input', debounce((event) => {
@@ -233,6 +255,22 @@ document.addEventListener('DOMContentLoaded', () => {
             updateMovieList();
         });
     }
+
+    if (elements.finalistsAlwaysVisibleToggle) {
+        elements.finalistsAlwaysVisibleToggle.addEventListener('change', (event) => {
+            appState.preferences.showFinalistsFromStart = event.target.checked;
+            handleFinalistsPreferenceChange();
+        });
+    }
+
+    if (elements.finalistsHideToggle) {
+        elements.finalistsHideToggle.addEventListener('change', (event) => {
+            appState.preferences.hideFinalistsBox = event.target.checked;
+            handleFinalistsPreferenceChange();
+        });
+    }
+
+    syncFinalistsToggles();
 
     if (elements.oneSpinToggle) {
         elements.oneSpinToggle.addEventListener('change', handleSpinModeChange);

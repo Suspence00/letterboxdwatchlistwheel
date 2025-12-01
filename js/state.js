@@ -16,7 +16,11 @@ export const appState = {
         showCustoms: true,
         sortMode: 'original'
     },
-    knockoutResults: new Map()
+    knockoutResults: new Map(),
+    preferences: {
+        hideFinalistsBox: false,
+        showFinalistsFromStart: false
+    }
 };
 
 /**
@@ -27,7 +31,8 @@ export function saveState() {
         allMovies: appState.movies,
         selectedIds: Array.from(appState.selectedIds),
         history: appState.history,
-        filterState: appState.filter
+        filterState: appState.filter,
+        preferences: appState.preferences
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
 }
@@ -56,11 +61,23 @@ export function loadState() {
         if (loaded.filterState) {
             Object.assign(appState.filter, loaded.filterState);
         }
+        if (loaded.preferences && typeof loaded.preferences === 'object') {
+            appState.preferences = {
+                hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
+                showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart)
+            };
+        }
         if (typeof appState.filter.showCustoms !== 'boolean') {
             appState.filter.showCustoms = true;
         }
         if (!appState.filter.sortMode) {
             appState.filter.sortMode = 'original';
+        }
+        if (!appState.preferences || typeof appState.preferences !== 'object') {
+            appState.preferences = {
+                hideFinalistsBox: false,
+                showFinalistsFromStart: false
+            };
         }
 
         return appState.movies.length > 0;
