@@ -13,7 +13,8 @@ export const appState = {
     filter: {
         query: '',
         normalizedQuery: '',
-        showCustoms: true
+        showCustoms: true,
+        sortMode: 'original'
     },
     knockoutResults: new Map()
 };
@@ -55,6 +56,12 @@ export function loadState() {
         if (loaded.filterState) {
             Object.assign(appState.filter, loaded.filterState);
         }
+        if (typeof appState.filter.showCustoms !== 'boolean') {
+            appState.filter.showCustoms = true;
+        }
+        if (!appState.filter.sortMode) {
+            appState.filter.sortMode = 'original';
+        }
 
         return appState.movies.length > 0;
     } catch (e) {
@@ -67,14 +74,15 @@ export function loadState() {
  * Adds a movie to the history
  * @param {Object} movie 
  */
-export function addToHistory(movie) {
+export function addToHistory(movie, spinMode = 'unknown') {
     const entry = {
         id: crypto.randomUUID(),
         movieId: movie.id,
         name: movie.name,
         year: movie.year,
         timestamp: Date.now(),
-        uri: movie.uri
+        uri: movie.uri,
+        mode: spinMode
     };
     appState.history.unshift(entry);
     // Keep only last 50 entries

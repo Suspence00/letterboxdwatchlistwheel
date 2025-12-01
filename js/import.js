@@ -3,7 +3,7 @@
  */
 
 import { appState, saveState } from './state.js';
-import { getDefaultColorForIndex, decodeHtmlEntities } from './utils.js';
+import { clampWeight, decodeHtmlEntities, getDefaultColorForIndex } from './utils.js';
 import { updateMovieList, closeWinnerPopup } from './ui.js';
 
 let elements = {};
@@ -36,7 +36,47 @@ export function setImportCardCollapsed(collapsed) {
     elements.importCard.classList.toggle('card--collapsed', collapsed);
     elements.importCardBody.hidden = collapsed;
     elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.importToggleBtn.textContent = collapsed ? 'Show Steps' : 'Hide Steps';
+    elements.importToggleBtn.textContent = collapsed ? 'Hide Step' : 'Hide Step';
+}
+
+function buildMovieIdentityKey(movie = {}) {
+    const uri = typeof movie.uri === 'string' ? movie.uri.trim().toLowerCase() : '';
+    if (uri) {
+        return `uri:${uri}`;
+    }
+    const name = typeof movie.name === 'string' ? movie.name.trim().toLowerCase() : '';
+    const year = typeof movie.year === 'string' ? movie.year.trim() : '';
+    if (name && year) {
+        return `name:${name}|year:${year}`;
+    }
+    if (name) {
+        return `name:${name}`;
+    }
+    return null;
+}
+
+function buildWeightLookup(existingMovies = []) {
+    const lookup = new Map();
+    existingMovies.forEach((movie) => {
+        const key = buildMovieIdentityKey(movie);
+        if (!key) {
+            return;
+        }
+        lookup.set(key, clampWeight(Number(movie.weight)));
+    });
+    return lookup;
+}
+
+function restoreWeight(movie, lookup = new Map()) {
+    const key = buildMovieIdentityKey(movie);
+    if (!key || !lookup.has(key)) {
+        return 1;
+    }
+    const storedWeight = lookup.get(key);
+    if (!Number.isFinite(storedWeight)) {
+        return 1;
+    }
+    return clampWeight(storedWeight);
 }
 
 async function handleLetterboxdProxyImport(event) {
@@ -101,18 +141,21 @@ async function handleLetterboxdProxyImport(event) {
         }
 
         // Map rows into your app’s expected movie structure
+        const existingWeights = buildWeightLookup(appState.movies);
+
         appState.movies = rows.slice(1).map((row, i) => {
             const rawTitle = row[titleIndex]?.trim() || '';
             if (!rawTitle) return null;
             const title = decodeHtmlEntities(rawTitle);
             const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
+            const weight = restoreWeight({ uri, name: title }, existingWeights);
             return {
                 id: `${i}-${title}`,
                 name: title,
                 uri,
                 year: '',
                 date: '',
-                weight: 1,
+                weight,
                 color: getDefaultColorForIndex(i),
                 initialIndex: i,
             };
@@ -180,6 +223,7 @@ function handleFileUpload(event) {
             }
 
             const isLikelyLizardExport = header.some((h) => h.includes('letterboxduri'));
+            const existingWeights = buildWeightLookup(appState.movies);
 
             appState.movies = rows
                 .slice(1)
@@ -191,17 +235,20 @@ function handleFileUpload(event) {
                     const rawName = decodeHtmlEntities(rawNameInput);
 
                     const uri = uriIndex >= 0 && row[uriIndex] ? row[uriIndex].trim() : '';
+                    const year = yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '';
+                    const date = dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '';
+                    const weight = restoreWeight({ uri, name: rawName, year }, existingWeights);
                     const idBase = uri || rawName || index;
 
                     return {
                         id: `${index}-${idBase}`,
                         initialIndex: index,
                         name: rawName,
-                        year: yearIndex >= 0 && row[yearIndex] ? row[yearIndex].trim() : '',
-                        date: dateIndex >= 0 && row[dateIndex] ? row[dateIndex].trim() : '',
+                        year,
+                        date,
                         uri,
                         fromLizard: isLikelyLizardExport,
-                        weight: 1,
+                        weight,
                         color: getDefaultColorForIndex(index)
                     };
                 })

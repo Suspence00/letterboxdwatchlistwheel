@@ -27,7 +27,7 @@
       <div class="card-header">
         <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
         <button type="button" class="btn card-toggle" id="import-toggle" aria-expanded="true"
-          aria-controls="import-body">Hide Steps</button>
+          aria-controls="import-body">Hide Step</button>
       </div>
       <div class="card-body import-body" id="import-body">
         <div class="import-section import-section--primary">
@@ -76,7 +76,7 @@
             <button type="button" class="btn" id="reset-weights">Reset all weights</button>
           </div>
           <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
-            aria-controls="selection-body">Hide Steps</button>
+            aria-controls="selection-body">Hide Step</button>
         </div>
       </div>
       <div class="card-body" id="selection-body">
@@ -93,34 +93,21 @@
             picks.</p>
         </div>
         <div class="selection-area">
-          <div class="advanced-options">
-            <div class="advanced-options__header">
-              <label class="advanced-options__toggle" for="advanced-options-toggle">
-                <input type="checkbox" id="advanced-options-toggle" />
-                <span>Advanced options</span>
-              </label>
-              <p class="helper-text helper-text--compact" id="advanced-options-hint" hidden>
-                Adjust slice weights, colors, and spin modes to boost your favorites and personalize the wheel.
-              </p>
+          <div class="selection-controls">
+            <label class="visually-hidden" for="movie-search">Search your picks</label>
+            <div class="selection-search selection-search--standalone">
+              <input type="search" id="movie-search" class="text-input" name="movie-search"
+                placeholder="Search titles or years" autocomplete="off" />
             </div>
-            <div class="advanced-options__panel" id="advanced-options-panel" hidden>
-              <label class="visually-hidden" for="movie-search">Search your picks</label>
-              <div class="selection-search">
-                <input type="search" id="movie-search" class="text-input" name="movie-search"
-                  placeholder="Search titles or years" autocomplete="off" />
-              </div>
-              <div class="filter-toggles" role="group" aria-label="Filters">
-                <label class="filter-toggle" for="filter-show-customs">
-                  <input type="checkbox" id="filter-show-customs" checked />
-                  <span>Show custom selections</span>
-                </label>
-              </div>
-              <div class="spin-modes" role="group" aria-label="Spin modes">
-                <label class="filter-toggle spin-mode-toggle" for="one-spin-toggle">
-                  <input type="checkbox" id="one-spin-toggle" />
-                  <span>One Spin to Rule them all</span>
-                </label>
-              </div>
+            <div class="selection-sort">
+              <label class="visually-hidden" for="movie-sort">Sort movies</label>
+              <select id="movie-sort" class="text-input text-input--select" aria-label="Sort movies">
+                <option value="original">Original order</option>
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="weight-desc">Weight high to low</option>
+                <option value="weight-asc">Weight low to high</option>
+              </select>
             </div>
           </div>
           <div class="movie-list-wrapper">
@@ -130,9 +117,54 @@
       </div>
     </section>
 
+    <section class="card card--collapsed" id="advanced-card" aria-labelledby="advanced-heading">
+      <div class="card-header">
+        <h2 id="advanced-heading">3. Advanced options</h2>
+        <button type="button" class="btn card-toggle" id="advanced-card-toggle" aria-expanded="false"
+          aria-controls="advanced-body">Show Steps</button>
+      </div>
+      <div class="card-body" id="advanced-body" hidden>
+        <div class="advanced-options">
+          <div class="advanced-options__header">
+            <p class="helper-text helper-text--compact" id="advanced-options-hint">
+              Adjust slice weights, colors, and spin modes to boost your favorites and personalize the wheel.
+            </p>
+          </div>
+          <div class="advanced-options__panel" id="advanced-options-panel">
+            <div class="filter-toggles" role="group" aria-label="Filters">
+              <label class="filter-toggle" for="filter-show-customs">
+                <input type="checkbox" id="filter-show-customs" checked />
+                <span>Show custom selections</span>
+              </label>
+            </div>
+            <div class="spin-modes" role="group" aria-label="Spin modes">
+              <label class="filter-toggle spin-mode-toggle" for="one-spin-toggle">
+                <input type="checkbox" id="one-spin-toggle" />
+                <span>One Spin to Rule them all</span>
+                <span class="weight-help" role="img"
+                  aria-label="Single dramatic spin using current weights to pick a winner."
+                  title="Single dramatic spin using current weights to pick a winner.">?</span>
+              </label>
+              <label class="filter-toggle spin-mode-toggle" for="random-boost-toggle">
+                <input type="checkbox" id="random-boost-toggle" aria-describedby="random-boost-hint" />
+                <span>Random Boost</span>
+                <span class="weight-help" role="img"
+                  aria-label="Resets all selected weights to 1x for an even spin, then boosts the winner by +1x."
+                  title="Resets all selected weights to 1x for an even spin, then boosts the winner by +1x.">?</span>
+              </label>
+              <p id="random-boost-hint" class="visually-hidden">
+                Random Boost resets all selected weights to 1x before a single spin, then increases the winning slice by
+                +1x.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="spin-heading">
       <div class="card-header card-header--spin">
-        <h2 id="spin-heading">3. Spin the wheel</h2>
+        <h2 id="spin-heading">4. Spin the wheel</h2>
         <div class="card-header__section">
           <button type="button" class="btn" id="history-btn">History</button>
           <button type="button" class="btn sound-toggle" id="wheel-sound-toggle" aria-pressed="false"

@@ -22,7 +22,7 @@ import {
     updateDisplayedOdds
 } from './ui.js';
 import { initImport } from './import.js';
-import { debounce } from './utils.js';
+import { debounce, getStoredWeight, clampWeight } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -69,11 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
         selectionCard: document.getElementById('selection-card'),
         selectionBody: document.getElementById('selection-body'),
         selectionToggleBtn: document.getElementById('selection-toggle'),
+        advancedCard: document.getElementById('advanced-card'),
+        advancedBody: document.getElementById('advanced-body'),
+        advancedCardToggleBtn: document.getElementById('advanced-card-toggle'),
+        sortSelect: document.getElementById('movie-sort'),
 
         // Filters & Options
         searchInput: document.getElementById('movie-search'), // Check HTML
-        advancedOptionsToggle: document.getElementById('advanced-options-toggle'),
         oneSpinToggle: document.getElementById('one-spin-toggle'),
+        randomBoostToggle: document.getElementById('random-boost-toggle'),
         showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
         customEntryForm: document.getElementById('custom-entry-form'),
         customEntryInput: document.getElementById('custom-entry-name'), // Check HTML
@@ -135,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateKnockoutRemainingBox,
         highlightKnockoutCandidate,
         handleSliceClick: handleSliceSelection,
-        updateOdds: updateDisplayedOdds
+        updateOdds: updateDisplayedOdds,
+        refreshMovies: updateMovieList
     });
 
     // Initialize UI
@@ -143,6 +148,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Import
     initImport(elements);
+
+    const syncSpinModeToggles = () => {
+        const { oneSpinToggle, randomBoostToggle, advancedBody } = elements;
+        if (!oneSpinToggle || !randomBoostToggle) {
+            return;
+        }
+
+        const advancedEnabled = advancedBody ? !advancedBody.hidden : true;
+
+        if (randomBoostToggle.checked) {
+            oneSpinToggle.checked = false;
+            oneSpinToggle.disabled = true;
+        } else {
+            oneSpinToggle.disabled = false;
+        }
+
+        if (oneSpinToggle.checked) {
+            randomBoostToggle.checked = false;
+            randomBoostToggle.disabled = true;
+        } else {
+            randomBoostToggle.disabled = false;
+        }
+    };
+
+    const randomBoostWeights = new Map();
+
+    const handleSpinModeChange = () => {
+        syncSpinModeToggles();
+        if (elements.randomBoostToggle && elements.randomBoostToggle.checked) {
+            randomBoostWeights.clear();
+            appState.movies.forEach((movie) => {
+                if (appState.selectedIds.has(movie.id)) {
+                    randomBoostWeights.set(movie.id, getStoredWeight(movie));
+                    movie.weight = 1;
+                }
+            });
+        } else {
+            if (randomBoostWeights.size) {
+                appState.movies.forEach((movie) => {
+                    if (randomBoostWeights.has(movie.id)) {
+                        const baseline = clampWeight(randomBoostWeights.get(movie.id));
+                        const current = clampWeight(getStoredWeight(movie));
+                        const restored = Math.max(current, baseline);
+                        movie.weight = restored;
+                    }
+                });
+            }
+            randomBoostWeights.clear();
+        }
+        updateMovieList();
+        updateSpinButtonLabel();
+    };
 
     // Global Event Listeners for Search and Filters
     if (elements.searchInput) {
@@ -167,36 +224,24 @@ document.addEventListener('DOMContentLoaded', () => {
             updateMovieList();
         });
     }
-
-    if (elements.advancedOptionsToggle) {
-        // Toggle visibility function
-        const toggleAdvancedOptions = (checked) => {
-            const panel = document.getElementById('advanced-options-panel');
-            const hint = document.getElementById('advanced-options-hint');
-            if (panel) {
-                panel.hidden = !checked;
-            }
-            if (hint) {
-                hint.hidden = !checked;
-            }
-        };
-
-        // Set initial state
-        toggleAdvancedOptions(elements.advancedOptionsToggle.checked);
-
-        elements.advancedOptionsToggle.addEventListener('change', (event) => {
-            toggleAdvancedOptions(event.target.checked);
+    if (elements.sortSelect) {
+        elements.sortSelect.value = appState.filter.sortMode || 'original';
+        elements.sortSelect.addEventListener('change', (event) => {
+            appState.filter.sortMode = event.target.value || 'original';
+            saveState();
             updateMovieList();
-            updateSpinButtonLabel();
         });
     }
 
     if (elements.oneSpinToggle) {
-        elements.oneSpinToggle.addEventListener('change', () => {
-            updateSpinButtonLabel();
-            updateMovieList();
-        });
+        elements.oneSpinToggle.addEventListener('change', handleSpinModeChange);
     }
+
+    if (elements.randomBoostToggle) {
+        elements.randomBoostToggle.addEventListener('change', handleSpinModeChange);
+    }
+
+    syncSpinModeToggles();
 
     // Example URL Click Handler
     const exampleUrlEl = document.getElementById('example-url');

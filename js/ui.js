@@ -63,7 +63,7 @@ export function initUI(domElements) {
     if (elements.spinButton) {
         elements.spinButton.addEventListener('click', () => {
             handleSpinPrep();
-            spinWheel(isOneSpinModeEnabled());
+            spinWheel(getSpinMode());
         });
     }
 
@@ -136,6 +136,15 @@ export function initUI(domElements) {
         });
     }
 
+    if (elements.advancedCardToggleBtn) {
+        elements.advancedCardToggleBtn.addEventListener('click', () => {
+            const willCollapse = !elements.advancedCard.classList.contains('card--collapsed');
+            setAdvancedCardCollapsed(willCollapse);
+            updateMovieList();
+            updateSpinButtonLabel();
+        });
+    }
+
     if (elements.sliceColorInput) {
         elements.sliceColorInput.addEventListener('input', handleSliceColorInput);
     }
@@ -183,6 +192,9 @@ function getActiveFilterDescriptions() {
     if (!appState.filter.showCustoms) {
         descriptions.push('Custom entries hidden');
     }
+    if (appState.filter.sortMode && appState.filter.sortMode !== 'original') {
+        descriptions.push(`sorted by ${appState.filter.sortMode}`);
+    }
     return descriptions;
 }
 
@@ -201,7 +213,7 @@ function getModeCopy(isInverseMode) {
             riskLabel: 'Pick risk this spin',
             winLabel: 'Odds to be final winner',
             weightHelp: 'Knockout mode: higher weight makes a movie harder to be picked in elimination spins (better odds to reach the end).',
-            weightLabel: 'Knockout weight (safer)'
+            weightLabel: 'Knockout weight'
         };
     }
     return {
@@ -235,16 +247,25 @@ function buildMovieOddsLabel(oddsValue = 0, isSelected = false, label = '') {
     return `${label}: ${formatOddsPercent(oddsValue)}`;
 }
 
+function getModeLabel(mode) {
+    if (mode === 'random-boost') return 'Random Boost';
+    if (mode === 'one-spin') return 'One Spin';
+    if (mode === 'knockout') return 'Knockout';
+    return '';
+}
+
 export function updateMovieList() {
     if (!elements.movieListEl) return;
 
     elements.movieListEl.innerHTML = '';
 
-    const inverseMode = !isOneSpinModeEnabled();
+    const spinMode = getSpinMode();
+    const inverseMode = spinMode === 'knockout';
     setWeightMode(inverseMode ? 'inverse' : 'normal');
     currentWeightCopy = getModeCopy(inverseMode);
     applyWeightCopy(currentWeightCopy);
-    const weightsEnabled = isAdvancedOptionsEnabled();
+    const weightsEnabled = true;
+    const randomBoostActive = getSpinMode() === 'random-boost';
 
     if (!appState.movies.length) {
         const emptyItem = document.createElement('li');
@@ -290,6 +311,24 @@ export function updateMovieList() {
     const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
 
     const displayMovies = [...filteredMovies];
+    if (!appState.knockoutResults.size) {
+        const mode = appState.filter.sortMode || 'original';
+        displayMovies.sort((a, b) => {
+            if (mode === 'name-asc') {
+                return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' });
+            }
+            if (mode === 'name-desc') {
+                return (b.name || '').localeCompare(a.name || '', undefined, { sensitivity: 'base' });
+            }
+            if (mode === 'weight-desc') {
+                return (getStoredWeight(b) || 0) - (getStoredWeight(a) || 0);
+            }
+            if (mode === 'weight-asc') {
+                return (getStoredWeight(a) || 0) - (getStoredWeight(b) || 0);
+            }
+            return 0;
+        });
+    }
     if (appState.knockoutResults.size) {
         displayMovies.sort((a, b) => {
             const aStatus = appState.knockoutResults.get(a.id);
@@ -405,7 +444,7 @@ export function updateMovieList() {
         oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
 
         const winOddsEl = document.createElement('span');
-        winOddsEl.className = 'movie-odds movie-odds--secondary movie-odds--win';
+        winOddsEl.className = 'movie-odds movie-odds--win';
         winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
         winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
 
@@ -453,7 +492,12 @@ export function updateMovieList() {
                 weightSelect.appendChild(option);
             }
             weightSelect.value = String(sanitizedWeight);
+            weightSelect.disabled = randomBoostActive;
             weightSelect.addEventListener('change', (event) => {
+                if (randomBoostActive) {
+                    event.target.value = '1';
+                    return;
+                }
                 const selectedValue = Number(event.target.value);
                 movie.weight = clampWeight(selectedValue);
                 event.target.value = String(movie.weight);
@@ -521,7 +565,7 @@ export function updateMovieList() {
 
 export function updateDisplayedOdds(selectionOverride = null) {
     const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: !isOneSpinModeEnabled() });
+    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: getSpinMode() === 'knockout' });
     const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
     if (elements.movieListEl) {
         const items = elements.movieListEl.querySelectorAll('li[data-id]');
@@ -581,14 +625,20 @@ function updateSliceOddsDisplay(oddsMap = null, selectionOverride = null) {
 
 export function updateSpinButtonLabel() {
     if (!elements.spinButton) return;
-    const inverseMode = !isOneSpinModeEnabled();
+    const spinMode = getSpinMode();
+    const inverseMode = spinMode === 'knockout';
     setWeightMode(inverseMode ? 'inverse' : 'normal');
     if (getIsLastStandingInProgress()) {
-        elements.spinButton.textContent = 'Eliminating…';
+        elements.spinButton.textContent = 'Eliminating.';
         return;
     }
 
-    if (isOneSpinModeEnabled()) {
+    if (spinMode === 'random-boost') {
+        elements.spinButton.textContent = 'Random Boost Spin (+1x)';
+        return;
+    }
+
+    if (spinMode === 'one-spin') {
         elements.spinButton.textContent = 'Spin the One Spin to Rule them all';
         return;
     }
@@ -603,11 +653,25 @@ export function updateSpinButtonLabel() {
 }
 
 export function isAdvancedOptionsEnabled() {
-    return elements.advancedOptionsToggle ? Boolean(elements.advancedOptionsToggle.checked) : true;
+    return true;
+}
+
+export function getSpinMode() {
+    if (elements.randomBoostToggle && elements.randomBoostToggle.checked) {
+        return 'random-boost';
+    }
+    if (elements.oneSpinToggle && elements.oneSpinToggle.checked) {
+        return 'one-spin';
+    }
+    return 'knockout';
+}
+
+export function isRandomBoostEnabled() {
+    return getSpinMode() === 'random-boost';
 }
 
 export function isOneSpinModeEnabled() {
-    return Boolean(isAdvancedOptionsEnabled() && elements.oneSpinToggle && elements.oneSpinToggle.checked);
+    return getSpinMode() !== 'knockout';
 }
 
 export function setSelectionCardCollapsed(collapsed) {
@@ -616,7 +680,16 @@ export function setSelectionCardCollapsed(collapsed) {
     elements.selectionCard.classList.toggle('card--collapsed', collapsed);
     elements.selectionBody.hidden = collapsed;
     elements.selectionToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.selectionToggleBtn.textContent = collapsed ? 'Show Steps' : 'Hide Steps';
+    elements.selectionToggleBtn.textContent = collapsed ? 'Show Step' : 'Hide Step';
+}
+
+export function setAdvancedCardCollapsed(collapsed) {
+    if (!elements.advancedCardToggleBtn || !elements.advancedCard || !elements.advancedBody) return;
+
+    elements.advancedCard.classList.toggle('card--collapsed', collapsed);
+    elements.advancedBody.hidden = collapsed;
+    elements.advancedCardToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    elements.advancedCardToggleBtn.textContent = collapsed ? 'Show Step' : 'Hide Step';
 }
 
 export function handleSliceSelection(movie) {
@@ -653,6 +726,9 @@ function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
         elements.sliceColorSwatch.style.backgroundColor = color;
     }
     updateSliceWeightDisplay(weight);
+    if (elements.sliceWeightInput) {
+        elements.sliceWeightInput.disabled = isRandomBoostEnabled();
+    }
     updateSliceOddsDisplay();
     syncListControlsWithMovie(movie, color);
     updateWheelAsideLayout();
@@ -739,6 +815,10 @@ function handleSliceColorInput(event) {
 }
 
 function handleSliceWeightInput(event) {
+    if (isRandomBoostEnabled()) {
+        event.target.value = '1';
+        return;
+    }
     const movie = getActiveSliceMovie();
     if (!movie) {
         return;
@@ -851,7 +931,8 @@ const metadataCache = new Map();
 const METADATA_API_URL = 'https://www.omdbapi.com/';
 const METADATA_API_KEY = 'trilogy';
 
-export function showWinnerPopup(movie) {
+export function showWinnerPopup(movie, context = {}) {
+    const { spinMode } = context;
     if (!elements.winModal) return;
 
     if (modalHideTimeoutId) {
@@ -865,6 +946,13 @@ export function showWinnerPopup(movie) {
     }
     if (movie.date) {
         details.push(`Added to your watchlist ${movie.date}`);
+    }
+    if (spinMode === 'random-boost' && Number.isFinite(Number(movie.weight))) {
+        details.push(`Random Boost winner · boosted to ${movie.weight}x`);
+    } else if (spinMode === 'one-spin') {
+        details.push('One Spin to Rule them all winner');
+    } else if (spinMode === 'knockout') {
+        details.push('Movie Knockout champion');
     }
 
     if (elements.winModalTitle) {
@@ -1164,6 +1252,7 @@ export function renderHistory() {
     appState.history.forEach(entry => {
         const li = document.createElement('li');
         li.className = 'history-item';
+        const modeLabel = getModeLabel(entry.mode);
 
         const date = new Date(entry.timestamp).toLocaleDateString(undefined, {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -1172,6 +1261,7 @@ export function renderHistory() {
         li.innerHTML = `
       <div class="history-item__info">
         <span class="history-item__name">${entry.name} ${entry.year ? `(${entry.year})` : ''}</span>
+        ${modeLabel ? `<span class="history-item__mode">${modeLabel}</span>` : ''}
         <span class="history-item__date">${date}</span>
       </div>
       <div class="history-item__actions">
@@ -1411,3 +1501,5 @@ function createWheelAsideUpdater(domElements) {
         wheelLayout.classList.toggle('is-centered', !asideVisible);
     };
 }
+
+

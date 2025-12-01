@@ -226,6 +226,18 @@
     color: var(--muted);
 }
 
+.history-item__mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
 .history-delete-btn {
     background: transparent;
     border: none;

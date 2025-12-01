@@ -28,6 +28,11 @@
     accent-color: var(--accent);
 }
 
+.filter-toggle input:disabled + span {
+    color: var(--muted);
+    opacity: 0.65;
+}
+
 .spin-modes {
     margin-top: 0.85rem;
     display: flex;
@@ -48,6 +53,39 @@
     .selection-search {
         max-width: 360px;
     }
+}
+
+.selection-search--standalone {
+    width: min(960px, 100%);
+    margin-bottom: 0.25rem;
+    flex: 0 0 auto;
+}
+
+.selection-search--standalone .text-input {
+    height: 1.8rem;
+    min-height: 0;
+    max-height: 1.85rem;
+    padding: 0.2rem 0.65rem;
+    line-height: 1.1;
+    font-size: 0.95rem;
+    border-radius: 8px;
+}
+
+.selection-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    width: min(960px, 100%);
+    flex-wrap: wrap;
+}
+
+.selection-sort {
+    flex: 0 0 180px;
+}
+
+.selection-sort .text-input--select {
+    width: 100%;
+    min-height: 2.1rem;
 }
 
 .file-input {

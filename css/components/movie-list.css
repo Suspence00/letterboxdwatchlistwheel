@@ -2,7 +2,7 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: 1.1rem;
     width: 100%;
 }
 
@@ -10,7 +10,7 @@
     margin: 0 auto;
     max-height: 520px;
     overflow: auto;
-    padding: 1rem;
+    padding: 0.85rem 1rem;
     width: min(960px, 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
@@ -122,10 +122,14 @@
 }
 
 .movie-odds {
-    color: var(--accent);
+    color: var(--muted);
     font-size: 0.9rem;
     font-variant-numeric: tabular-nums;
     font-weight: 700;
+}
+
+.movie-odds--win {
+    color: var(--accent);
 }
 
 .movie-odds--inactive {
@@ -164,10 +168,10 @@
 
 .movie-weight {
     display: none;
-    flex-basis: 100%;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.25rem;
+    gap: 0.4rem;
+    margin-left: auto;
+    flex: 0 0 auto;
 }
 
 .movie-weight label {
@@ -204,10 +208,10 @@
 
 .movie-color {
     display: none;
-    flex-basis: 100%;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.15rem;
+    gap: 0.4rem;
+    margin-left: 0.85rem;
+    flex: 0 0 auto;
 }
 
 .movie-color label {

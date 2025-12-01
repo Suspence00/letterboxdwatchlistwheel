@@ -142,6 +142,7 @@
 .slice-editor__odds-value {
     font-variant-numeric: tabular-nums;
     font-weight: 700;
+    color: var(--muted);
 }
 
 .slice-editor__odds-value--inactive {
@@ -149,6 +150,14 @@
 }
 
 .slice-editor__odds-value--secondary {
+    color: var(--muted);
+}
+
+#slice-odds-value-win {
+    color: var(--accent);
+}
+
+#slice-odds-value-risk {
     color: var(--muted);
 }
 

@@ -3,7 +3,7 @@
  */
 
 import { appState, addToHistory } from './state.js';
-import { getDefaultColorForIndex } from './utils.js';
+import { getDefaultColorForIndex, clampWeight } from './utils.js';
 import { playTickSound, playWinSound, playKnockoutSound } from './audio.js';
 
 const TAU = 2 * Math.PI;
@@ -105,7 +105,8 @@ let ui = {
     updateKnockoutResultText: () => { },
     updateKnockoutRemainingBox: () => { },
     highlightKnockoutCandidate: () => { },
-    updateOdds: () => { }
+    updateOdds: () => { },
+    refreshMovies: () => { }
 };
 
 export function initWheel(canvasElement, callbacks = {}) {
@@ -563,13 +564,16 @@ function performSpin(selectedMovies, options = {}) {
     });
 }
 
-export async function spinWheel(isOneSpinMode = false) {
+export async function spinWheel(spinMode = 'knockout') {
     if (isSpinning || isLastStandingInProgress) return;
 
     const selectedMovies = getFilteredSelectedMovies();
     if (!selectedMovies.length) {
         return;
     }
+
+    const isRandomBoost = spinMode === 'random-boost';
+    const isSingleSpin = isRandomBoost || spinMode === 'one-spin';
 
     winnerId = null;
     if (typeof ui.highlightKnockoutCandidate === 'function') {
@@ -580,12 +584,21 @@ export async function spinWheel(isOneSpinMode = false) {
     }
     ui.updateSpinButtonLabel();
 
-    if (!isOneSpinMode && selectedMovies.length > 1) {
+    if (!isSingleSpin && selectedMovies.length > 1) {
         await runLastStandingMode(selectedMovies);
         return;
     }
 
-    const spinSettings = isOneSpinMode ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS;
+    if (isRandomBoost) {
+        selectedMovies.forEach((movie) => {
+            movie.weight = clampWeight(1);
+        });
+        if (typeof ui.refreshMovies === 'function') {
+            ui.refreshMovies();
+        }
+    }
+
+    const spinSettings = isSingleSpin ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS;
 
     const { winningMovie } = await performSpin(selectedMovies, spinSettings);
 
@@ -595,12 +608,22 @@ export async function spinWheel(isOneSpinMode = false) {
     }
 
     winnerId = winningMovie.id;
+    if (isRandomBoost) {
+        const boostedWeight = clampWeight((Number(winningMovie.weight) || 1) + 1);
+        if (boostedWeight !== winningMovie.weight) {
+            winningMovie.weight = boostedWeight;
+        }
+    }
     playWinSound();
     drawWheel(selectedMovies);
     ui.triggerConfetti();
-    ui.showWinnerPopup(winningMovie);
-    addToHistory(winningMovie);
-    ui.updateSpinButtonLabel();
+    ui.showWinnerPopup(winningMovie, { spinMode });
+    addToHistory(winningMovie, spinMode);
+    if (isRandomBoost && typeof ui.refreshMovies === 'function') {
+        ui.refreshMovies();
+    } else {
+        ui.updateSpinButtonLabel();
+    }
 }
 
 function delay(ms) {
@@ -682,8 +705,8 @@ async function runLastStandingMode(selectedMovies) {
         playWinSound();
         drawWheel(eliminationPool);
         ui.triggerConfetti();
-        ui.showWinnerPopup(finalMovie);
-        addToHistory(finalMovie);
+        ui.showWinnerPopup(finalMovie, { spinMode: 'knockout' });
+        addToHistory(finalMovie, 'knockout');
     }
 
     ui.highlightKnockoutCandidate(null);

@@ -78,6 +78,16 @@ Clicking a slice on the wheel opens the **Slice Editor**.
 *   **Storage:** Keeps the last 50 winners in `appState.history`.
 *   **Deduplication:** It does *not* deduplicate. If you win the same movie twice, it appears twice.
 *   **Persistence:** Survives page reloads.
+*   **Spin context:** Each entry is tagged as Knockout, One Spin, or Random Boost. Boosted wins carry their increased weight forward.
+
+### Sorting
+*   **Modes:** Original order, Name (A-Z/Z-A), Weight (high→low or low→high).
+*   **Scope:** Sorting applies to the curated list whenever knockout ordering isn’t in effect (knockout uses its own ordering to reflect eliminations).
+
+### Random Boost Mode
+*   **Setup:** When enabled, all selected weights are temporarily set to `1x` for an even-chance single spin.
+*   **Outcome:** The winning slice is boosted by `+1x`. Turning Random Boost off preserves any boosted weights (restoring at least the pre-boost baseline).
+*   **Locks:** Weight controls are disabled while Random Boost is active to keep the even field intact.
 
 ### Audio & Haptics
 The app uses the **Web Audio API** for real-time sound synthesis (no pre-recorded MP3s for UI sounds).
@@ -134,6 +144,13 @@ The app includes a custom, lightweight CSV parser (no heavy external libraries l
 *   **Detection:** It automatically detects delimiters (comma, tab, semicolon, pipe) by analyzing the first line.
 *   **Robustness:** It handles quoted fields (e.g., `"Movie Title, The"`) and newlines within fields.
 *   **Normalization:** It looks for common header names (e.g., "Name", "Title", "Film") to map columns correctly, making it compatible with various export formats (Letterboxd, Lizard, custom).
+
+### 3. Weight Persistence on Re-import
+Custom slice weights survive re-imports so you do not lose tuning when the underlying list changes.
+
+*   **Lookup:** Before rebuilding `appState.movies`, the importer builds a map of prior weights keyed by `(URI)`, then `(name + year)`, then `(name)` as a last resort.
+*   **Restore:** Each incoming row attempts to restore its weight from that map; if no match exists, it falls back to `1x`.
+*   **Scope:** Works for both proxy imports and CSV uploads, so edits made in the UI persist across refreshed or updated source lists.
 
 ## State Management (`js/state.js`)
 
