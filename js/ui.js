@@ -29,6 +29,8 @@ const elements = {};
 let activeSliceId = null;
 let updateWheelAsideLayout = () => { };
 let currentWeightCopy = getModeCopy(true);
+let knockoutLaunchPrimed = false;
+let knockoutLaunchEngaged = false;
 
 export function initUI(domElements) {
     Object.assign(elements, domElements);
@@ -551,7 +553,7 @@ export function updateMovieList() {
     });
 
     if (elements.spinButton) {
-        elements.spinButton.disabled = selectedMovies.length === 0 || getIsSpinning();
+        elements.spinButton.disabled = selectedMovies.length === 0 || getIsSpinning() || getIsLastStandingInProgress();
     }
     if (!selectedMovies.length) {
         closeWinnerPopup({ restoreFocus: false });
@@ -627,8 +629,19 @@ export function updateSpinButtonLabel() {
     if (!elements.spinButton) return;
     const spinMode = getSpinMode();
     const inverseMode = spinMode === 'knockout';
+    const lastStandingActive = getIsLastStandingInProgress();
+    const spinning = getIsSpinning();
+
+    if (knockoutLaunchPrimed && lastStandingActive) {
+        knockoutLaunchEngaged = true;
+    }
+
+    if (knockoutLaunchPrimed && knockoutLaunchEngaged && !lastStandingActive && !spinning) {
+        resetKnockoutLaunchEffects();
+    }
+
     setWeightMode(inverseMode ? 'inverse' : 'normal');
-    if (getIsLastStandingInProgress()) {
+    if (lastStandingActive) {
         elements.spinButton.textContent = 'Eliminating.';
         return;
     }
@@ -674,13 +687,27 @@ export function isOneSpinModeEnabled() {
     return getSpinMode() !== 'knockout';
 }
 
+function getStepToggleLabel(collapsed) {
+    return collapsed ? 'Expand Step' : 'Collapse Step';
+}
+
+function setImportCardCollapsedUI(collapsed) {
+    if (!elements.importCard || !elements.importCardBody || !elements.importToggleBtn) {
+        return;
+    }
+    elements.importCard.classList.toggle('card--collapsed', collapsed);
+    elements.importCardBody.hidden = collapsed;
+    elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    elements.importToggleBtn.textContent = getStepToggleLabel(collapsed);
+}
+
 export function setSelectionCardCollapsed(collapsed) {
     if (!elements.selectionToggleBtn || !elements.selectionCard || !elements.selectionBody) return;
 
     elements.selectionCard.classList.toggle('card--collapsed', collapsed);
     elements.selectionBody.hidden = collapsed;
     elements.selectionToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.selectionToggleBtn.textContent = collapsed ? 'Show Step' : 'Hide Step';
+    elements.selectionToggleBtn.textContent = getStepToggleLabel(collapsed);
 }
 
 export function setAdvancedCardCollapsed(collapsed) {
@@ -689,7 +716,13 @@ export function setAdvancedCardCollapsed(collapsed) {
     elements.advancedCard.classList.toggle('card--collapsed', collapsed);
     elements.advancedBody.hidden = collapsed;
     elements.advancedCardToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.advancedCardToggleBtn.textContent = collapsed ? 'Show Step' : 'Hide Step';
+    elements.advancedCardToggleBtn.textContent = getStepToggleLabel(collapsed);
+}
+
+function collapseAllSteps() {
+    setImportCardCollapsedUI(true);
+    setSelectionCardCollapsed(true);
+    setAdvancedCardCollapsed(true);
 }
 
 export function handleSliceSelection(movie) {
@@ -875,8 +908,98 @@ function syncSliceEditorWithSelection(currentSelection = []) {
     updateWheelAsideLayout();
 }
 
+function shouldLaunchKnockoutEffects() {
+    const selection = getFilteredSelectedMovies();
+    return getSpinMode() === 'knockout' && selection.length > 1 && !getIsSpinning() && !getIsLastStandingInProgress();
+}
+
+function clearSpinButtonShards() {
+    if (!elements.spinButton) {
+        return;
+    }
+    const shards = elements.spinButton.querySelector('.spin-button__shards');
+    if (shards) {
+        shards.remove();
+    }
+}
+
+function createSpinButtonShards() {
+    if (!elements.spinButton) {
+        return null;
+    }
+    const shardCount = 16;
+    const burst = document.createElement('span');
+    burst.className = 'spin-button__shards';
+    burst.setAttribute('aria-hidden', 'true');
+
+    for (let index = 0; index < shardCount; index += 1) {
+        const shard = document.createElement('span');
+        shard.className = 'spin-button__shard';
+        const offsetX = (Math.random() - 0.5) * 220;
+        const offsetY = (Math.random() - 0.2) * 160;
+        const spin = (Math.random() - 0.5) * 180;
+        const delay = Math.random() * 0.12;
+        const scale = 0.7 + Math.random() * 0.6;
+        shard.style.setProperty('--shard-x', `${offsetX}px`);
+        shard.style.setProperty('--shard-y', `${offsetY}px`);
+        shard.style.setProperty('--shard-rotate', `${spin}deg`);
+        shard.style.setProperty('--shard-delay', `${delay}s`);
+        shard.style.setProperty('--shard-scale', scale.toFixed(2));
+        burst.appendChild(shard);
+    }
+
+    return burst;
+}
+
+function boostWheelStage() {
+    if (elements.wheelStage) {
+        elements.wheelStage.classList.add('wheel-stage--amped');
+    }
+}
+
+function resetWheelStageBoost() {
+    if (elements.wheelStage) {
+        elements.wheelStage.classList.remove('wheel-stage--amped');
+    }
+}
+
+function triggerKnockoutLaunchEffects() {
+    if (!shouldLaunchKnockoutEffects() || knockoutLaunchPrimed) {
+        return;
+    }
+    knockoutLaunchPrimed = true;
+    knockoutLaunchEngaged = false;
+
+    if (elements.spinButton) {
+        elements.spinButton.classList.add('spin-button--obliterated');
+        elements.spinButton.disabled = true;
+        clearSpinButtonShards();
+        const burst = createSpinButtonShards();
+        if (burst) {
+            elements.spinButton.appendChild(burst);
+            requestAnimationFrame(() => burst.classList.add('is-active'));
+        }
+    }
+    boostWheelStage();
+}
+
+function resetKnockoutLaunchEffects() {
+    knockoutLaunchPrimed = false;
+    knockoutLaunchEngaged = false;
+    if (elements.spinButton) {
+        elements.spinButton.classList.remove('spin-button--obliterated');
+        clearSpinButtonShards();
+        elements.spinButton.disabled = getFilteredSelectedMovies().length === 0
+            || getIsSpinning()
+            || getIsLastStandingInProgress();
+    }
+    resetWheelStageBoost();
+}
+
 function handleSpinPrep() {
+    collapseAllSteps();
     resetSliceEditor();
+    triggerKnockoutLaunchEffects();
 }
 
 function addCustomEntry() {

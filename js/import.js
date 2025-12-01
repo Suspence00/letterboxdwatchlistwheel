@@ -36,7 +36,7 @@ export function setImportCardCollapsed(collapsed) {
     elements.importCard.classList.toggle('card--collapsed', collapsed);
     elements.importCardBody.hidden = collapsed;
     elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.importToggleBtn.textContent = collapsed ? 'Hide Step' : 'Hide Step';
+    elements.importToggleBtn.textContent = collapsed ? 'Expand Step' : 'Collapse Step';
 }
 
 function buildMovieIdentityKey(movie = {}) {

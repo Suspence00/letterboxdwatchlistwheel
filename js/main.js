@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         knockoutList: document.getElementById('knockout-remaining-list'),
         wheelAside: document.getElementById('wheel-aside'),
         wheelLayout: document.getElementById('wheel-layout'),
+        wheelStage: document.querySelector('.wheel-stage'),
         sliceEditor: document.getElementById('slice-editor'),
         sliceEditorBody: document.getElementById('slice-editor-body'),
         sliceEditorHint: document.getElementById('slice-editor-hint'),

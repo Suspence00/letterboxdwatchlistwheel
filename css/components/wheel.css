@@ -296,11 +296,67 @@
 }
 
 .wheel-stage {
+    --wheel-scale: 1;
     align-items: center;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     position: relative;
+    transform: scale(var(--wheel-scale));
+    transform-origin: center top;
+    transition: transform 0.6s cubic-bezier(0.2, 0.85, 0.25, 1.2);
+}
+
+.wheel-stage canvas {
+    transition: filter 0.4s ease;
+}
+
+.wheel-stage--amped {
+    --wheel-scale: 1.12;
+}
+
+.wheel-layout:not(.is-centered) .wheel-stage--amped {
+    --wheel-scale: 1.02;
+}
+
+.wheel-stage--amped canvas {
+    filter: drop-shadow(0 14px 30px rgba(255, 134, 0, 0.32));
+}
+
+#spin-button {
+    isolation: isolate;
+    overflow: visible;
+    position: relative;
+}
+
+#spin-button.spin-button--obliterated {
+    animation: spinButtonImplode 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+    pointer-events: none;
+}
+
+.spin-button__shards {
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+    position: absolute;
+}
+
+.spin-button__shards.is-active .spin-button__shard {
+    animation: spinButtonShard 0.9s cubic-bezier(0.22, 0.86, 0.3, 1.2) forwards;
+    animation-delay: var(--shard-delay, 0s);
+}
+
+.spin-button__shard {
+    background: linear-gradient(135deg, #ffe6c7, var(--accent));
+    border-radius: 3px;
+    display: block;
+    height: 9px;
+    left: 50%;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 9px;
 }
 
 .pointer {
@@ -313,6 +369,7 @@
     pointer-events: none;
     position: absolute;
     transform: translate(-50%, 12px);
+    transition: transform 0.6s cubic-bezier(0.2, 0.85, 0.25, 1.2);
     width: 58px;
     z-index: 10;
 }
@@ -361,9 +418,10 @@
     gap: 0.5rem;
     justify-content: center;
     line-height: 1.4;
-    margin: 0.85rem auto 0;
+    margin: 0.2rem auto 0;
     padding: 0.85rem 1.4rem;
     text-shadow: 0 4px 18px rgba(4, 18, 31, 0.55);
+    transform: translateY(-8px);
 }
 
 .result--knockout strong {
@@ -376,6 +434,39 @@
     box-shadow: 0 24px 42px rgba(255, 134, 0, 0.32);
     color: #fffbed;
     text-shadow: 0 5px 20px rgba(255, 134, 0, 0.65);
+}
+
+@keyframes spinButtonImplode {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.08);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.78) rotate(-6deg);
+    }
+}
+
+@keyframes spinButtonShard {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(var(--shard-scale, 1)) rotate(0deg);
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--shard-x, 0px)), calc(-50% + var(--shard-y, 0px))) scale(calc(var(--shard-scale, 1) * 1.1)) rotate(var(--shard-rotate, 0deg));
+    }
 }
 
 @keyframes knockoutPulse {

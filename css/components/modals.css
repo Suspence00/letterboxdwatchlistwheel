@@ -175,17 +175,18 @@
 }
 
 .history-modal__content {
-    max-width: 600px;
+    max-width: 720px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 
 .history-list-wrapper {
     flex: 1;
     overflow-y: auto;
-    margin: 1rem 0;
-    padding: 0 0.5rem;
+    margin: 0.5rem 0 1rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.2);
@@ -195,35 +196,42 @@
     list-style: none;
     padding: 0;
     margin: 0;
-}
+    }
 
-.history-list li {
-    display: flex;
+.history-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem 1rem;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem;
+    padding: 0.95rem 0.35rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.history-list li:last-child {
+.history-item:last-child {
     border-bottom: none;
 }
 
-.history-item-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+.history-item__info {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(140px, max-content);
+    gap: 0.35rem 0.9rem;
+    align-items: center;
+    min-width: 0;
 }
 
-.history-item-name {
+.history-item__name {
     font-weight: 600;
     color: var(--text);
+    line-height: 1.3;
+    word-break: break-word;
 }
 
-.history-item-date {
+.history-item__date {
     font-size: 0.8rem;
     color: var(--muted);
+    justify-self: end;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .history-item__mode {
@@ -236,6 +244,17 @@
     color: var(--accent);
     font-size: 0.8rem;
     font-weight: 700;
+}
+
+.history-item__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.history-item__actions .btn {
+    min-width: 70px;
+    justify-content: center;
 }
 
 .history-delete-btn {
@@ -251,4 +270,19 @@
 .history-delete-btn:hover {
     background: rgba(255, 93, 87, 0.15);
     color: var(--accent-strong);
+}
+
+@media (max-width: 560px) {
+    .history-item {
+        grid-template-columns: 1fr;
+    }
+
+    .history-item__info {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+
+    .history-item__actions {
+        justify-content: flex-start;
+    }
 }
