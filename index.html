@@ -171,6 +171,34 @@
             </div>
           </div>
         </div>
+        <div class="data-transfer" aria-labelledby="data-transfer-title">
+          <div class="data-transfer__header">
+            <h3 id="data-transfer-title">Export or import your wheel</h3>
+            <p class="helper-text helper-text--compact">Save movies, weights, and history as a .wheel file or bring
+              them back later.</p>
+          </div>
+          <div class="data-transfer__grid">
+            <div class="data-transfer__card">
+              <h4>Export</h4>
+              <p class="helper-text helper-text--compact">Download a .wheel backup or copy a paste-ready string.</p>
+              <div class="data-transfer__actions">
+                <button type="button" class="btn" id="backup-export">Download .wheel file</button>
+                <button type="button" class="btn" id="backup-copy">Copy backup string</button>
+              </div>
+              <p class="status" id="backup-export-status" role="status" aria-live="polite"></p>
+            </div>
+            <div class="data-transfer__card">
+              <h4>Import</h4>
+              <p class="helper-text helper-text--compact">Apply saved weights to your current picks or fully restore the
+                wheel.</p>
+              <div class="data-transfer__actions">
+                <button type="button" class="btn" id="backup-import">Open import popup</button>
+              </div>
+              <p class="data-transfer__note">Importing on top of a Letterboxd list keeps your current movies and reuses
+                the saved weights.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -303,6 +331,36 @@
       <div class="win-modal__actions">
         <button type="button" class="btn danger" id="clear-history-btn">Clear History</button>
       </div>
+    </div>
+  </div>
+
+  <div id="backup-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="backup-modal-title" hidden>
+    <div class="win-modal__content backup-modal__content">
+      <button type="button" class="win-modal__close" id="backup-modal-close"
+        aria-label="Close backup import dialog">&times;</button>
+      <h3 id="backup-modal-title" class="win-modal__title">Import a .wheel backup</h3>
+      <p class="helper-text">Paste your backup string or upload a .wheel file to reuse saved movies, weights, and
+        history.</p>
+      <div class="backup-modal__fields">
+        <label for="backup-text">Paste backup string</label>
+        <textarea id="backup-text" class="text-input text-input--textarea" name="backup-text" rows="6"
+          placeholder="Paste backup JSON or .wheel text here"></textarea>
+        <label class="file-input file-input--inline" for="backup-file">
+          <span class="file-label">Upload .wheel file</span>
+          <input type="file" id="backup-file" accept=".wheel,application/json,text/plain" />
+        </label>
+        <div class="backup-modal__toggles">
+          <label class="filter-toggle" for="backup-import-history">
+            <input type="checkbox" id="backup-import-history" checked />
+            <span>Replace history with backup</span>
+          </label>
+        </div>
+      </div>
+      <div class="backup-modal__actions">
+        <button type="button" class="btn" id="backup-apply">Apply weights to current list</button>
+        <button type="button" class="btn danger" id="backup-restore">Replace wheel with backup</button>
+      </div>
+      <p class="status" id="backup-import-status" role="status" aria-live="polite"></p>
     </div>
   </div>
 

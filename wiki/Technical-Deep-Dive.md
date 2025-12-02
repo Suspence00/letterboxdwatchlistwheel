@@ -80,6 +80,12 @@ Clicking a slice on the wheel opens the **Slice Editor**.
 *   **Persistence:** Survives page reloads.
 *   **Spin context:** Each entry is tagged as Knockout, One Spin, or Random Boost. Boosted wins carry their increased weight forward.
 
+### Backups & Import/Export
+*   **Format:** `.wheel` files are plain JSON snapshots containing movies (id, title, year, uri, weight, color), selection set, history, and preferences.
+*   **Identity matching:** When applying weights onto a freshly imported Letterboxd list, movies are matched by `uri`, then `name|year`, then `name`, then id. Only weights/colors/history are applied; existing movies stay in place.
+*   **Full restore:** Choosing restore replaces `appState.movies`, selection set, preferences, and (optionally) history, then re-sorts colors with stored values.
+*   **Safety:** Backups include a `version` flag; newer-version backups are rejected to avoid misreads. Invalid or empty backups short-circuit with user-facing status errors.
+
 ### Sorting
 *   **Modes:** Original order, Name (A-Z/Z-A), Weight (high→low or low→high).
 *   **Scope:** Sorting applies to the curated list whenever knockout ordering isn’t in effect (knockout uses its own ordering to reflect eliminations).

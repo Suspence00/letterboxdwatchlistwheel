@@ -34,6 +34,7 @@ Once your movies are loaded, they will appear in the **"2. Curate your wheel"** 
 Check the **Advanced options** box to reveal more controls:
 *   **Weights:** Increase the "weight" of a movie to make it more likely to win (or harder to eliminate in Knockout mode).
 *   **Colors:** Customize the color of each movie's slice on the wheel.
+*   **Export/Import:** Use **Export or import your wheel** to download a `.wheel` backup or paste one in. You can apply saved weights/colors to a newly imported Letterboxd list without re-importing movies, or fully restore movies, selections, and history.
 
 ## 3. Spinning the Wheel
 
@@ -45,3 +46,10 @@ Scroll down to **"3. Spin the wheel"**.
 
 ## History
 Click the **History** button to see a log of your past winners. This is saved in your browser so you can come back to it later.
+
+## Saving or Moving Your Wheel
+1. Open **Advanced options → Export or import your wheel**.
+2. Click **Download .wheel file** to save a backup, or **Copy backup string** if you prefer the clipboard.
+3. To reuse a backup, click **Open import popup**, paste the string or upload the `.wheel` file.
+   * Choose **Apply weights to current list** to keep the movies you just imported from Letterboxd/CSV and layer on the saved weights/colors (ideal when refreshing a watchlist).
+   * Choose **Replace wheel with backup** to fully restore movies, selections, preferences, and (optionally) history.

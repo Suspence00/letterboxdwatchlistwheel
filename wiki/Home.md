@@ -9,6 +9,7 @@ The **Letterboxd Watchlist Wheel** is a web-based tool designed to help you deci
 *   **Curated Spins:** Toggle specific movies on or off before spinning.
 *   **Knockout Mode:** A "Last Movie Standing" mode where movies are eliminated one by one.
 *   **Wheel.FM:** A built-in music player to set the mood while you spin.
+*   **Export/Import:** Download a `.wheel` backup or paste one to reapply weights and history later.
 *   **Local-First:** Your data stays in your browser. No accounts or servers required.
 
 ## Getting Started

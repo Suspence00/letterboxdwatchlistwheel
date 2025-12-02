@@ -157,6 +157,22 @@ export function getMovieOriginalIndex(movie, allMovies) {
     return index >= 0 ? index : -1;
 }
 
+export function buildMovieIdentityKey(movie = {}) {
+    const uri = typeof movie.uri === 'string' ? movie.uri.trim().toLowerCase() : '';
+    if (uri) {
+        return `uri:${uri}`;
+    }
+    const name = typeof movie.name === 'string' ? movie.name.trim().toLowerCase() : '';
+    const year = typeof movie.year === 'string' ? movie.year.trim() : '';
+    if (name && year) {
+        return `name:${name}|year:${year}`;
+    }
+    if (name) {
+        return `name:${name}`;
+    }
+    return null;
+}
+
 /**
  * Decodes HTML entities in a string (e.g. "Freddy&#039;s" -> "Freddy's")
  * @param {string} text 

@@ -3,7 +3,7 @@
  */
 
 import { appState, saveState } from './state.js';
-import { clampWeight, decodeHtmlEntities, getDefaultColorForIndex } from './utils.js';
+import { buildMovieIdentityKey, clampWeight, decodeHtmlEntities, getDefaultColorForIndex } from './utils.js';
 import { updateMovieList, closeWinnerPopup } from './ui.js';
 
 let elements = {};
@@ -37,22 +37,6 @@ export function setImportCardCollapsed(collapsed) {
     elements.importCardBody.hidden = collapsed;
     elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
     elements.importToggleBtn.textContent = collapsed ? 'Expand Step' : 'Collapse Step';
-}
-
-function buildMovieIdentityKey(movie = {}) {
-    const uri = typeof movie.uri === 'string' ? movie.uri.trim().toLowerCase() : '';
-    if (uri) {
-        return `uri:${uri}`;
-    }
-    const name = typeof movie.name === 'string' ? movie.name.trim().toLowerCase() : '';
-    const year = typeof movie.year === 'string' ? movie.year.trim() : '';
-    if (name && year) {
-        return `name:${name}|year:${year}`;
-    }
-    if (name) {
-        return `name:${name}`;
-    }
-    return null;
 }
 
 function buildWeightLookup(existingMovies = []) {

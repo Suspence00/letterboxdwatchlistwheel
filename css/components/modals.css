@@ -219,6 +219,32 @@
     min-width: 0;
 }
 
+.backup-modal__content {
+    max-width: 720px;
+    text-align: left;
+}
+
+.backup-modal__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin: 1rem 0;
+}
+
+.backup-modal__toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.backup-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
 .history-item__name {
     font-weight: 600;
     color: var(--text);

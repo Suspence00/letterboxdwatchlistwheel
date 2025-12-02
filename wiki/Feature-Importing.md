@@ -37,3 +37,12 @@ The app expects the standard Letterboxd export format. The critical columns are:
 ## Custom Entries
 
 You can mix and match! After importing a list (or even without one), you can manually add entries using the "Add a custom entry" form in the "Curate your wheel" section. These are treated exactly like imported movies.
+
+## Using .wheel Backups with Imports
+
+If you regularly refresh a Letterboxd list, you can keep the current movies and reapply saved weights/colors from a backup:
+
+1. Import the latest Letterboxd list or CSV as usual.
+2. Open **Advanced options → Export or import your wheel**.
+3. Click **Open import popup** and paste/upload your `.wheel` backup.
+4. Choose **Apply weights to current list**. Matching movies (by URI/title/year) keep the backup weights and slice colors without re-adding movies. History can also be replaced if you check the option.

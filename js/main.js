@@ -23,6 +23,7 @@ import {
     updateDisplayedOdds
 } from './ui.js';
 import { initImport } from './import.js';
+import { initBackup } from './backup.js';
 import { debounce, getStoredWeight, clampWeight } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -122,6 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
         wheelFmCurrentTime: document.getElementById('wheel-fm-current-time'),
         wheelFmDuration: document.getElementById('wheel-fm-duration'),
         wheelFmAudio: document.getElementById('wheel-fm-audio'),
+
+        // Backup / Export
+        backupExportBtn: document.getElementById('backup-export'),
+        backupCopyBtn: document.getElementById('backup-copy'),
+        backupImportBtn: document.getElementById('backup-import'),
+        backupExportStatus: document.getElementById('backup-export-status'),
+        backupImportStatus: document.getElementById('backup-import-status'),
+        backupModal: document.getElementById('backup-modal'),
+        backupModalCloseBtn: document.getElementById('backup-modal-close'),
+        backupTextInput: document.getElementById('backup-text'),
+        backupFileInput: document.getElementById('backup-file'),
+        backupApplyWeightsBtn: document.getElementById('backup-apply'),
+        backupRestoreBtn: document.getElementById('backup-restore'),
+        backupImportHistoryToggle: document.getElementById('backup-import-history'),
     };
 
     const canvas = document.getElementById('wheel');
@@ -223,6 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         refreshKnockoutBoxVisibility();
     };
+
+    initBackup(elements, {
+        refreshMovies: updateMovieList,
+        renderHistory,
+        refreshPreferences: syncFinalistsToggles,
+        resetKnockoutUI: refreshKnockoutBoxVisibility
+    });
 
     // Global Event Listeners for Search and Filters
     if (elements.searchInput) {
