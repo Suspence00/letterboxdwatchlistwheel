@@ -1,31 +1,41 @@
 [
   {
-    "title": "Praise the Turning",
-    "artist": "Asha Wheelwalla",
+    "title": "A Spin Through Mumbai",
+    "artist": "Bolly Wheel",
     "file": "wheel-fm/BollyWheel.mp3"
   },
   {
-    "title": "Drums of the Iron Rim",
-    "artist": "Warcry Wheelguard",
+    "title": "Ethereal Spokes",
+    "artist": "The Chant Wheels",
     "file": "wheel-fm/ChantWheel.mp3"
   },
   {
-    "title": "Spin Forever (VIP Mix)",
-    "artist": "Lil Rim & DJ Axle",
+    "title": "Yuletide Rotation",
+    "artist": "Classic Christmas Wheel",
+    "file": "wheel-fm/ClassiCChristmas.mp3"
+  },
+  {
+    "title": "Turbocharged Rotation",
+    "artist": "Hyper Wheel",
     "file": "wheel-fm/HyperWheel.mp3"
   },
   {
-    "title": "Rolling Down the Line",
+    "title": "The Man in Spokes",
     "artist": "Johnny Wheel",
     "file": "wheel-fm/JohnnyWheel.mp3"
   },
   {
-    "title": "Ride This Life With Me",
+    "title": "Never Met A Wheel Like You",
+    "artist": "Midwest Emo Christmas",
+    "file": "wheel-fm/MidwestEmoChristmas.mp3"
+  },
+  {
+    "title": "The Long Road Home",
     "artist": "Randy Wheelman",
     "file": "wheel-fm/RandyWheelman.mp3"
   },
   {
-    "title": "King without a Flick",
+    "title": "One Hub",
     "artist": "Wheeltisyahu",
     "file": "wheel-fm/Wheeltisyahu.mp3"
   }
