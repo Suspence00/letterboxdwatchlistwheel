@@ -33,6 +33,10 @@ let knockoutLaunchPrimed = false;
 let knockoutLaunchEngaged = false;
 let lastKnockoutRemaining = [];
 
+function isThemePaletteLocked() {
+    return Boolean(appState.preferences?.theme && appState.preferences.theme !== 'default');
+}
+
 export function initUI(domElements) {
     Object.assign(elements, domElements);
 
@@ -269,6 +273,7 @@ export function updateMovieList() {
     applyWeightCopy(currentWeightCopy);
     const weightsEnabled = true;
     const randomBoostActive = getSpinMode() === 'random-boost';
+    const themeLocked = isThemePaletteLocked();
 
     if (!appState.movies.length) {
         const emptyItem = document.createElement('li');
@@ -393,9 +398,9 @@ export function updateMovieList() {
             colorIndex = appState.movies.indexOf(movie);
         }
         const defaultColor = getDefaultColorForIndex(colorIndex);
-        const sanitizedColor = getStoredColor(movie, defaultColor);
-        if (movie.color !== sanitizedColor) {
-            movie.color = sanitizedColor;
+        const resolvedColor = themeLocked ? defaultColor : getStoredColor(movie, defaultColor);
+        if (movie.color !== resolvedColor) {
+            movie.color = resolvedColor;
         }
 
         const checkbox = document.createElement('input');
@@ -524,7 +529,8 @@ export function updateMovieList() {
             colorInput.type = 'color';
             colorInput.id = colorInputId;
             colorInput.className = 'movie-color__input';
-            colorInput.value = sanitizedColor;
+            colorInput.disabled = themeLocked;
+            colorInput.value = resolvedColor;
             colorInput.addEventListener('input', (event) => {
                 const selectedColor = sanitizeColor(event.target.value, defaultColor);
                 movie.color = selectedColor;
@@ -742,19 +748,23 @@ function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
     movie.color = color;
     movie.weight = weight;
     activeSliceId = movie.id;
+    const themeLocked = isThemePaletteLocked();
 
     elements.sliceEditor.hidden = false;
     if (elements.sliceEditorBody) {
         elements.sliceEditorBody.hidden = false;
     }
     if (elements.sliceEditorHint) {
-        elements.sliceEditorHint.textContent = 'Adjust slice color and weight.';
+        elements.sliceEditorHint.textContent = themeLocked
+            ? 'Holiday theme is active, so slice colors follow the theme palette.'
+            : 'Adjust slice color and weight.';
     }
     if (elements.sliceEditorName) {
         elements.sliceEditorName.textContent = movie.name;
     }
     if (elements.sliceColorInput) {
         elements.sliceColorInput.value = color;
+        elements.sliceColorInput.disabled = themeLocked;
     }
     if (elements.sliceColorSwatch) {
         elements.sliceColorSwatch.style.backgroundColor = color;
@@ -790,6 +800,7 @@ function resetSliceEditor() {
     }
     if (elements.sliceColorInput) {
         elements.sliceColorInput.value = '#ff8600';
+        elements.sliceColorInput.disabled = isThemePaletteLocked();
     }
     if (elements.sliceOddsValueRisk) {
         elements.sliceOddsValueRisk.textContent = '0%';
@@ -810,7 +821,7 @@ function getSliceDefaults(movie) {
         paletteIndex = appState.movies.indexOf(movie);
     }
     const fallback = getDefaultColorForIndex(paletteIndex);
-    const color = getStoredColor(movie, fallback);
+    const color = isThemePaletteLocked() ? fallback : getStoredColor(movie, fallback);
     const weight = getStoredWeight(movie);
     return { color, fallback, weight };
 }
@@ -833,6 +844,9 @@ function updateSliceWeightDisplay(weight) {
 }
 
 function handleSliceColorInput(event) {
+    if (isThemePaletteLocked()) {
+        return;
+    }
     const movie = getActiveSliceMovie();
     if (!movie) {
         return;
@@ -1456,6 +1470,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     elements.knockoutBox.hidden = false;
     const oddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: true });
     const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
+    const themeLocked = isThemePaletteLocked();
 
     lastKnockoutRemaining.forEach((movie) => {
         const originalIndex = getMovieOriginalIndex(movie, appState.movies);
@@ -1464,9 +1479,9 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
             colorIndex = appState.movies.indexOf(movie);
         }
         const defaultColor = getDefaultColorForIndex(colorIndex);
-        const sanitizedColor = getStoredColor(movie, defaultColor);
-        if (movie.color !== sanitizedColor) {
-            movie.color = sanitizedColor;
+        const resolvedColor = themeLocked ? defaultColor : getStoredColor(movie, defaultColor);
+        if (movie.color !== resolvedColor) {
+            movie.color = resolvedColor;
         }
 
         const item = document.createElement('li');
@@ -1478,7 +1493,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
 
         const colorSwatch = document.createElement('span');
         colorSwatch.className = 'knockout-remaining__color';
-        colorSwatch.style.backgroundColor = sanitizedColor;
+        colorSwatch.style.backgroundColor = resolvedColor;
         colorSwatch.setAttribute('aria-hidden', 'true');
 
         const title = document.createElement('span');

@@ -58,18 +58,31 @@ export const hanukkahPalette = [
 
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
-const getActivePalette = () => {
+const getActiveTheme = () => {
     if (typeof document === 'undefined') {
-        return basePalette;
+        return 'default';
     }
     if (document.body && document.body.classList.contains('theme-holiday')) {
-        return holidayPalette;
+        return 'holiday';
     }
     if (document.body && document.body.classList.contains('theme-hanukkah')) {
+        return 'hanukkah';
+    }
+    return 'default';
+};
+
+const getActivePalette = () => {
+    const theme = getActiveTheme();
+    if (theme === 'holiday') {
+        return holidayPalette;
+    }
+    if (theme === 'hanukkah') {
         return hanukkahPalette;
     }
     return basePalette;
 };
+
+const isThemePaletteLocked = () => getActiveTheme() !== 'default';
 
 /**
  * Converts HSL color values to Hex string
@@ -106,6 +119,22 @@ export function generateDynamicColor(index) {
     return hslToHex(hue, saturation, lightness);
 }
 
+export function getPaletteColorForIndex(index, palette, options = {}) {
+    const { allowDynamic = true } = options;
+    const safePalette = Array.isArray(palette) && palette.length ? palette : basePalette;
+    if (!Number.isFinite(index)) {
+        return safePalette[0] || DEFAULT_SLICE_COLOR;
+    }
+    const normalizedIndex = Math.max(0, Math.floor(index));
+    if (!allowDynamic) {
+        return safePalette[normalizedIndex % safePalette.length];
+    }
+    if (normalizedIndex < safePalette.length) {
+        return safePalette[normalizedIndex];
+    }
+    return generateDynamicColor(normalizedIndex);
+}
+
 /**
  * Gets a color for a specific index, using the base palette or generating a dynamic one
  * @param {number} index 
@@ -113,14 +142,7 @@ export function generateDynamicColor(index) {
  */
 export function getDefaultColorForIndex(index) {
     const palette = getActivePalette();
-    if (!Number.isFinite(index)) {
-        return palette[0] || DEFAULT_SLICE_COLOR;
-    }
-    const normalizedIndex = Math.max(0, Math.floor(index));
-    if (normalizedIndex < palette.length) {
-        return palette[normalizedIndex];
-    }
-    return generateDynamicColor(normalizedIndex);
+    return getPaletteColorForIndex(index, palette, { allowDynamic: !isThemePaletteLocked() });
 }
 
 /**
@@ -172,8 +194,7 @@ export function sanitizeColor(value, fallback) {
     if (typeof fallback === 'string' && /^#([0-9a-f]{6})$/i.test(fallback.trim())) {
         return fallback.trim().toLowerCase();
     }
-    const palette = getActivePalette();
-    return palette[0] || DEFAULT_SLICE_COLOR;
+    return getPaletteColorForIndex(0, getActivePalette(), { allowDynamic: false });
 }
 
 export function getStoredColor(movie, fallback) {

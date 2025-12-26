@@ -24,7 +24,16 @@ import {
 } from './ui.js';
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
-import { basePalette, clampWeight, debounce, getMovieOriginalIndex, getStoredWeight, hanukkahPalette, holidayPalette } from './utils.js';
+import {
+    basePalette,
+    clampWeight,
+    debounce,
+    getMovieOriginalIndex,
+    getPaletteColorForIndex,
+    getStoredWeight,
+    hanukkahPalette,
+    holidayPalette
+} from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -251,33 +260,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return basePalette;
     };
 
-    const applyThemePalette = (previousTheme, nextTheme) => {
-        if (previousTheme === nextTheme) return;
-        const previousPalette = getPaletteForTheme(previousTheme);
+    const applyThemePalette = (previousTheme, nextTheme, options = {}) => {
+        const { force = false } = options;
+        if (!force && previousTheme === nextTheme) return;
+
+        const overrides = appState.preferences.themeColorOverrides || {};
         const nextPalette = getPaletteForTheme(nextTheme);
+        const allowDynamic = nextTheme === 'default';
+
+        if (nextTheme === 'default') {
+            appState.movies.forEach((movie, index) => {
+                const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+                const paletteIndex = Number.isFinite(originalIndex) && originalIndex >= 0 ? originalIndex : index;
+                const override = typeof overrides[movie.id] === 'string' ? overrides[movie.id].trim() : '';
+                if (override) {
+                    movie.color = override;
+                    return;
+                }
+                movie.color = getPaletteColorForIndex(paletteIndex, basePalette, { allowDynamic: true });
+            });
+            appState.preferences.themeColorOverrides = {};
+            return;
+        }
 
         appState.movies.forEach((movie, index) => {
             const originalIndex = getMovieOriginalIndex(movie, appState.movies);
             const paletteIndex = Number.isFinite(originalIndex) && originalIndex >= 0 ? originalIndex : index;
-            const normalizedIndex = Math.max(0, Math.floor(paletteIndex));
-
-            if (normalizedIndex >= previousPalette.length || normalizedIndex >= nextPalette.length) {
-                return;
+            const existingOverride = typeof overrides[movie.id] === 'string' ? overrides[movie.id].trim() : '';
+            if (!existingOverride) {
+                overrides[movie.id] = movie.color || getPaletteColorForIndex(paletteIndex, basePalette, { allowDynamic: true });
             }
-
-            const previousColor = previousPalette[normalizedIndex].toLowerCase();
-            const currentColor = typeof movie.color === 'string' ? movie.color.toLowerCase() : '';
-
-            if (!currentColor || currentColor === previousColor) {
-                movie.color = nextPalette[normalizedIndex];
-            }
+            movie.color = getPaletteColorForIndex(paletteIndex, nextPalette, { allowDynamic });
         });
+
+        appState.preferences.themeColorOverrides = overrides;
     };
 
-    const applyTheme = (theme) => {
+    const applyTheme = (theme, options = {}) => {
+        const { force = false } = options;
         const safeTheme = normalizeTheme(theme);
         const previousTheme = appState.preferences.theme || 'default';
-        applyThemePalette(previousTheme, safeTheme);
+        applyThemePalette(previousTheme, safeTheme, { force });
         document.body.classList.toggle('theme-holiday', safeTheme === 'holiday');
         document.body.classList.toggle('theme-hanukkah', safeTheme === 'hanukkah');
         if (elements.themeSelect) {
@@ -287,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const initThemeSelector = () => {
-        applyTheme(appState.preferences?.theme);
+        applyTheme(appState.preferences?.theme, { force: true });
 
         if (elements.themeSelect) {
             elements.themeSelect.addEventListener('change', (event) => {

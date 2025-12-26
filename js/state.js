@@ -20,7 +20,8 @@ export const appState = {
     preferences: {
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
-        theme: 'default'
+        theme: 'default',
+        themeColorOverrides: {}
     }
 };
 
@@ -63,10 +64,13 @@ export function loadState() {
             Object.assign(appState.filter, loaded.filterState);
         }
         if (loaded.preferences && typeof loaded.preferences === 'object') {
+            const overrides = loaded.preferences.themeColorOverrides;
+            const safeOverrides = overrides && typeof overrides === 'object' && !Array.isArray(overrides) ? overrides : {};
             appState.preferences = {
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
-                theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default'
+                theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
+                themeColorOverrides: safeOverrides
             };
         }
         if (typeof appState.filter.showCustoms !== 'boolean') {
@@ -79,7 +83,8 @@ export function loadState() {
             appState.preferences = {
                 hideFinalistsBox: false,
                 showFinalistsFromStart: false,
-                theme: 'default'
+                theme: 'default',
+                themeColorOverrides: {}
             };
         }
 

@@ -65,31 +65,57 @@ body.theme-hanukkah .seasonal-accent {
 
 .seasonal-accent__tree {
     display: none;
-    height: 64px;
+    height: 70px;
     position: relative;
-    width: 56px;
+    width: 70px;
 }
 
 body.theme-holiday .seasonal-accent__tree {
     display: block;
 }
 
-.seasonal-accent__tree::before {
-    background: linear-gradient(180deg, #2e9b6b, #1f7a4d);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    content: '';
-    height: 100%;
-    left: 0;
+.seasonal-accent__tree-star {
+    background: #f7e7a3;
+    box-shadow: 0 0 10px rgba(247, 231, 163, 0.8);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    height: 14px;
+    left: 50%;
     position: absolute;
     top: 0;
-    width: 100%;
+    transform: translateX(-50%);
+    width: 14px;
 }
 
-.seasonal-accent__tree::after {
+.seasonal-accent__tree-tier {
+    background: linear-gradient(180deg, #2e9b6b, #1f7a4d);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+}
+
+.seasonal-accent__tree-tier--top {
+    height: 20px;
+    top: 10px;
+    width: 30px;
+}
+
+.seasonal-accent__tree-tier--mid {
+    height: 24px;
+    top: 24px;
+    width: 40px;
+}
+
+.seasonal-accent__tree-tier--bottom {
+    height: 28px;
+    top: 40px;
+    width: 50px;
+}
+
+.seasonal-accent__tree-trunk {
     background: #5b3c1f;
     border-radius: 2px;
     bottom: -4px;
-    content: '';
     height: 12px;
     left: 50%;
     position: absolute;
@@ -112,48 +138,61 @@ body.theme-holiday .seasonal-accent__tree {
 .seasonal-accent__light.light--1 {
     animation-delay: 0.2s;
     color: #f0c75e;
-    left: 18px;
-    top: 16px;
+    left: 30px;
+    top: 18px;
 }
 
 .seasonal-accent__light.light--2 {
     animation-delay: 0.6s;
     color: #7dd3fc;
-    left: 32px;
-    top: 28px;
+    left: 40px;
+    top: 30px;
 }
 
 .seasonal-accent__light.light--3 {
     animation-delay: 0.1s;
     color: #ffb703;
-    left: 12px;
-    top: 30px;
+    left: 22px;
+    top: 32px;
 }
 
 .seasonal-accent__light.light--4 {
     animation-delay: 0.8s;
     color: #ff8fab;
-    left: 22px;
-    top: 40px;
+    left: 28px;
+    top: 44px;
 }
 
 .seasonal-accent__light.light--5 {
     animation-delay: 0.4s;
     color: #ffe066;
-    left: 30px;
-    top: 48px;
+    left: 38px;
+    top: 50px;
 }
 
 .seasonal-accent__candles {
     align-items: flex-end;
     display: none;
     gap: 0.35rem;
-    height: 26px;
+    height: 30px;
     justify-content: center;
+    position: relative;
 }
 
 body.theme-hanukkah .seasonal-accent__candles {
     display: flex;
+}
+
+.seasonal-accent__candles::after {
+    background: linear-gradient(90deg, rgba(250, 204, 21, 0.4), rgba(59, 130, 246, 0.6));
+    border-radius: 999px;
+    bottom: -6px;
+    content: '';
+    height: 6px;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 96px;
 }
 
 .seasonal-accent__candle {
@@ -178,8 +217,8 @@ body.theme-hanukkah .seasonal-accent__candles {
     width: 10px;
 }
 
-body.theme-hanukkah .seasonal-accent__candle:nth-child(3) {
-    height: 18px;
+.seasonal-accent__candle:nth-child(5) {
+    height: 22px;
 }
 
 .holiday-snow {
