@@ -46,8 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
         importToggleBtn: document.getElementById('import-toggle'),
         importCard: document.getElementById('import-card'),
         importCardBody: document.getElementById('import-body'),
+        exampleUrlEl: document.getElementById('example-url'),
 
         // Main UI
+        movieListWrapper: document.querySelector('.movie-list-wrapper'),
         movieListEl: document.getElementById('movie-list'),
         spinButton: document.getElementById('spin-button'),
         selectAllBtn: document.getElementById('select-all'),
@@ -309,13 +311,26 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.preferences.theme = safeTheme;
     };
 
+    const DEFAULT_EXAMPLE_URL = 'https://letterboxd.com/suspence0/list/the-wheel/';
+    const HOLIDAY_EXAMPLE_URL = 'https://letterboxd.com/suspence0/list/wheelmas/';
+
+    const updateExampleUrl = (theme) => {
+        if (!elements.exampleUrlEl) {
+            return;
+        }
+        const nextUrl = theme === 'holiday' ? HOLIDAY_EXAMPLE_URL : DEFAULT_EXAMPLE_URL;
+        elements.exampleUrlEl.textContent = nextUrl;
+    };
+
     const initThemeSelector = () => {
         applyTheme(appState.preferences?.theme, { force: true });
+        updateExampleUrl(appState.preferences?.theme || 'default');
 
         if (elements.themeSelect) {
             elements.themeSelect.addEventListener('change', (event) => {
                 const nextTheme = normalizeTheme(event.target.value);
                 applyTheme(nextTheme);
+                updateExampleUrl(nextTheme);
                 saveState();
                 updateMovieList();
             });
@@ -389,11 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
     syncSpinModeToggles();
 
     // Example URL Click Handler
-    const exampleUrlEl = document.getElementById('example-url');
-    if (exampleUrlEl) {
-        exampleUrlEl.addEventListener('click', () => {
+    if (elements.exampleUrlEl) {
+        elements.exampleUrlEl.addEventListener('click', () => {
             if (elements.letterboxdProxyInput) {
-                elements.letterboxdProxyInput.value = exampleUrlEl.textContent;
+                elements.letterboxdProxyInput.value = elements.exampleUrlEl.textContent;
                 elements.letterboxdProxyInput.focus();
                 // Optional: trigger input event if there's validation attached to it
                 elements.letterboxdProxyInput.dispatchEvent(new Event('input'));

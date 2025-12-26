@@ -32,6 +32,22 @@ let currentWeightCopy = getModeCopy(true);
 let knockoutLaunchPrimed = false;
 let knockoutLaunchEngaged = false;
 let lastKnockoutRemaining = [];
+const VIRTUALIZATION_THRESHOLD = 250;
+const VIRTUAL_OVERSCAN = 6;
+const VIRTUAL_ROW_ESTIMATE = 128;
+const virtualListState = {
+    enabled: false,
+    rowHeight: 0,
+    data: [],
+    context: null,
+    startIndex: 0,
+    endIndex: -1,
+    renderScheduled: false,
+    forceRender: false
+};
+let wheelUpdateFrame = null;
+let pendingWheelSelection = null;
+let pendingOddsMaps = null;
 
 function isThemePaletteLocked() {
     return Boolean(appState.preferences?.theme && appState.preferences.theme !== 'default');
@@ -165,6 +181,7 @@ export function initUI(domElements) {
     }
 
     updateWheelAsideLayout = createWheelAsideUpdater(elements);
+    initVirtualList();
     resetSliceEditor();
 }
 
@@ -261,10 +278,362 @@ function getModeLabel(mode) {
     return '';
 }
 
-export function updateMovieList() {
-    if (!elements.movieListEl) return;
+function initVirtualList() {
+    if (!elements.movieListWrapper || !elements.movieListEl) {
+        return;
+    }
+
+    elements.movieListWrapper.addEventListener(
+        'scroll',
+        () => {
+            if (!virtualListState.enabled) {
+                return;
+            }
+            requestVirtualRender();
+        },
+        { passive: true }
+    );
+
+    window.addEventListener('resize', () => {
+        if (!virtualListState.enabled) {
+            return;
+        }
+        virtualListState.rowHeight = 0;
+        requestVirtualRender(true);
+    });
+}
+
+function shouldVirtualize(total) {
+    return total >= VIRTUALIZATION_THRESHOLD && Boolean(elements.movieListWrapper);
+}
+
+function resetVirtualList() {
+    virtualListState.enabled = false;
+    virtualListState.data = [];
+    virtualListState.context = null;
+    virtualListState.startIndex = 0;
+    virtualListState.endIndex = -1;
+    virtualListState.rowHeight = 0;
+    virtualListState.renderScheduled = false;
+    virtualListState.forceRender = false;
+    if (elements.movieListEl) {
+        elements.movieListEl.style.paddingBottom = '';
+        elements.movieListEl.style.paddingTop = '';
+    }
+}
+
+function getListGap() {
+    if (!elements.movieListEl) {
+        return 0;
+    }
+    const styles = window.getComputedStyle(elements.movieListEl);
+    const gapValue = styles.rowGap || styles.gap || '0';
+    const gap = Number.parseFloat(gapValue);
+    return Number.isFinite(gap) ? gap : 0;
+}
+
+function measureVirtualRowHeight() {
+    if (!elements.movieListEl) {
+        return;
+    }
+    const firstItem = elements.movieListEl.querySelector('li[data-id]');
+    if (!firstItem) {
+        return;
+    }
+    const rect = firstItem.getBoundingClientRect();
+    const gap = getListGap();
+    const height = rect.height + gap;
+    if (Number.isFinite(height) && height > 0) {
+        virtualListState.rowHeight = height;
+    }
+}
+
+function requestVirtualRender(force = false) {
+    if (!virtualListState.enabled) {
+        return;
+    }
+    if (force) {
+        virtualListState.forceRender = true;
+    }
+    if (virtualListState.renderScheduled) {
+        return;
+    }
+    virtualListState.renderScheduled = true;
+    requestAnimationFrame(() => {
+        virtualListState.renderScheduled = false;
+        const shouldForce = virtualListState.forceRender;
+        virtualListState.forceRender = false;
+        renderVirtualWindow(shouldForce);
+    });
+}
+
+function renderVirtualWindow(force = false) {
+    if (!virtualListState.enabled || !elements.movieListEl || !elements.movieListWrapper) {
+        return;
+    }
+    const { data, context } = virtualListState;
+    const total = data.length;
+    if (!total) {
+        elements.movieListEl.innerHTML = '';
+        elements.movieListEl.style.paddingBottom = '';
+        elements.movieListEl.style.paddingTop = '';
+        return;
+    }
+
+    const rowHeight = virtualListState.rowHeight || VIRTUAL_ROW_ESTIMATE;
+    const gap = getListGap();
+    const scrollTop = elements.movieListWrapper.scrollTop || 0;
+    const viewportHeight = elements.movieListWrapper.clientHeight || 0;
+    const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - VIRTUAL_OVERSCAN);
+    const endIndex = Math.min(
+        total - 1,
+        Math.ceil((scrollTop + viewportHeight) / rowHeight) + VIRTUAL_OVERSCAN
+    );
+
+    if (!force && startIndex === virtualListState.startIndex && endIndex === virtualListState.endIndex) {
+        return;
+    }
+
+    virtualListState.startIndex = startIndex;
+    virtualListState.endIndex = endIndex;
 
     elements.movieListEl.innerHTML = '';
+    const beforeCount = startIndex;
+    const afterCount = Math.max(0, total - endIndex - 1);
+    const topPadding = beforeCount ? Math.max(0, (beforeCount * rowHeight) - gap) : 0;
+    const bottomPadding = afterCount ? Math.max(0, (afterCount * rowHeight) - gap) : 0;
+    elements.movieListEl.style.paddingTop = `${topPadding}px`;
+    elements.movieListEl.style.paddingBottom = `${bottomPadding}px`;
+
+    for (let i = startIndex; i <= endIndex; i += 1) {
+        const movie = data[i];
+        if (!movie) {
+            continue;
+        }
+        elements.movieListEl.appendChild(buildMovieListItem(movie, i, context));
+    }
+
+    measureVirtualRowHeight();
+}
+
+function renderMovieList(displayMovies, context) {
+    if (!elements.movieListEl) {
+        return;
+    }
+
+    if (!shouldVirtualize(displayMovies.length)) {
+        resetVirtualList();
+        elements.movieListEl.innerHTML = '';
+        displayMovies.forEach((movie, index) => {
+            elements.movieListEl.appendChild(buildMovieListItem(movie, index, context));
+        });
+        measureVirtualRowHeight();
+        return;
+    }
+
+    const wasEnabled = virtualListState.enabled;
+    virtualListState.enabled = true;
+    virtualListState.data = displayMovies;
+    virtualListState.context = context;
+
+    if (!wasEnabled && elements.movieListWrapper) {
+        elements.movieListWrapper.scrollTop = 0;
+    }
+
+    requestVirtualRender(true);
+}
+
+function buildMovieListItem(movie, index, context) {
+    const { oddsMap, winOddsMap, weightsEnabled, randomBoostActive, themeLocked, winnerId } = context;
+    const li = document.createElement('li');
+    li.dataset.id = movie.id;
+    if (winnerId === movie.id) {
+        li.classList.add('highlight');
+    }
+    if (weightsEnabled) {
+        li.classList.add('show-weights');
+    }
+
+    const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+    if (Number.isFinite(originalIndex) && originalIndex >= 0) {
+        li.dataset.originalIndex = String(originalIndex);
+    } else {
+        li.removeAttribute('data-original-index');
+    }
+
+    const sanitizedWeight = getStoredWeight(movie);
+    if (movie.weight !== sanitizedWeight) {
+        movie.weight = sanitizedWeight;
+    }
+
+    let colorIndex = originalIndex;
+    if (!Number.isFinite(colorIndex) || colorIndex < 0) {
+        colorIndex = appState.movies.indexOf(movie);
+    }
+    const defaultColor = getDefaultColorForIndex(colorIndex);
+    const resolvedColor = themeLocked ? defaultColor : getStoredColor(movie, defaultColor);
+    if (movie.color !== resolvedColor) {
+        movie.color = resolvedColor;
+    }
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    const isSelected = appState.selectedIds.has(movie.id);
+    checkbox.checked = isSelected;
+    checkbox.id = `movie-${movie.id}`;
+    checkbox.addEventListener('change', (event) => {
+        if (event.target.checked) {
+            appState.selectedIds.add(movie.id);
+        } else {
+            appState.selectedIds.delete(movie.id);
+        }
+        updateMovieList();
+    });
+
+    const label = document.createElement('label');
+    label.setAttribute('for', checkbox.id);
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'movie-name';
+    nameEl.textContent = movie.name;
+
+    const metaEl = document.createElement('span');
+    metaEl.className = 'movie-meta';
+    const parts = [];
+    if (movie.year) parts.push(movie.year);
+    if (movie.date) parts.push(`Added ${movie.date}`);
+    if (movie.isCustom) parts.push('Custom entry');
+    metaEl.textContent = parts.join(' • ');
+
+    label.appendChild(nameEl);
+    if (parts.length) {
+        label.appendChild(metaEl);
+    }
+
+    const hasRiskOdds = oddsMap.has(movie.id);
+    const hasWinOdds = winOddsMap.has(movie.id);
+    const oddsValue = hasRiskOdds ? oddsMap.get(movie.id) || 0 : 0;
+    const winOddsValue = hasWinOdds ? winOddsMap.get(movie.id) || 0 : 0;
+    const isActive = isSelected && hasRiskOdds;
+    const isWinActive = isSelected && hasWinOdds;
+    const oddsGroup = document.createElement('div');
+    oddsGroup.className = 'movie-odds-group';
+
+    const oddsEl = document.createElement('span');
+    oddsEl.className = 'movie-odds movie-odds--risk';
+    oddsEl.classList.toggle('movie-odds--inactive', !isActive);
+    oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
+
+    const winOddsEl = document.createElement('span');
+    winOddsEl.className = 'movie-odds movie-odds--win';
+    winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
+    winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
+
+    oddsGroup.appendChild(oddsEl);
+    oddsGroup.appendChild(winOddsEl);
+    label.appendChild(oddsGroup);
+
+    if (movie.uri) {
+        const link = document.createElement('a');
+        link.href = movie.uri;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.className = 'movie-link';
+        link.textContent = 'Open on Letterboxd';
+        label.appendChild(link);
+    }
+
+    li.appendChild(checkbox);
+    li.appendChild(label);
+
+    if (weightsEnabled) {
+        const weightWrapper = document.createElement('div');
+        weightWrapper.className = 'movie-weight';
+
+        const weightSelectId = `weight-${index}`;
+        const weightLabel = document.createElement('label');
+        weightLabel.setAttribute('for', weightSelectId);
+        weightLabel.textContent = currentWeightCopy.weightLabel;
+
+        const weightHelp = document.createElement('span');
+        weightHelp.className = 'weight-help';
+        weightHelp.setAttribute('role', 'img');
+        weightHelp.setAttribute('aria-label', currentWeightCopy.weightHelp);
+        weightHelp.title = currentWeightCopy.weightHelp;
+        weightHelp.textContent = '?';
+        weightLabel.appendChild(weightHelp);
+
+        const weightSelect = document.createElement('select');
+        weightSelect.id = weightSelectId;
+        weightSelect.className = 'movie-weight__select';
+        for (let value = 1; value <= 10; value += 1) {
+            const option = document.createElement('option');
+            option.value = String(value);
+            option.textContent = `${value}x`;
+            weightSelect.appendChild(option);
+        }
+        weightSelect.value = String(sanitizedWeight);
+        weightSelect.disabled = randomBoostActive;
+        weightSelect.addEventListener('change', (event) => {
+            if (randomBoostActive) {
+                event.target.value = '1';
+                return;
+            }
+            const selectedValue = Number(event.target.value);
+            movie.weight = clampWeight(selectedValue);
+            event.target.value = String(movie.weight);
+            redrawWheelAndPersist();
+            syncSliceEditorWithSelection(getFilteredSelectedMovies());
+        });
+
+        weightWrapper.appendChild(weightLabel);
+        weightWrapper.appendChild(weightSelect);
+        li.appendChild(weightWrapper);
+
+        const colorWrapper = document.createElement('div');
+        colorWrapper.className = 'movie-color';
+
+        const colorInputId = `color-${index}`;
+        const colorLabel = document.createElement('label');
+        colorLabel.setAttribute('for', colorInputId);
+        colorLabel.textContent = 'Slice color';
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = colorInputId;
+        colorInput.className = 'movie-color__input';
+        colorInput.disabled = themeLocked;
+        colorInput.value = resolvedColor;
+        colorInput.addEventListener('input', (event) => {
+            const selectedColor = sanitizeColor(event.target.value, defaultColor);
+            movie.color = selectedColor;
+            event.target.value = selectedColor;
+            redrawWheelAndPersist();
+            syncSliceEditorWithSelection(getFilteredSelectedMovies());
+        });
+
+        colorWrapper.appendChild(colorLabel);
+        colorWrapper.appendChild(colorInput);
+        li.appendChild(colorWrapper);
+    }
+
+    if (movie.isCustom) {
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'btn remove-custom';
+        removeButton.textContent = 'Remove';
+        removeButton.addEventListener('click', () => removeCustomEntry(movie.id));
+        li.appendChild(removeButton);
+    }
+
+    const knockoutStatus = appState.knockoutResults.get(movie.id);
+    applyKnockoutStatusToElement(li, knockoutStatus);
+
+    return li;
+}
+
+export function updateMovieList() {
+    if (!elements.movieListEl) return;
 
     const spinMode = getSpinMode();
     const inverseMode = spinMode === 'knockout';
@@ -272,10 +641,12 @@ export function updateMovieList() {
     currentWeightCopy = getModeCopy(inverseMode);
     applyWeightCopy(currentWeightCopy);
     const weightsEnabled = true;
-    const randomBoostActive = getSpinMode() === 'random-boost';
+    const randomBoostActive = spinMode === 'random-boost';
     const themeLocked = isThemePaletteLocked();
 
     if (!appState.movies.length) {
+        resetVirtualList();
+        elements.movieListEl.innerHTML = '';
         const emptyItem = document.createElement('li');
         emptyItem.className = 'empty';
         emptyItem.textContent = 'Upload a CSV to see your movies here.';
@@ -300,6 +671,8 @@ export function updateMovieList() {
     }
 
     if (!filteredMovies.length) {
+        resetVirtualList();
+        elements.movieListEl.innerHTML = '';
         const emptyItem = document.createElement('li');
         emptyItem.className = 'empty';
         const descriptions = getActiveFilterDescriptions();
@@ -371,193 +744,15 @@ export function updateMovieList() {
         });
     }
 
-    displayMovies.forEach((movie, index) => {
-        const li = document.createElement('li');
-        li.dataset.id = movie.id;
-        if (winnerId === movie.id) {
-            li.classList.add('highlight');
-        }
-        if (weightsEnabled) {
-            li.classList.add('show-weights');
-        }
-
-        const originalIndex = getMovieOriginalIndex(movie, appState.movies);
-        if (Number.isFinite(originalIndex) && originalIndex >= 0) {
-            li.dataset.originalIndex = String(originalIndex);
-        } else {
-            li.removeAttribute('data-original-index');
-        }
-
-        const sanitizedWeight = getStoredWeight(movie);
-        if (movie.weight !== sanitizedWeight) {
-            movie.weight = sanitizedWeight;
-        }
-
-        let colorIndex = originalIndex;
-        if (!Number.isFinite(colorIndex) || colorIndex < 0) {
-            colorIndex = appState.movies.indexOf(movie);
-        }
-        const defaultColor = getDefaultColorForIndex(colorIndex);
-        const resolvedColor = themeLocked ? defaultColor : getStoredColor(movie, defaultColor);
-        if (movie.color !== resolvedColor) {
-            movie.color = resolvedColor;
-        }
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        const isSelected = appState.selectedIds.has(movie.id);
-        checkbox.checked = isSelected;
-        checkbox.id = `movie-${movie.id}`;
-        checkbox.addEventListener('change', (event) => {
-            if (event.target.checked) {
-                appState.selectedIds.add(movie.id);
-            } else {
-                appState.selectedIds.delete(movie.id);
-            }
-            updateMovieList();
-        });
-
-        const label = document.createElement('label');
-        label.setAttribute('for', checkbox.id);
-
-        const nameEl = document.createElement('span');
-        nameEl.className = 'movie-name';
-        nameEl.textContent = movie.name;
-
-        const metaEl = document.createElement('span');
-        metaEl.className = 'movie-meta';
-        const parts = [];
-        if (movie.year) parts.push(movie.year);
-        if (movie.date) parts.push(`Added ${movie.date}`);
-        if (movie.isCustom) parts.push('Custom entry');
-        metaEl.textContent = parts.join(' • ');
-
-        label.appendChild(nameEl);
-        if (parts.length) {
-            label.appendChild(metaEl);
-        }
-
-        const hasRiskOdds = oddsMap.has(movie.id);
-        const hasWinOdds = winOddsMap.has(movie.id);
-        const oddsValue = hasRiskOdds ? oddsMap.get(movie.id) || 0 : 0;
-        const winOddsValue = hasWinOdds ? winOddsMap.get(movie.id) || 0 : 0;
-        const isActive = isSelected && hasRiskOdds;
-        const isWinActive = isSelected && hasWinOdds;
-        const oddsGroup = document.createElement('div');
-        oddsGroup.className = 'movie-odds-group';
-
-        const oddsEl = document.createElement('span');
-        oddsEl.className = 'movie-odds movie-odds--risk';
-        oddsEl.classList.toggle('movie-odds--inactive', !isActive);
-        oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
-
-        const winOddsEl = document.createElement('span');
-        winOddsEl.className = 'movie-odds movie-odds--win';
-        winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
-        winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
-
-        oddsGroup.appendChild(oddsEl);
-        oddsGroup.appendChild(winOddsEl);
-        label.appendChild(oddsGroup);
-
-        if (movie.uri) {
-            const link = document.createElement('a');
-            link.href = movie.uri;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.className = 'movie-link';
-            link.textContent = 'Open on Letterboxd';
-            label.appendChild(link);
-        }
-
-        li.appendChild(checkbox);
-        li.appendChild(label);
-
-        if (weightsEnabled) {
-            const weightWrapper = document.createElement('div');
-            weightWrapper.className = 'movie-weight';
-
-            const weightSelectId = `weight-${index}`;
-            const weightLabel = document.createElement('label');
-            weightLabel.setAttribute('for', weightSelectId);
-            weightLabel.textContent = currentWeightCopy.weightLabel;
-
-            const weightHelp = document.createElement('span');
-            weightHelp.className = 'weight-help';
-            weightHelp.setAttribute('role', 'img');
-            weightHelp.setAttribute('aria-label', currentWeightCopy.weightHelp);
-            weightHelp.title = currentWeightCopy.weightHelp;
-            weightHelp.textContent = '?';
-            weightLabel.appendChild(weightHelp);
-
-            const weightSelect = document.createElement('select');
-            weightSelect.id = weightSelectId;
-            weightSelect.className = 'movie-weight__select';
-            for (let value = 1; value <= 10; value += 1) {
-                const option = document.createElement('option');
-                option.value = String(value);
-                option.textContent = `${value}×`;
-                weightSelect.appendChild(option);
-            }
-            weightSelect.value = String(sanitizedWeight);
-            weightSelect.disabled = randomBoostActive;
-            weightSelect.addEventListener('change', (event) => {
-                if (randomBoostActive) {
-                    event.target.value = '1';
-                    return;
-                }
-                const selectedValue = Number(event.target.value);
-                movie.weight = clampWeight(selectedValue);
-                event.target.value = String(movie.weight);
-                redrawWheelAndPersist();
-                syncSliceEditorWithSelection(getFilteredSelectedMovies());
-            });
-
-            weightWrapper.appendChild(weightLabel);
-            weightWrapper.appendChild(weightSelect);
-            li.appendChild(weightWrapper);
-
-            const colorWrapper = document.createElement('div');
-            colorWrapper.className = 'movie-color';
-
-            const colorInputId = `color-${index}`;
-            const colorLabel = document.createElement('label');
-            colorLabel.setAttribute('for', colorInputId);
-            colorLabel.textContent = 'Slice color';
-
-            const colorInput = document.createElement('input');
-            colorInput.type = 'color';
-            colorInput.id = colorInputId;
-            colorInput.className = 'movie-color__input';
-            colorInput.disabled = themeLocked;
-            colorInput.value = resolvedColor;
-            colorInput.addEventListener('input', (event) => {
-                const selectedColor = sanitizeColor(event.target.value, defaultColor);
-                movie.color = selectedColor;
-                event.target.value = selectedColor;
-                redrawWheelAndPersist();
-                syncSliceEditorWithSelection(getFilteredSelectedMovies());
-            });
-
-            colorWrapper.appendChild(colorLabel);
-            colorWrapper.appendChild(colorInput);
-            li.appendChild(colorWrapper);
-        }
-
-        if (movie.isCustom) {
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.className = 'btn remove-custom';
-            removeButton.textContent = 'Remove';
-            removeButton.addEventListener('click', () => removeCustomEntry(movie.id));
-            li.appendChild(removeButton);
-        }
-
-        const knockoutStatus = appState.knockoutResults.get(movie.id);
-        applyKnockoutStatusToElement(li, knockoutStatus);
-
-        elements.movieListEl.appendChild(li);
-    });
+    const renderContext = {
+        oddsMap,
+        winOddsMap,
+        weightsEnabled,
+        randomBoostActive,
+        themeLocked,
+        winnerId
+    };
+    renderMovieList(displayMovies, renderContext);
 
     if (elements.spinButton) {
         elements.spinButton.disabled = selectedMovies.length === 0 || getIsSpinning() || getIsLastStandingInProgress();
@@ -566,16 +761,14 @@ export function updateMovieList() {
         closeWinnerPopup({ restoreFocus: false });
     }
     syncSliceEditorWithSelection(selectedMovies);
-    drawWheel(selectedMovies);
-    updateDisplayedOdds();
+    scheduleWheelUpdate(selectedMovies, { oddsMap, winOddsMap });
     updateSpinButtonLabel();
-    debouncedSaveState();
 }
 
-export function updateDisplayedOdds(selectionOverride = null) {
+export function updateDisplayedOdds(selectionOverride = null, oddsOverride = null) {
     const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: getSpinMode() === 'knockout' });
-    const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+    const oddsMap = oddsOverride?.oddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: getSpinMode() === 'knockout' });
+    const winOddsMap = oddsOverride?.winOddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: false });
     if (elements.movieListEl) {
         const items = elements.movieListEl.querySelectorAll('li[data-id]');
         items.forEach((item) => {
@@ -898,11 +1091,30 @@ function syncListControlsWithMovie(movie, colorOverride = null) {
     }
 }
 
+function scheduleWheelUpdate(selectionOverride = null, oddsOverride = null) {
+    if (selectionOverride) {
+        pendingWheelSelection = selectionOverride;
+    }
+    if (oddsOverride) {
+        pendingOddsMaps = oddsOverride;
+    }
+    if (wheelUpdateFrame) {
+        return;
+    }
+    wheelUpdateFrame = requestAnimationFrame(() => {
+        wheelUpdateFrame = null;
+        const selectedMoviesSnapshot = pendingWheelSelection || getFilteredSelectedMovies();
+        const oddsMaps = pendingOddsMaps;
+        pendingWheelSelection = null;
+        pendingOddsMaps = null;
+        drawWheel(selectedMoviesSnapshot);
+        updateDisplayedOdds(selectedMoviesSnapshot, oddsMaps);
+        debouncedSaveState();
+    });
+}
+
 function redrawWheelAndPersist() {
-    const selectedMoviesSnapshot = getFilteredSelectedMovies();
-    drawWheel(selectedMoviesSnapshot);
-    updateDisplayedOdds();
-    debouncedSaveState();
+    scheduleWheelUpdate();
 }
 
 function syncSliceEditorWithSelection(currentSelection = []) {
@@ -1618,7 +1830,7 @@ function applyKnockoutStatusToItem(movieId) {
 }
 
 function reorderMovieListForKnockout() {
-    if (!elements.movieListEl || !appState.knockoutResults.size) {
+    if (!elements.movieListEl || !appState.knockoutResults.size || virtualListState.enabled) {
         return;
     }
 
