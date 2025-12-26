@@ -20,7 +20,56 @@ export const basePalette = [
     '#ff5d8f'
 ];
 
+export const holidayPalette = [
+    '#c93737',
+    '#1f7a4d',
+    '#f0c75e',
+    '#9b2f2f',
+    '#2e9b6b',
+    '#f2a65a',
+    '#7ab6d9',
+    '#d1495b',
+    '#2d6a4f',
+    '#f7e1a1',
+    '#b56576',
+    '#4c956c',
+    '#f28482',
+    '#84a59d',
+    '#f6bd60'
+];
+
+export const hanukkahPalette = [
+    '#1d4ed8',
+    '#3b82f6',
+    '#60a5fa',
+    '#fde68a',
+    '#facc15',
+    '#2563eb',
+    '#93c5fd',
+    '#1e40af',
+    '#f59e0b',
+    '#38bdf8',
+    '#7dd3fc',
+    '#1e3a8a',
+    '#eab308',
+    '#0ea5e9',
+    '#fbbf24'
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
+
+const getActivePalette = () => {
+    if (typeof document === 'undefined') {
+        return basePalette;
+    }
+    if (document.body && document.body.classList.contains('theme-holiday')) {
+        return holidayPalette;
+    }
+    if (document.body && document.body.classList.contains('theme-hanukkah')) {
+        return hanukkahPalette;
+    }
+    return basePalette;
+};
 
 /**
  * Converts HSL color values to Hex string
@@ -63,12 +112,13 @@ export function generateDynamicColor(index) {
  * @returns {string} Hex color string
  */
 export function getDefaultColorForIndex(index) {
+    const palette = getActivePalette();
     if (!Number.isFinite(index)) {
-        return DEFAULT_SLICE_COLOR;
+        return palette[0] || DEFAULT_SLICE_COLOR;
     }
     const normalizedIndex = Math.max(0, Math.floor(index));
-    if (normalizedIndex < basePalette.length) {
-        return basePalette[normalizedIndex];
+    if (normalizedIndex < palette.length) {
+        return palette[normalizedIndex];
     }
     return generateDynamicColor(normalizedIndex);
 }
@@ -122,7 +172,8 @@ export function sanitizeColor(value, fallback) {
     if (typeof fallback === 'string' && /^#([0-9a-f]{6})$/i.test(fallback.trim())) {
         return fallback.trim().toLowerCase();
     }
-    return DEFAULT_SLICE_COLOR;
+    const palette = getActivePalette();
+    return palette[0] || DEFAULT_SLICE_COLOR;
 }
 
 export function getStoredColor(movie, fallback) {

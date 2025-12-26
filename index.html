@@ -17,6 +17,7 @@
 </head>
 
 <body>
+  <div class="holiday-snow" aria-hidden="true"></div>
   <header class="app-header">
     <h1>Letterboxd Watchlist Wheel</h1>
     <p>Upload your exported watchlist, curate the entries, and spin to decide what to watch next.</p>
@@ -157,6 +158,19 @@
                 +1x.
               </p>
             </div>
+            <fieldset class="theme-selector">
+              <legend>Theme</legend>
+              <div class="theme-selector__controls">
+                <label class="visually-hidden" for="theme-select">Theme</label>
+                <select id="theme-select" class="text-input text-input--select" aria-describedby="theme-select-hint">
+                  <option value="default">Classic</option>
+                  <option value="holiday">Christmas</option>
+                  <option value="hanukkah">Hanukkah</option>
+                </select>
+                <p class="helper-text helper-text--compact" id="theme-select-hint">Switch to holiday accents and effects.
+                </p>
+              </div>
+            </fieldset>
             <div class="finalists-preferences" role="group" aria-label="Final Contenders display options">
               <p class="helper-text helper-text--compact">Control when the Final Contenders box shows up during Movie
                 Knockout.</p>

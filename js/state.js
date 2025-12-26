@@ -19,7 +19,8 @@ export const appState = {
     knockoutResults: new Map(),
     preferences: {
         hideFinalistsBox: false,
-        showFinalistsFromStart: false
+        showFinalistsFromStart: false,
+        theme: 'default'
     }
 };
 
@@ -64,7 +65,8 @@ export function loadState() {
         if (loaded.preferences && typeof loaded.preferences === 'object') {
             appState.preferences = {
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
-                showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart)
+                showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
+                theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default'
             };
         }
         if (typeof appState.filter.showCustoms !== 'boolean') {
@@ -76,7 +78,8 @@ export function loadState() {
         if (!appState.preferences || typeof appState.preferences !== 'object') {
             appState.preferences = {
                 hideFinalistsBox: false,
-                showFinalistsFromStart: false
+                showFinalistsFromStart: false,
+                theme: 'default'
             };
         }
 

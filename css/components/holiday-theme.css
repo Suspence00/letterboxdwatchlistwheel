@@ -1,0 +1,151 @@
+body.theme-holiday {
+    --accent: #d1495b;
+    --accent-strong: #2ea44f;
+    --background: #0b1a12;
+    --card-bg: rgba(12, 25, 17, 0.92);
+    --muted: #c7d3c7;
+    --shadow: rgba(4, 8, 6, 0.4);
+    --text: #f8f4eb;
+    background: radial-gradient(circle at top, #1a3c2c, #0c1611 55%, #0a120d 100%);
+    color: var(--text);
+}
+
+body.theme-hanukkah {
+    --accent: #1d4ed8;
+    --accent-strong: #facc15;
+    --background: #0a1330;
+    --card-bg: rgba(9, 18, 40, 0.9);
+    --muted: #c7d2fe;
+    --shadow: rgba(3, 6, 20, 0.45);
+    --text: #f8fbff;
+    background: radial-gradient(circle at top, #1e3a8a, #0a1431 60%, #070f24 100%);
+    color: var(--text);
+}
+
+body.theme-holiday .app,
+body.theme-holiday .app-footer,
+body.theme-holiday .app-header,
+body.theme-hanukkah .app,
+body.theme-hanukkah .app-footer,
+body.theme-hanukkah .app-header {
+    position: relative;
+    z-index: 1;
+}
+
+body.theme-holiday .app-header h1 {
+    text-shadow: 0 6px 18px rgba(209, 73, 91, 0.45);
+}
+
+body.theme-hanukkah .app-header h1 {
+    text-shadow: 0 6px 18px rgba(96, 165, 250, 0.45);
+}
+
+body.theme-holiday .btn.primary {
+    color: #1b0f0b;
+}
+
+body.theme-hanukkah .btn.primary {
+    color: #0b1028;
+}
+
+.holiday-snow {
+    background-image: radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.75) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 70px 80px, rgba(255, 255, 255, 0.6) 45%, transparent 55%),
+        radial-gradient(1px 1px at 120px 140px, rgba(255, 255, 255, 0.5) 45%, transparent 55%);
+    background-size: 180px 180px;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.holiday-snow::before {
+    background-image: radial-gradient(2px 2px at 40px 60px, rgba(255, 255, 255, 0.6) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 90px 120px, rgba(255, 255, 255, 0.5) 45%, transparent 55%),
+        radial-gradient(1px 1px at 150px 30px, rgba(255, 255, 255, 0.4) 45%, transparent 55%);
+    background-size: 240px 240px;
+    content: '';
+    inset: 0;
+    opacity: 0.7;
+    position: absolute;
+}
+
+.holiday-snow::after {
+    background-image: radial-gradient(1.5px 1.5px at 10px 20px, rgba(255, 255, 255, 0.55) 45%, transparent 55%),
+        radial-gradient(1px 1px at 60px 140px, rgba(255, 255, 255, 0.45) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 180px 110px, rgba(255, 255, 255, 0.35) 45%, transparent 55%);
+    background-size: 320px 320px;
+    content: '';
+    inset: 0;
+    opacity: 0.45;
+    position: absolute;
+}
+
+body.theme-holiday .holiday-snow {
+    animation: snow-fall 18s linear infinite;
+    opacity: 1;
+}
+
+body.theme-holiday .holiday-snow::before {
+    animation: snow-fall 26s linear infinite;
+}
+
+body.theme-holiday .holiday-snow::after {
+    animation: snow-fall 34s linear infinite;
+}
+
+body.theme-hanukkah .holiday-snow {
+    animation: hanukkah-drift 42s linear infinite;
+    background-image: radial-gradient(1.5px 1.5px at 18px 24px, rgba(253, 230, 138, 0.9) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 110px 90px, rgba(96, 165, 250, 0.6) 45%, transparent 55%),
+        radial-gradient(1px 1px at 170px 30px, rgba(255, 255, 255, 0.5) 45%, transparent 55%);
+    background-size: 220px 220px;
+    opacity: 1;
+}
+
+body.theme-hanukkah .holiday-snow::before {
+    animation: hanukkah-drift 58s linear infinite;
+    background-image: radial-gradient(1.5px 1.5px at 30px 50px, rgba(147, 197, 253, 0.6) 45%, transparent 55%),
+        radial-gradient(1px 1px at 140px 120px, rgba(251, 191, 36, 0.55) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 200px 70px, rgba(255, 255, 255, 0.4) 45%, transparent 55%);
+    background-size: 280px 280px;
+}
+
+body.theme-hanukkah .holiday-snow::after {
+    animation: hanukkah-drift 72s linear infinite;
+    background-image: radial-gradient(1px 1px at 10px 20px, rgba(125, 211, 252, 0.7) 45%, transparent 55%),
+        radial-gradient(1.5px 1.5px at 80px 160px, rgba(250, 204, 21, 0.5) 45%, transparent 55%),
+        radial-gradient(1px 1px at 190px 110px, rgba(255, 255, 255, 0.35) 45%, transparent 55%);
+    background-size: 340px 340px;
+}
+
+@keyframes snow-fall {
+    0% {
+        background-position: 0 -200px, 80px -400px, -100px -600px;
+    }
+    100% {
+        background-position: 0 800px, 80px 1000px, -100px 1200px;
+    }
+}
+
+@keyframes hanukkah-drift {
+    0% {
+        background-position: 0 -180px, 120px -360px, -90px -540px;
+    }
+    100% {
+        background-position: 0 720px, 120px 960px, -90px 1140px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.theme-holiday .holiday-snow,
+    body.theme-holiday .holiday-snow::before,
+    body.theme-holiday .holiday-snow::after,
+    body.theme-hanukkah .holiday-snow,
+    body.theme-hanukkah .holiday-snow::before,
+    body.theme-hanukkah .holiday-snow::after {
+        animation: none;
+    }
+}

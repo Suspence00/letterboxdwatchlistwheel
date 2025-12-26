@@ -24,7 +24,7 @@ import {
 } from './ui.js';
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
-import { debounce, getStoredWeight, clampWeight } from './utils.js';
+import { basePalette, clampWeight, debounce, getMovieOriginalIndex, getStoredWeight, hanukkahPalette, holidayPalette } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finalistsAlwaysVisibleToggle: document.getElementById('finalists-always-visible'),
         finalistsHideToggle: document.getElementById('finalists-hide-box'),
         showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
+        themeSelect: document.getElementById('theme-select'),
         customEntryForm: document.getElementById('custom-entry-form'),
         customEntryInput: document.getElementById('custom-entry-name'), // Check HTML
 
@@ -239,6 +240,65 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshKnockoutBoxVisibility();
     };
 
+    const normalizeTheme = (value) => {
+        if (value === 'holiday') return 'holiday';
+        if (value === 'hanukkah') return 'hanukkah';
+        return 'default';
+    };
+    const getPaletteForTheme = (theme) => {
+        if (theme === 'holiday') return holidayPalette;
+        if (theme === 'hanukkah') return hanukkahPalette;
+        return basePalette;
+    };
+
+    const applyThemePalette = (previousTheme, nextTheme) => {
+        if (previousTheme === nextTheme) return;
+        const previousPalette = getPaletteForTheme(previousTheme);
+        const nextPalette = getPaletteForTheme(nextTheme);
+
+        appState.movies.forEach((movie, index) => {
+            const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+            const paletteIndex = Number.isFinite(originalIndex) && originalIndex >= 0 ? originalIndex : index;
+            const normalizedIndex = Math.max(0, Math.floor(paletteIndex));
+
+            if (normalizedIndex >= previousPalette.length || normalizedIndex >= nextPalette.length) {
+                return;
+            }
+
+            const previousColor = previousPalette[normalizedIndex].toLowerCase();
+            const currentColor = typeof movie.color === 'string' ? movie.color.toLowerCase() : '';
+
+            if (!currentColor || currentColor === previousColor) {
+                movie.color = nextPalette[normalizedIndex];
+            }
+        });
+    };
+
+    const applyTheme = (theme) => {
+        const safeTheme = normalizeTheme(theme);
+        const previousTheme = appState.preferences.theme || 'default';
+        applyThemePalette(previousTheme, safeTheme);
+        document.body.classList.toggle('theme-holiday', safeTheme === 'holiday');
+        document.body.classList.toggle('theme-hanukkah', safeTheme === 'hanukkah');
+        if (elements.themeSelect) {
+            elements.themeSelect.value = safeTheme;
+        }
+        appState.preferences.theme = safeTheme;
+    };
+
+    const initThemeSelector = () => {
+        applyTheme(appState.preferences?.theme);
+
+        if (elements.themeSelect) {
+            elements.themeSelect.addEventListener('change', (event) => {
+                const nextTheme = normalizeTheme(event.target.value);
+                applyTheme(nextTheme);
+                saveState();
+                updateMovieList();
+            });
+        }
+    };
+
     initBackup(elements, {
         refreshMovies: updateMovieList,
         renderHistory,
@@ -293,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     syncFinalistsToggles();
+    initThemeSelector();
 
     if (elements.oneSpinToggle) {
         elements.oneSpinToggle.addEventListener('change', handleSpinModeChange);

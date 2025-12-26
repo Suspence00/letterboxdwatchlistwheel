@@ -1322,6 +1322,16 @@ function buildTrailerSearchUrl(name, year) {
 // Confetti
 let confettiTimeoutId = null;
 
+function getConfettiPalette() {
+    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-hanukkah')) {
+        return ['#1d4ed8', '#60a5fa', '#facc15', '#fde68a', '#93c5fd', '#2563eb'];
+    }
+    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-holiday')) {
+        return ['#d1495b', '#2ea44f', '#f0c75e', '#f7e1a1', '#9b2f2f', '#4c956c'];
+    }
+    return ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
+}
+
 export function triggerConfetti() {
     if (!elements.confettiContainer) return;
 
@@ -1333,7 +1343,7 @@ export function triggerConfetti() {
     elements.confettiContainer.classList.remove('show');
     elements.confettiContainer.innerHTML = '';
 
-    const colors = ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
+    const colors = getConfettiPalette();
     const pieceCount = 140;
 
     for (let i = 0; i < pieceCount; i += 1) {

@@ -60,6 +60,34 @@
     margin: 0;
 }
 
+.theme-selector {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    min-width: 220px;
+    padding: 0;
+}
+
+.theme-selector legend {
+    font-weight: 600;
+}
+
+.theme-selector__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.theme-selector__controls .text-input--select {
+    flex: 0 0 auto;
+    height: 2.3rem;
+    max-height: 2.3rem;
+    min-height: 2.3rem;
+    width: min(100%, 220px);
+}
+
 @media (min-width: 720px) {
     .selection-search {
         max-width: 360px;
