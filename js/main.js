@@ -418,4 +418,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Render
     updateMovieList();
     renderHistory();
+
+    // Deep Linking: Auto-import from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const listParam = urlParams.get('list');
+    if (listParam && elements.letterboxdProxyInput && elements.letterboxdProxyForm) {
+        console.log('Deep link found:', listParam);
+        elements.letterboxdProxyInput.value = listParam;
+        
+        // Short delay to ensure UI init is complete before triggering fetch
+        setTimeout(() => {
+            elements.letterboxdProxyForm.dispatchEvent(new Event('submit'));
+        }, 500);
+    }
 });
