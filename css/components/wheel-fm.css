@@ -192,9 +192,12 @@
 }
 
 .wheel-fm__playlist {
-    align-items: center;
+    align-items: stretch;
+    /* Stretch to fill width */
     display: flex;
-    gap: 0.75rem;
+    flex-direction: column;
+    /* Stack vertically */
+    gap: 0.5rem;
     width: 100%;
 }
 

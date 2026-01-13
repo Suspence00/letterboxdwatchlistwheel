@@ -107,7 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
         themeSelect: document.getElementById('theme-select'),
         customEntryForm: document.getElementById('custom-entry-form'),
-        customEntryInput: document.getElementById('custom-entry-name'), // Check HTML
+        customEntryInput: document.getElementById('custom-entry-name'),
+        openCustomModalBtn: document.getElementById('open-custom-modal'),
+        customEntryModal: document.getElementById('custom-entry-modal'),
+        customModalCloseBtn: document.getElementById('custom-modal-close'),
 
         // Winner Modal
         winModal: document.getElementById('win-modal'),
@@ -137,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wheelFmStatus: document.getElementById('wheel-fm-status'),
         wheelFmTrackTitle: document.getElementById('wheel-fm-track-title'),
         wheelFmTrackArtist: document.getElementById('wheel-fm-track-artist'),
+        wheelFmChannelSelect: document.getElementById('wheel-fm-channel'),
         wheelFmPlaylistSelect: document.getElementById('wheel-fm-playlist'),
         wheelFmPlaylistMeta: document.getElementById('wheel-fm-playlist-meta'),
         wheelFmVolumeSlider: document.getElementById('wheel-fm-volume'),
@@ -409,6 +413,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncSpinModeToggles();
 
+    // Custom Entry Modal Logic
+    if (elements.openCustomModalBtn && elements.customEntryModal) {
+        elements.openCustomModalBtn.addEventListener('click', () => {
+            elements.customEntryModal.hidden = false;
+            // Add 'show' class for animation if needed, similar to other modals
+            requestAnimationFrame(() => elements.customEntryModal.classList.add('show'));
+            if (elements.customEntryInput) {
+                elements.customEntryInput.focus();
+            }
+        });
+    }
+
+    const closeCustomModal = () => {
+        if (!elements.customEntryModal) return;
+        elements.customEntryModal.classList.remove('show');
+        setTimeout(() => {
+            elements.customEntryModal.hidden = true;
+        }, 200);
+    };
+
+    if (elements.customModalCloseBtn) {
+        elements.customModalCloseBtn.addEventListener('click', closeCustomModal);
+    }
+
+    if (elements.customEntryModal) {
+        elements.customEntryModal.addEventListener('click', (event) => {
+            if (event.target === elements.customEntryModal) {
+                closeCustomModal();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !elements.customEntryModal.hidden) {
+                closeCustomModal();
+            }
+        });
+    }
+
+    // Intercept form submission to close modal (UI logic handles the adding)
+    if (elements.customEntryForm) {
+        elements.customEntryForm.addEventListener('submit', () => {
+            if (elements.customEntryInput && elements.customEntryInput.value.trim()) {
+                closeCustomModal();
+                // Clear input is handled by UI likely, but safe to do here if needed
+                // elements.customEntryInput.value = ''; 
+            }
+        });
+    }
+
     // Settings Modal Logic
     if (elements.settingsOpenBtn && elements.settingsModal) {
         elements.settingsOpenBtn.addEventListener('click', () => {
@@ -462,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (listParam && elements.letterboxdProxyInput && elements.letterboxdProxyForm) {
         console.log('Deep link found:', listParam);
         elements.letterboxdProxyInput.value = listParam;
-        
+
         // Short delay to ensure UI init is complete before triggering fetch
         setTimeout(() => {
             elements.letterboxdProxyForm.dispatchEvent(new Event('submit'));

@@ -132,28 +132,17 @@
           <h2 id="selection-heading">2. Curate your wheel</h2>
         </div>
         <div class="card-header__section">
-          <div class="controls">
-            <button type="button" class="btn" id="select-all">Select all</button>
-            <button type="button" class="btn" id="clear-selection">Clear all</button>
-            <button type="button" class="btn" id="reset-weights">Reset all weights</button>
-          </div>
-          <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
-            aria-controls="selection-body">Collapse Step</button>
+          <button type="button" class="btn" id="open-custom-modal">Add Custom Movie</button>
+          <button type="button" class="btn" id="select-all">Select all</button>
+          <button type="button" class="btn" id="clear-selection">Clear all</button>
+          <button type="button" class="btn" id="reset-weights">Reset all weights</button>
         </div>
+        <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
+          aria-controls="selection-body">Collapse Step</button>
+      </div>
       </div>
       <div class="card-body" id="selection-body">
-        <div class="custom-entry">
-          <form id="custom-entry-form" class="custom-entry__form">
-            <label for="custom-entry-name">Add a custom entry</label>
-            <div class="custom-entry__controls">
-              <input type="text" id="custom-entry-name" class="text-input" name="custom-entry-name"
-                placeholder="Anything goes — add a wildcard pick" autocomplete="off" />
-              <button type="submit" class="btn" id="add-custom-entry">Add to wheel</button>
-            </div>
-          </form>
-          <p class="helper-text helper-text--compact">Add anything you'd like to include alongside your Letterboxd
-            picks.</p>
-        </div>
+
         <div class="selection-area">
           <div class="selection-controls">
             <label class="visually-hidden" for="movie-search">Search your picks</label>
@@ -272,6 +261,28 @@
   </footer>
 
   <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
+
+  <div id="custom-entry-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title"
+    hidden>
+    <div class="win-modal__content settings-modal__content" style="padding: 2rem;">
+      <button type="button" class="win-modal__close" id="custom-modal-close" aria-label="Close dialog">&times;</button>
+      <h3 id="custom-modal-title" class="win-modal__title" style="padding-left: 0;">Add Custom Entry</h3>
+
+      <form id="custom-entry-form" class="custom-entry__form" style="margin-top: 1rem;">
+        <label for="custom-entry-name" style="display:block; margin-bottom: 0.5rem; font-weight: 600;">Movie Name or
+          Entry</label>
+        <input type="text" id="custom-entry-name" class="text-input" name="custom-entry-name"
+          placeholder="Anything goes — add a wildcard pick" autocomplete="off"
+          style="width: 100%; margin-bottom: 1rem; flex: 0 0 auto;" />
+        <p class="helper-text" style="margin-bottom: 2rem;">Add anything you'd like to include alongside your Letterboxd
+          picks.</p>
+
+        <div class="win-modal__actions" style="justify-content: flex-end;">
+          <button type="submit" class="btn btn--primary" id="add-custom-entry">Add to Wheel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div id="win-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="win-modal-title" hidden>
     <div class="win-modal__content">
@@ -485,6 +496,11 @@
         </div>
       </div>
       <div class="wheel-fm__playlist">
+        <label class="wheel-fm__playlist-label" for="wheel-fm-channel">Channel</label>
+        <select id="wheel-fm-channel" class="wheel-fm__playlist-select" aria-label="Select Wheel.FM Channel">
+          <option value="">Loading Channels...</option>
+        </select>
+
         <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
         <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled aria-label="Pick a Wheel.FM track">
           <option>Loading…</option>

@@ -10,7 +10,8 @@ let audioContext = null;
 let wheelSoundsMuted = false;
 
 const wheelFmState = {
-    playlist: [],
+    playlist: [], // Current active playlist
+    allPlaylists: {}, // Cache of all channels
     currentIndex: 0,
     isSeeking: false
 };
@@ -139,6 +140,7 @@ function handleWheelSoundToggle() {
     wheelSoundsMuted = !wheelSoundsMuted;
     updateWheelSoundToggle();
 }
+
 
 // Wheel.FM Logic
 
@@ -413,23 +415,69 @@ async function initWheelFm() {
     try {
         const response = await fetch(WHEEL_FM_PLAYLIST_PATH, { cache: 'no-store' });
         if (!response.ok) throw new Error('Playlist unavailable');
-        const data = await response.json();
-        const normalized = Array.isArray(data)
-            ? data.map((entry, index) => normalizeWheelFmTrack(entry, index)).filter(Boolean)
-            : [];
 
-        if (!normalized.length) {
+        const rawData = await response.json();
+
+        // Handle Legacy Array format (Auto-convert to 'Default Mix')
+        if (Array.isArray(rawData)) {
+            wheelFmState.allPlaylists = { 'Default Mix': rawData };
+        } else {
+            wheelFmState.allPlaylists = rawData;
+        }
+
+        const channelNames = Object.keys(wheelFmState.allPlaylists);
+
+        if (!channelNames.length) {
             setWheelFmStatus('Add MP3 files to wheel-fm/ and list them in playlist.json to start broadcasting.');
             showWheelFmPlaylistPlaceholder('Add tracks to wheel-fm/ to build your playlist.');
             return;
         }
 
-        wheelFmState.playlist = normalized;
-        setWheelFmControlsDisabled(false);
-        renderWheelFmPlaylist();
-        await loadWheelFmTrack(0);
+        // Initialize Channel Selector
+        if (elements.wheelFmChannelSelect) {
+            elements.wheelFmChannelSelect.innerHTML = '';
+
+            channelNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                elements.wheelFmChannelSelect.append(option);
+            });
+
+            elements.wheelFmChannelSelect.disabled = false;
+
+            // Handle Channel Switching
+            elements.wheelFmChannelSelect.addEventListener('change', (event) => {
+                const newChannel = event.target.value;
+                if (!wheelFmState.allPlaylists[newChannel]) return;
+
+                loadChannel(newChannel);
+            });
+        }
+
+        // Load Initial Channel (First one)
+        loadChannel(channelNames[0]);
+
     } catch (error) {
+        console.error(error);
         setWheelFmStatus('Wheel.FM playlist missing or invalid.');
         showWheelFmPlaylistPlaceholder('Wheel.FM playlist missing or invalid.');
     }
+}
+
+function loadChannel(channelName) {
+    const rawTracks = wheelFmState.allPlaylists[channelName];
+    if (!rawTracks || !Array.isArray(rawTracks)) return;
+
+    const normalized = rawTracks
+        .map((entry, index) => normalizeWheelFmTrack(entry, index))
+        .filter(Boolean);
+
+    wheelFmState.playlist = normalized;
+    setWheelFmControlsDisabled(false);
+    renderWheelFmPlaylist();
+    // Reset to first track of new channel
+    loadWheelFmTrack(0, { autoplay: false });
+
+    setWheelFmStatus(`Tuned in to ${channelName}.`);
 }

@@ -19,7 +19,6 @@ body.theme-modern {
 
 /* Glassmorphism Cards */
 body.theme-modern .card,
-body.theme-modern .import-bar,
 body.theme-modern .win-modal__content,
 body.theme-modern .settings-modal__content,
 body.theme-modern .data-transfer,
@@ -33,6 +32,12 @@ body.theme-modern .settings-panel {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
     border-radius: 18px;
     /* Slightly more rounded */
+}
+
+body.theme-modern .import-bar {
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Buttons - Pill shaped, clean */
@@ -53,10 +58,12 @@ body.theme-modern .btn:hover {
 }
 
 body.theme-modern .btn.btn--primary,
+body.theme-modern .btn.primary,
 body.theme-modern .import-btn {
-    background: #0a84ff;
+    background: #0071e3;
+    /* Classic Apple Blue */
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
 }
 
 body.theme-modern .btn.btn--primary:hover,
