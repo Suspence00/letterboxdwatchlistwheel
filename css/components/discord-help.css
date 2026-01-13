@@ -1,0 +1,67 @@
+/* Discord Help Toggle */
+.discord-help {
+    position: relative;
+}
+
+.discord-help__summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    /* Hide default triangle */
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.discord-help__summary::-webkit-details-marker {
+    display: none;
+}
+
+.discord-help__summary:hover,
+.discord-help[open] .discord-help__summary {
+    background: var(--accent);
+    color: #000;
+}
+
+.discord-help__content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    width: 280px;
+    background: #1a2634;
+    /* Darker dropdown background */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.discord-help__content p {
+    margin: 0 0 0.5rem;
+}
+
+.discord-help__content ol {
+    padding-left: 1.25rem;
+    margin: 0;
+    color: var(--muted);
+}
+
+.discord-help__content li {
+    margin-bottom: 0.25rem;
+}
+
+.discord-help__content strong {
+    color: var(--text);
+}

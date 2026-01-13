@@ -1,0 +1,108 @@
+body.theme-modern {
+    --accent: #0a84ff;
+    /* iOS System Blue */
+    --accent-strong: #5e5ce6;
+    /* iOS System Indigo */
+    --background: #000000;
+    --card-bg: rgba(28, 28, 30, 0.72);
+    /* iOS System Gray 6 equivalent with transparency */
+    --muted: #86868b;
+    /* Apple Gray */
+    --shadow: rgba(0, 0, 0, 0.2);
+    --text: #f5f5f7;
+
+    background: linear-gradient(180deg, #1c1c1e 0%, #000000 100%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Glassmorphism Cards */
+body.theme-modern .card,
+body.theme-modern .import-bar,
+body.theme-modern .win-modal__content,
+body.theme-modern .settings-modal__content,
+body.theme-modern .data-transfer,
+body.theme-modern .import-section--hero,
+body.theme-modern .settings-panel {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Fainter border */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    border-radius: 18px;
+    /* Slightly more rounded */
+}
+
+/* Buttons - Pill shaped, clean */
+body.theme-modern .btn {
+    border-radius: 980px;
+    /* Full pill */
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    padding: 0.6rem 1.4rem;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+}
+
+body.theme-modern .btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+}
+
+body.theme-modern .btn.btn--primary,
+body.theme-modern .import-btn {
+    background: #0a84ff;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+}
+
+body.theme-modern .btn.btn--primary:hover,
+body.theme-modern .import-btn:hover {
+    background: #007aff;
+    box-shadow: 0 6px 16px rgba(10, 132, 255, 0.4);
+}
+
+/* Typography adjustments */
+body.theme-modern h1,
+body.theme-modern h2,
+body.theme-modern h3 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+/* Inputs */
+body.theme-modern .text-input,
+body.theme-modern .import-input {
+    background: rgba(118, 118, 128, 0.24);
+    /* iOS input field style */
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 17px;
+    /* Apple standard */
+}
+
+body.theme-modern .text-input:focus,
+body.theme-modern .import-input:focus {
+    background: rgba(118, 118, 128, 0.35);
+    outline: none;
+    box-shadow: none;
+    /* Apple inputs rarely glow, they just darken/lighten */
+}
+
+/* Remove seasonal stuff */
+body.theme-modern .seasonal-accent {
+    display: none !important;
+}
+
+/* Soft ambient glow background (Mesh gradient style) */
+
+
+/* Modernize lists and items */
+body.theme-modern .movie-list li,
+body.theme-modern .history-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}

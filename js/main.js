@@ -24,6 +24,7 @@ import {
 } from './ui.js';
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
+import { initDiscord } from './discord.js';
 import {
     basePalette,
     clampWeight,
@@ -32,7 +33,9 @@ import {
     getPaletteColorForIndex,
     getStoredWeight,
     hanukkahPalette,
-    holidayPalette
+    holidayPalette,
+    cyberPalette,
+    modernPalette
 } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         importToggleBtn: document.getElementById('import-toggle'),
         importCard: document.getElementById('import-card'),
         importCardBody: document.getElementById('import-body'),
-        exampleUrlEl: document.getElementById('example-url'),
 
         // Main UI
         movieListWrapper: document.querySelector('.movie-list-wrapper'),
@@ -83,10 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
         selectionCard: document.getElementById('selection-card'),
         selectionBody: document.getElementById('selection-body'),
         selectionToggleBtn: document.getElementById('selection-toggle'),
-        advancedCard: document.getElementById('advanced-card'),
-        advancedBody: document.getElementById('advanced-body'),
-        advancedCardToggleBtn: document.getElementById('advanced-card-toggle'),
         sortSelect: document.getElementById('movie-sort'),
+
+        // Settings Modal
+        settingsModal: document.getElementById('settings-modal'),
+        settingsOpenBtn: document.getElementById('settings-open'),
+        settingsCloseBtn: document.getElementById('settings-modal-close'),
+        settingsTabs: document.querySelectorAll('.settings-tab-btn'),
+        settingsPanels: document.querySelectorAll('.settings-panel'),
+
+        // Discord
+        discordWebhookInput: document.getElementById('discord-webhook-url'),
+        discordTestBtn: document.getElementById('discord-test-btn'),
 
         // Filters & Options
         searchInput: document.getElementById('movie-search'), // Check HTML
@@ -180,13 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Import
     initImport(elements);
 
+    // Initialize Discord
+    initDiscord(elements);
+
     const syncSpinModeToggles = () => {
-        const { oneSpinToggle, randomBoostToggle, advancedBody } = elements;
+        const { oneSpinToggle, randomBoostToggle } = elements;
         if (!oneSpinToggle || !randomBoostToggle) {
             return;
         }
-
-        const advancedEnabled = advancedBody ? !advancedBody.hidden : true;
 
         if (randomBoostToggle.checked) {
             oneSpinToggle.checked = false;
@@ -254,11 +265,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizeTheme = (value) => {
         if (value === 'holiday') return 'holiday';
         if (value === 'hanukkah') return 'hanukkah';
+        if (value === 'cyber') return 'cyber';
+        if (value === 'modern') return 'modern';
         return 'default';
     };
     const getPaletteForTheme = (theme) => {
         if (theme === 'holiday') return holidayPalette;
         if (theme === 'hanukkah') return hanukkahPalette;
+        if (theme === 'cyber') return cyberPalette;
+        if (theme === 'modern') return modernPalette;
         return basePalette;
     };
 
@@ -305,32 +320,23 @@ document.addEventListener('DOMContentLoaded', () => {
         applyThemePalette(previousTheme, safeTheme, { force });
         document.body.classList.toggle('theme-holiday', safeTheme === 'holiday');
         document.body.classList.toggle('theme-hanukkah', safeTheme === 'hanukkah');
+        document.body.classList.toggle('theme-cyber', safeTheme === 'cyber');
+        document.body.classList.toggle('theme-modern', safeTheme === 'modern');
         if (elements.themeSelect) {
             elements.themeSelect.value = safeTheme;
         }
         appState.preferences.theme = safeTheme;
     };
 
-    const DEFAULT_EXAMPLE_URL = 'https://letterboxd.com/suspence0/list/the-wheel/';
-    const HOLIDAY_EXAMPLE_URL = 'https://letterboxd.com/suspence0/list/wheelmas/';
 
-    const updateExampleUrl = (theme) => {
-        if (!elements.exampleUrlEl) {
-            return;
-        }
-        const nextUrl = theme === 'holiday' ? HOLIDAY_EXAMPLE_URL : DEFAULT_EXAMPLE_URL;
-        elements.exampleUrlEl.textContent = nextUrl;
-    };
 
     const initThemeSelector = () => {
         applyTheme(appState.preferences?.theme, { force: true });
-        updateExampleUrl(appState.preferences?.theme || 'default');
 
         if (elements.themeSelect) {
             elements.themeSelect.addEventListener('change', (event) => {
                 const nextTheme = normalizeTheme(event.target.value);
                 applyTheme(nextTheme);
-                updateExampleUrl(nextTheme);
                 saveState();
                 updateMovieList();
             });
@@ -403,15 +409,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncSpinModeToggles();
 
-    // Example URL Click Handler
-    if (elements.exampleUrlEl) {
-        elements.exampleUrlEl.addEventListener('click', () => {
-            if (elements.letterboxdProxyInput) {
-                elements.letterboxdProxyInput.value = elements.exampleUrlEl.textContent;
-                elements.letterboxdProxyInput.focus();
-                // Optional: trigger input event if there's validation attached to it
-                elements.letterboxdProxyInput.dispatchEvent(new Event('input'));
+    // Settings Modal Logic
+    if (elements.settingsOpenBtn && elements.settingsModal) {
+        elements.settingsOpenBtn.addEventListener('click', () => {
+            elements.settingsModal.hidden = false;
+            // Also ensure correct tab is active (default to first if none)
+            // Logic to animate or handle focus can go here
+        });
+    }
+
+    if (elements.settingsCloseBtn && elements.settingsModal) {
+        elements.settingsCloseBtn.addEventListener('click', () => {
+            elements.settingsModal.hidden = true;
+        });
+    }
+
+    // Close on backdrop click
+    if (elements.settingsModal) {
+        elements.settingsModal.addEventListener('click', (event) => {
+            if (event.target === elements.settingsModal) {
+                elements.settingsModal.hidden = true;
             }
+        });
+    }
+
+    if (elements.settingsTabs) {
+        elements.settingsTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('aria-controls');
+
+                // Update Tabs
+                elements.settingsTabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+                tab.setAttribute('aria-selected', 'true');
+
+                // Update Panels
+                if (elements.settingsPanels) {
+                    elements.settingsPanels.forEach(panel => {
+                        panel.hidden = panel.id !== targetId;
+                    });
+                }
+            });
         });
     }
 

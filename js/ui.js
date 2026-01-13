@@ -23,6 +23,7 @@ import {
     setWeightMode,
     getSelectionOdds
 } from './wheel.js';
+import { sendDiscordNotification } from './discord.js';
 
 // DOM Elements
 const elements = {};
@@ -1328,7 +1329,23 @@ export function showWinnerPopup(movie, context = {}) {
     const metadataKey = buildMetadataKey(movie);
     currentModalMetadataKey = metadataKey;
     setWinnerModalLoadingState(movie);
-    populateWinnerModalMetadata(movie, metadataKey);
+    populateWinnerModalMetadata(movie, metadataKey).then((metadata) => {
+        if (!metadata) return;
+        const posterUrl = metadata.poster && metadata.poster !== 'N/A' ? metadata.poster : '';
+
+        // Calculate Odds
+        const totalWeight = appState.movies.reduce((sum, m) => {
+            return appState.selectedIds.has(m.id) ? sum + getStoredWeight(m) : sum;
+        }, 0);
+        const movieWeight = getStoredWeight(movie);
+        const odds = totalWeight > 0 ? ((movieWeight / totalWeight) * 100).toFixed(1) + '%' : 'N/A';
+
+        sendDiscordNotification(movie.name, posterUrl, {
+            odds: odds,
+            weight: movieWeight,
+            link: movie.uri || null
+        });
+    });
 
     elements.winModal.setAttribute('aria-hidden', 'false');
     elements.winModal.removeAttribute('hidden');
@@ -1405,8 +1422,7 @@ function setWinnerModalLoadingState(movie) {
 
 async function populateWinnerModalMetadata(movie, metadataKey) {
     if (!movie || !movie.name) {
-        applyWinnerModalFallback(movie);
-        return;
+        return applyWinnerModalFallback(movie);
     }
 
     const result = await fetchMovieMetadata(movie);
@@ -1415,8 +1431,7 @@ async function populateWinnerModalMetadata(movie, metadataKey) {
     }
 
     if (!result || result.status !== 'success' || !result.data) {
-        applyWinnerModalFallback(movie);
-        return;
+        return applyWinnerModalFallback(movie);
     }
 
     const { title, runtime, plot, poster, year } = result.data;
@@ -1454,6 +1469,7 @@ async function populateWinnerModalMetadata(movie, metadataKey) {
         }
         elements.winModalTrailer.classList.remove('hidden');
     }
+    return result.data;
 }
 
 function applyWinnerModalFallback(movie) {
@@ -1486,6 +1502,12 @@ function applyWinnerModalFallback(movie) {
         }
         elements.winModalTrailer.classList.remove('hidden');
     }
+
+    return {
+        title: movie.name,
+        year: movie.year || '',
+        poster: ''
+    };
 }
 
 async function fetchMovieMetadata(movie) {

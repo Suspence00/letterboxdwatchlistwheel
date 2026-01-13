@@ -1,0 +1,219 @@
+/* Header Controls */
+.header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    position: relative;
+    width: 100%;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #8b9bb4);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    color: var(--text, #fff);
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(15deg);
+}
+
+/* Settings Modal */
+.settings-modal__content {
+    max-width: 600px;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    text-align: left;
+}
+
+.settings-modal__content .win-modal__title {
+    padding: 1.5rem 1.5rem 0.5rem;
+    margin: 0;
+    text-align: left;
+}
+
+.settings-modal__content .win-modal__close {
+    top: 1.5rem;
+    right: 1.5rem;
+}
+
+/* Tabs */
+.settings-tabs {
+    display: flex;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.settings-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #8b9bb4);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.settings-tab-btn:hover {
+    color: var(--text, #fff);
+}
+
+.settings-tab-btn[aria-selected="true"] {
+    color: var(--accent, #ff8600);
+}
+
+.settings-tab-btn[aria-selected="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent, #ff8600);
+    border-radius: 2px 2px 0 0;
+}
+
+/* Tab Content */
+.settings-tab-content {
+    padding: 0 1.5rem 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Settings Groups */
+.settings-group {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.settings-group legend {
+    padding: 0 0.5rem;
+    color: var(--text-muted, #8b9bb4);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Spin Mode Toggles */
+.filter-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.filter-toggle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-toggle input[type="checkbox"] {
+    margin-top: 0.25rem;
+    accent-color: var(--accent, #ff8600);
+    width: 1.1em;
+    height: 1.1em;
+}
+
+.toggle-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.toggle-content span {
+    font-weight: 500;
+    color: var(--text, #fff);
+}
+
+.toggle-content .helper-text {
+    font-size: 0.8rem;
+    color: var(--text-muted, #8b9bb4);
+    margin: 0;
+}
+
+/* Data Transfer Specifics */
+.data-transfer__card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-transfer__card h4 {
+    margin: 0 0 0.5rem;
+    color: var(--text, #fff);
+}
+
+.backup-modal__fields {
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.backup-modal__fields input[type="text"],
+.backup-modal__fields textarea {
+    width: 100%;
+    /* Reset flex to prevent 220px height from .text-input in column layout */
+    flex: 0 0 auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text, #fff);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.backup-modal__fields input[type="text"]:focus,
+.backup-modal__fields textarea:focus {
+    outline: 2px solid var(--accent, #ff8600);
+    border-color: transparent;
+}

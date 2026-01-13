@@ -70,7 +70,8 @@ export function loadState() {
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
-                themeColorOverrides: safeOverrides
+                themeColorOverrides: safeOverrides,
+                discordWebhookUrl: loaded.preferences.discordWebhookUrl || ''
             };
         }
         if (typeof appState.filter.showCustoms !== 'boolean') {

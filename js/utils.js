@@ -56,6 +56,39 @@ export const hanukkahPalette = [
     '#fbbf24'
 ];
 
+export const cyberPalette = [
+    '#f70776', // Hot Pink
+    '#2de2e6', // Cyan
+    '#9d4edd', // Deep Purple
+    '#f7f707', // Neon Yellow
+    '#ff0055', // Red Pink
+    '#02fdfe', // Bright Blue
+    '#d60270', // Magenta
+    '#9b5de5', // Lavender
+    '#0038a8', // Deep Blue
+    '#f15bb5', // Bubblegum
+    '#00f5d4', // Teal Neon
+    '#7209b7', // Violet
+    '#4cc9f0', // Sky Neon
+    '#4361ee', // Royal Blue
+    '#3a0ca3'  // Indigo
+];
+
+export const modernPalette = [
+    '#ff453a', // Red
+    '#ff9f0a', // Orange
+    '#ffd60a', // Yellow
+    '#32d74b', // Green
+    '#64d2ff', // Teal
+    '#0a84ff', // Blue
+    '#5e5ce6', // Indigo
+    '#bf5af2', // Purple
+    '#ff375f', // Pink
+    '#ac8e68', // Brown
+    '#ff453a', // Red (Repeat)
+    '#0a84ff'  // Blue (Repeat)
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
 const getActiveTheme = () => {
@@ -68,6 +101,12 @@ const getActiveTheme = () => {
     if (document.body && document.body.classList.contains('theme-hanukkah')) {
         return 'hanukkah';
     }
+    if (document.body && document.body.classList.contains('theme-cyber')) {
+        return 'cyber';
+    }
+    if (document.body && document.body.classList.contains('theme-modern')) {
+        return 'modern';
+    }
     return 'default';
 };
 
@@ -78,6 +117,12 @@ const getActivePalette = () => {
     }
     if (theme === 'hanukkah') {
         return hanukkahPalette;
+    }
+    if (theme === 'cyber') {
+        return cyberPalette;
+    }
+    if (theme === 'modern') {
+        return modernPalette;
     }
     return basePalette;
 };
