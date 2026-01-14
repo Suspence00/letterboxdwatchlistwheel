@@ -84,7 +84,7 @@ async function handleLetterboxdProxyImport(event) {
         listUrl = `https://letterboxd.com/${listUrl.replace(/^\/+/, '')}/`;
     }
 
-    const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}`;
+    const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}&t=${Date.now()}`;
 
     status.textContent = 'Fetching list from Letterboxd…';
     status.classList.remove('status--error', 'status--success');
@@ -93,6 +93,7 @@ async function handleLetterboxdProxyImport(event) {
         const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error(`Worker returned ${res.status}`);
         const csvText = await res.text();
+        console.log('Proxy content length:', csvText.length);
 
         // Parse CSV text using your custom parser
         const rows = parseCSV(csvText, ',').filter(
