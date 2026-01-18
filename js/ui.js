@@ -1343,7 +1343,8 @@ export function showWinnerPopup(movie, context = {}) {
         sendDiscordNotification(movie.name, posterUrl, {
             odds: odds,
             weight: movieWeight,
-            link: movie.uri || null
+            link: movie.uri || null,
+            spinMode: spinMode
         });
     });
 

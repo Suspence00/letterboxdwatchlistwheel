@@ -54,7 +54,8 @@ export async function sendDiscordNotification(winnerName, movieImage, options = 
     const {
         odds = null,
         weight = null,
-        link = null
+        link = null,
+        spinMode = null
     } = typeof options === 'object' ? options : {};
 
     if (!WEBHOOK_URL) {
@@ -63,14 +64,15 @@ export async function sendDiscordNotification(winnerName, movieImage, options = 
     }
 
     const title = isTest ? `🔔 Webhook Test: ${winnerName}` : `${winnerName} is the winner!`;
+    const spinModeLabel = options.spinModeLabel || (options.spinMode ? (options.spinMode.charAt(0).toUpperCase() + options.spinMode.slice(1).replace('-', ' ')) : 'Spin');
     const description = isTest
-        ? "If you can see this, the Wheelbur webhook integration is working!"
-        : "Praise the Wheel!";
+        ? `If you can see this, the Wheelbur webhook integration for **${winnerName}** is working!`
+        : `The Wheel has spoken! **${winnerName}** was selected via **${spinModeLabel}**. Praise the Wheel!`;
 
     const fields = [];
     if (!isTest) {
-        if (odds) fields.push({ name: "Original Odds", value: odds, inline: true });
-        if (weight) fields.push({ name: "Boosts", value: `${weight}x`, inline: true });
+        if (odds) fields.push({ name: "Odds", value: odds, inline: true });
+        if (weight) fields.push({ name: "Weight", value: `${weight}x`, inline: true });
         if (link) fields.push({ name: "Letterboxd", value: `[View Movie](${link})`, inline: true });
     }
 
