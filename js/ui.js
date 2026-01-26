@@ -185,7 +185,7 @@ export function initUI(domElements) {
 
     updateWheelAsideLayout = createWheelAsideUpdater(elements);
     initVirtualList();
-    initBoostStation();
+    initBoostControls();
     resetSliceEditor();
 }
 
@@ -1999,10 +1999,21 @@ function reorderMovieListForKnockout() {
 }
 
 // Boost Station Logic
-function initBoostStation() {
-    if (elements.boostStationBtn) {
-        elements.boostStationBtn.addEventListener('click', openBoostStation);
+// Boost Controls
+function initBoostControls() {
+    if (elements.randomBoostBtn) {
+        elements.randomBoostBtn.addEventListener('click', () => {
+            promptForInput('Who is this boost for?', 'Booster Name', (name) => {
+                const wheelSection = document.querySelector('.wheel-section');
+                if (wheelSection) {
+                    wheelSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                spinWheel('random-boost', { booster: name });
+            });
+        });
     }
+
+    // Keep Boost Modal listeners active just in case
     if (elements.boostModalCloseBtn) {
         elements.boostModalCloseBtn.addEventListener('click', closeBoostStation);
     }
@@ -2011,6 +2022,7 @@ function initBoostStation() {
             if (e.target === elements.boostModal) closeBoostStation();
         });
     }
+
     if (elements.boostMovieFilter) {
         elements.boostMovieFilter.addEventListener('input', (e) => {
             filterBoostOptions(e.target.value);

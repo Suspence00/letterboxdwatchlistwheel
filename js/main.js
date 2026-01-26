@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Filters & Options
         searchInput: document.getElementById('movie-search'),
-        boostStationBtn: document.getElementById('boost-station-btn'),
+        randomBoostBtn: document.getElementById('random-boost-btn'),
         spinModeRadios: document.querySelectorAll('input[name="spin-mode"]'),
         finalistsAlwaysVisibleToggle: document.getElementById('finalists-always-visible'),
         finalistsHideToggle: document.getElementById('finalists-hide-box'),
