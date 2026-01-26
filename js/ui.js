@@ -2250,12 +2250,38 @@ function handleBoosterTagClick(movie, name, count) {
     const existingOverlay = document.getElementById('booster-action-overlay');
     if (existingOverlay) existingOverlay.remove();
 
+    // Get timestamps for this person
+    const history = movie.boosters
+        .filter(b => (typeof b === 'string' ? b : b.name) === name)
+        .map(b => (typeof b === 'object' && b.timestamp) ? b.timestamp : null)
+        .sort((a, b) => {
+            if (!a) return 1; // Put legacy (null) at bottom
+            if (!b) return -1;
+            return b - a; // Newest first
+        });
+
     const overlay = document.createElement('div');
     overlay.id = 'booster-action-overlay';
-    overlay.className = 'win-modal show'; // Reuse existing modal styles
+    overlay.className = 'win-modal show';
     overlay.style.zIndex = '3000';
 
     const currentColor = getBoosterColor(name);
+
+    // Build history list HTML
+    const historyListHtml = history.length > 0
+        ? `<div style="margin: 0 0 1rem 0; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
+            <ul style="margin: 0; padding: 0; list-style: none; max-height: 120px; overflow-y: auto;">
+            ${history.map(ts => {
+            const dateStr = ts ? new Date(ts).toLocaleString(undefined, {
+                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+            }) : 'Legacy boost';
+            return `<li style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); display:flex; justify-content:space-between;">
+                    <span>Wait +1</span>
+                    <span>${dateStr}</span>
+                </li>`;
+        }).join('')}
+           </ul></div>`
+        : '';
 
     overlay.innerHTML = `
         <div class="win-modal__content" style="max-width: 320px; text-align: left; padding: 1.5rem;">
@@ -2264,9 +2290,13 @@ function handleBoosterTagClick(movie, name, count) {
                  <h3 class="win-modal__title" style="font-size: 1.2rem; margin:0;">${name}</h3>
                  <input type="color" id="booster-color-picker" value="${currentColor}" title="Change color for ${name}" style="background:none; border:none; width:30px; height:30px; cursor:pointer;">
             </div>
-            <p style="color: var(--muted); margin-bottom: 1.25rem; font-size: 0.9rem;">
-                Contributions to <strong>${movie.name}</strong>: ${count}
+            
+            <p style="color: var(--muted); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Contributions to <strong>${movie.name}</strong>: <strong>${count}</strong>
             </p>
+            
+            ${historyListHtml}
+
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <button id="action-add-boost" class="btn" style="justify-content: center;">
                     ➕ Add Boost (+1)
