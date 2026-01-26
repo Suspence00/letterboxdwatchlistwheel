@@ -2365,7 +2365,8 @@ function modifyBooster(movie, name, delta) {
         for (let i = 0; i < delta; i++) {
             movie.boosters.push({
                 name: name,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                source: 'manual'
             });
         }
 

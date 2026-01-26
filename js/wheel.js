@@ -570,9 +570,10 @@ function performSpin(selectedMovies, options = {}) {
     });
 }
 
-export async function spinWheel(spinMode = 'knockout') {
+export async function spinWheel(spinMode = 'knockout', options = {}) {
     if (isSpinning || isLastStandingInProgress) return;
 
+    const { booster } = options;
     const selectedMovies = getFilteredSelectedMovies();
     if (!selectedMovies.length) {
         return;
@@ -628,6 +629,14 @@ export async function spinWheel(spinMode = 'knockout') {
         const boostedWeight = clampWeight((Number(winningMovie.weight) || 1) + 1);
         if (boostedWeight !== winningMovie.weight) {
             winningMovie.weight = boostedWeight;
+        }
+        if (booster) {
+            if (!winningMovie.boosters) winningMovie.boosters = [];
+            winningMovie.boosters.push({
+                name: booster,
+                timestamp: Date.now(),
+                source: 'random'
+            });
         }
     }
     playWinSound();
