@@ -2009,20 +2009,6 @@ function createWheelAsideUpdater(domElements) {
     };
 }
 
-// Missing Utilities Restoration
-// Restoration of truly missing functions
-function handleSpinPrep() {
-    closeWinnerPopup({ restoreFocus: false });
-    if (elements.statusMessage) elements.statusMessage.textContent = '';
-    resetSliceEditor();
-    updateWheelAsideLayout();
-}
-
-function resetSliceEditor() {
-    activeSliceId = null;
-    if (elements.sliceEditor) elements.sliceEditor.hidden = true;
-    updateWheelAsideLayout();
-}
 
 function populateSliceEditor(m) {
     if (!elements.sliceEditor) return;
@@ -2031,16 +2017,5 @@ function populateSliceEditor(m) {
     if (elements.sliceWeightValue) elements.sliceWeightValue.textContent = getStoredWeight(m) + 'x';
 }
 
-function syncSliceEditorWithSelection() {
-    if (activeSliceId && !appState.selectedIds.has(activeSliceId)) resetSliceEditor();
-}
-
-function scheduleWheelUpdate(sel) {
-    if (wheelUpdateFrame) cancelAnimationFrame(wheelUpdateFrame);
-    wheelUpdateFrame = requestAnimationFrame(() => {
-        drawWheel(sel || getFilteredMovies().filter(m => appState.selectedIds.has(m.id)));
-        wheelUpdateFrame = null;
-    });
-}
 
 
