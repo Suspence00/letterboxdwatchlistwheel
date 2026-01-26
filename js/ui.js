@@ -2250,14 +2250,17 @@ function handleBoosterTagClick(movie, name, count) {
     const existingOverlay = document.getElementById('booster-action-overlay');
     if (existingOverlay) existingOverlay.remove();
 
-    // Get timestamps for this person
+    // Get history for this person
     const history = movie.boosters
         .filter(b => (typeof b === 'string' ? b : b.name) === name)
-        .map(b => (typeof b === 'object' && b.timestamp) ? b.timestamp : null)
+        .map(b => {
+            if (typeof b === 'string') return { timestamp: null, source: 'legacy' };
+            return { timestamp: b.timestamp, source: b.source || 'manual' };
+        })
         .sort((a, b) => {
-            if (!a) return 1; // Put legacy (null) at bottom
-            if (!b) return -1;
-            return b - a; // Newest first
+            if (!a.timestamp) return 1; // Put legacy at bottom
+            if (!b.timestamp) return -1;
+            return b.timestamp - a.timestamp; // Newest first
         });
 
     const overlay = document.createElement('div');
@@ -2271,12 +2274,17 @@ function handleBoosterTagClick(movie, name, count) {
     const historyListHtml = history.length > 0
         ? `<div style="margin: 0 0 1rem 0; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
             <ul style="margin: 0; padding: 0; list-style: none; max-height: 120px; overflow-y: auto;">
-            ${history.map(ts => {
-            const dateStr = ts ? new Date(ts).toLocaleString(undefined, {
+            ${history.map(item => {
+            const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString(undefined, {
                 month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
             }) : 'Legacy boost';
+
+            let label = 'Boost +1';
+            if (item.source === 'random') label = '🎲 Random Boost';
+            else if (item.source === 'manual') label = '➕ Manual Boost';
+
             return `<li style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); display:flex; justify-content:space-between;">
-                    <span>Wait +1</span>
+                    <span style="color: var(--text);">${label}</span>
                     <span>${dateStr}</span>
                 </li>`;
         }).join('')}
