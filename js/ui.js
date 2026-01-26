@@ -2214,9 +2214,10 @@ function getBoosterColor(name) {
 function renderBoosterTags(container, movie) {
     if (!movie.boosters || !movie.boosters.length) return;
 
-    // Group by name
+    // Group by name (handle string or object)
     const counts = {};
-    movie.boosters.forEach(name => {
+    movie.boosters.forEach(b => {
+        const name = typeof b === 'string' ? b : b.name;
         counts[name] = (counts[name] || 0) + 1;
     });
 
@@ -2229,6 +2230,7 @@ function renderBoosterTags(container, movie) {
         tag.title = `Manage boosts for ${name}`;
 
         const color = getBoosterColor(name);
+
         tag.style.backgroundColor = `${color}40`;
         tag.style.borderColor = color;
         tag.style.color = 'var(--text)';
