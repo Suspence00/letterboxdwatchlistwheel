@@ -569,12 +569,12 @@ function buildMovieListItem(movie, index, context) {
         weightHelp.textContent = '?';
         weightLabel.appendChild(weightHelp);
 
-        // Boosters Text
+        // Boosters Tags
         if (movie.boosters && movie.boosters.length > 0) {
-            const boostersText = document.createElement('span');
-            boostersText.className = 'movie-boosters';
-            boostersText.textContent = formatBoostersText(sanitizedWeight, movie.boosters);
-            label.appendChild(boostersText);
+            const boostersList = document.createElement('div');
+            boostersList.className = 'movie-boosters-list';
+            renderBoosterTags(boostersList, movie);
+            label.appendChild(boostersList);
         }
 
         const controlsDiv = document.createElement('div');
@@ -2188,6 +2188,144 @@ function populateSliceEditor(m) {
     elements.sliceEditor.hidden = false;
     if (elements.sliceEditorName) elements.sliceEditorName.textContent = m.name;
     if (elements.sliceWeightValue) elements.sliceWeightValue.textContent = getStoredWeight(m) + 'x';
+}
+
+function renderBoosterTags(container, movie) {
+    if (!movie.boosters || !movie.boosters.length) return;
+
+    // Group by name
+    const counts = {};
+    movie.boosters.forEach(name => {
+        counts[name] = (counts[name] || 0) + 1;
+    });
+
+    // Sort by count desc
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+    sorted.forEach(([name, count]) => {
+        const tag = document.createElement('span');
+        tag.className = 'booster-tag';
+        tag.title = `Manage boosts for ${name}`;
+        tag.innerHTML = `${name} <span class="booster-tag__count">x${count}</span>`;
+        tag.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleBoosterTagClick(movie, name, count);
+        });
+        container.appendChild(tag);
+    });
+}
+
+function handleBoosterTagClick(movie, name, count) {
+    const existingOverlay = document.getElementById('booster-action-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'booster-action-overlay';
+    overlay.className = 'win-modal show'; // Reuse existing modal styles
+    overlay.style.zIndex = '3000';
+
+    overlay.innerHTML = `
+        <div class="win-modal__content" style="max-width: 320px; text-align: left; padding: 1.5rem;">
+            <button type="button" class="win-modal__close" style="top: 0.5rem; right: 0.5rem;">&times;</button>
+            <h3 class="win-modal__title" style="font-size: 1.2rem; margin-bottom: 0.25rem;">${name}</h3>
+            <p style="color: var(--muted); margin-bottom: 1.25rem; font-size: 0.9rem;">
+                Contributions to <strong>${movie.name}</strong>: ${count}
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button id="action-add-boost" class="btn" style="justify-content: center;">
+                    ➕ Add Boost (+1)
+                </button>
+                <button id="action-remove-boost" class="btn" style="justify-content: center;">
+                    ➖ Remove One (-1)
+                </button>
+                <button id="action-remove-all" class="btn btn--danger" style="justify-content: center;">
+                    🗑️ Remove All
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+
+    // Bind events
+    overlay.querySelector('.win-modal__close').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+    });
+
+    overlay.querySelector('#action-add-boost').addEventListener('click', () => {
+        modifyBooster(movie, name, 1);
+        close();
+    });
+
+    overlay.querySelector('#action-remove-boost').addEventListener('click', () => {
+        modifyBooster(movie, name, -1);
+        close();
+    });
+
+    overlay.querySelector('#action-remove-all').addEventListener('click', () => {
+        modifyBooster(movie, name, -count); // Remove all
+        close();
+    });
+}
+
+function modifyBooster(movie, name, delta) {
+    const currentW = getStoredWeight(movie);
+
+    if (delta > 0) {
+        // Add
+        const newW = clampWeight(currentW + delta);
+        if (newW === currentW) {
+            alert('Max weight reached!');
+            return;
+        }
+        movie.weight = newW;
+        if (!movie.boosters) movie.boosters = [];
+        for (let i = 0; i < delta; i++) movie.boosters.push(name);
+
+    } else if (delta < 0) {
+        // Remove
+        const removeCount = Math.abs(delta);
+
+        // 1. Count how many this person has to ensure we don't underflow logic
+        // (Though the UI shouldn't allow it if count is accurate)
+        const personIndices = movie.boosters.map((n, i) => n === name ? i : -1).filter(i => i !== -1);
+
+        if (personIndices.length === 0) return;
+
+        // 2. Determine how many to remove
+        const toRemove = Math.min(removeCount, personIndices.length);
+
+        // 3. Remove them (by name instance)
+        // We iterate `toRemove` times, finding the Last index of that name each time.
+        for (let i = 0; i < toRemove; i++) {
+            const idx = movie.boosters.lastIndexOf(name);
+            if (idx > -1) movie.boosters.splice(idx, 1);
+        }
+
+        // 4. Update weight
+        // Weight = 1 (base) + boosters
+        // But we must respect the physical weight prop if it was manually set higher than boosters?
+        // Actually, boosters feature usually implies weight is driven by them + base.
+        // Let's recalculate safely: 
+        // If current weight > (boosters + 1), we decrease it by `toRemove`.
+        // If current weight <= (boosters + 1), we set it to (boosters + 1).
+
+        const calculatedWeightFromBoosters = (movie.boosters ? movie.boosters.length : 0) + 1;
+        // If we just removed X boosters, the weight should drop by X, unless it hits 1.
+        const targetW = clampWeight(Math.max(1, currentW - toRemove));
+
+        // Sanity check: ensure weight isn't less than what boosters imply? 
+        // Typically weight >= boosters + 1.
+        // So let's just do:
+        movie.weight = clampWeight(Math.max(calculatedWeightFromBoosters, targetW));
+    }
+
+    debouncedSaveState();
+    updateMovieList();
 }
 
 
