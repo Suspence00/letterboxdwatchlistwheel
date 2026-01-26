@@ -25,6 +25,41 @@ import {
 } from './wheel.js';
 import { sendDiscordNotification } from './discord.js';
 
+const WEIGHT_MODES = {
+    normal: {
+        weightLabel: 'Weight',
+        weightHelp: 'Higher value = More likely to win',
+        riskLabel: 'Chance',
+        winLabel: 'Win Chance'
+    },
+    inverse: {
+        weightLabel: 'Safety',
+        weightHelp: 'Higher value = Less likely to be eliminated',
+        riskLabel: 'Risk',
+        winLabel: 'Survival Chance'
+    }
+};
+
+function getModeCopy(isInverse) {
+    return isInverse ? { ...WEIGHT_MODES.inverse } : { ...WEIGHT_MODES.normal };
+}
+
+function applyWeightCopy(copy) {
+    if (elements.sliceWeightLabel) {
+        elements.sliceWeightLabel.textContent = copy.weightLabel;
+    }
+    if (elements.sliceWeightHelp) {
+        elements.sliceWeightHelp.title = copy.weightHelp;
+        elements.sliceWeightHelp.setAttribute('aria-label', copy.weightHelp);
+    }
+    if (elements.sliceOddsLabelRisk) {
+        elements.sliceOddsLabelRisk.textContent = copy.riskLabel;
+    }
+    if (elements.sliceOddsLabelWin) {
+        elements.sliceOddsLabelWin.textContent = copy.winLabel;
+    }
+}
+
 // DOM Elements
 const elements = {};
 let activeSliceId = null;
@@ -547,6 +582,8 @@ function buildMovieListItem(movie, index, context) {
     li.appendChild(checkbox);
     li.appendChild(label);
 
+
+
     if (weightsEnabled) {
         const weightWrapper = document.createElement('div');
         weightWrapper.className = 'movie-weight';
@@ -563,6 +600,17 @@ function buildMovieListItem(movie, index, context) {
         weightHelp.title = currentWeightCopy.weightHelp;
         weightHelp.textContent = '?';
         weightLabel.appendChild(weightHelp);
+
+        // Boosters Text
+        if (movie.boosters && movie.boosters.length > 0) {
+            const boostersText = document.createElement('span');
+            boostersText.className = 'movie-boosters';
+            boostersText.textContent = formatBoostersText(sanitizedWeight, movie.boosters);
+            label.appendChild(boostersText);
+        }
+
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'weight-controls';
 
         const weightSelect = document.createElement('select');
         weightSelect.id = weightSelectId;
@@ -587,8 +635,31 @@ function buildMovieListItem(movie, index, context) {
             syncSliceEditorWithSelection(getFilteredSelectedMovies());
         });
 
+        // Boost Button
+        const boostBtn = document.createElement('button');
+        boostBtn.type = 'button';
+        boostBtn.className = 'btn-boost';
+        boostBtn.textContent = '+';
+        boostBtn.title = 'Add a booster';
+        boostBtn.disabled = randomBoostActive;
+        boostBtn.addEventListener('click', () => {
+            if (randomBoostActive) return;
+            promptForInput('Who is boosting this movie?', 'Booster Name', (name) => {
+                const currentW = getStoredWeight(movie);
+                const newW = clampWeight(currentW + 1);
+                movie.weight = newW;
+                if (!movie.boosters) movie.boosters = [];
+                movie.boosters.push(name);
+                debouncedSaveState();
+                updateMovieList();
+            });
+        });
+
+        controlsDiv.appendChild(weightSelect);
+        controlsDiv.appendChild(boostBtn);
+
         weightWrapper.appendChild(weightLabel);
-        weightWrapper.appendChild(weightSelect);
+        weightWrapper.appendChild(controlsDiv);
         li.appendChild(weightWrapper);
 
         const colorWrapper = document.createElement('div');
@@ -631,6 +702,74 @@ function buildMovieListItem(movie, index, context) {
     applyKnockoutStatusToElement(li, knockoutStatus);
 
     return li;
+}
+
+function formatBoostersText(weight, boosters = []) {
+    if (!boosters || !boosters.length) return '';
+    const counts = {};
+    boosters.forEach(name => {
+        counts[name] = (counts[name] || 0) + 1;
+    });
+
+    // Sort by count desc
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const parts = sorted.map(([name, count]) => `${count}x ${name}`);
+
+    // Check if there is base weight not attributed to anyone
+    const attributedWeight = boosters.length;
+    // The visual weight might be clamped, but boosters could exceed it theoretically if logic drifts, 
+    // but typically weight >= attributed. 
+    // If weight > attributed, the difference is "Base" or anonymous. 
+    // User asked for: "3x (1x Spencer, 2x Riley)"
+    // If weight is 4x and we have 3 boosters, it implies 1x is base. We usually don't list base unless asked.
+    // Let's just list the boosters in parens.
+
+    return `(${parts.join(', ')})`;
+}
+
+export function promptForInput(title, label, callback) {
+    const modal = document.getElementById('input-modal');
+    const form = document.getElementById('input-modal-form');
+    const input = document.getElementById('input-modal-field');
+    const titleEl = document.getElementById('input-modal-title');
+    const labelEl = document.getElementById('input-modal-label');
+    const closeBtn = document.getElementById('input-modal-close');
+
+    if (!modal || !form || !input) return;
+
+    titleEl.textContent = title;
+    labelEl.textContent = label;
+    input.value = '';
+
+    const close = () => {
+        modal.classList.remove('show');
+        setTimeout(() => { modal.hidden = true; }, 200);
+        input.value = ''; // Clear for security/cleanliness
+    };
+
+    const submitHandler = (e) => {
+        e.preventDefault();
+        const value = input.value.trim();
+        if (value) {
+            callback(value);
+            close();
+        }
+        form.removeEventListener('submit', submitHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+    };
+
+    const closeHandler = () => {
+        close();
+        form.removeEventListener('submit', submitHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+    };
+
+    form.addEventListener('submit', submitHandler);
+    closeBtn.addEventListener('click', closeHandler);
+
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add('show'));
+    input.focus();
 }
 
 export function updateMovieList() {
