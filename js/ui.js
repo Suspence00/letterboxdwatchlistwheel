@@ -618,7 +618,11 @@ function buildMovieListItem(movie, index, context) {
                 const newW = clampWeight(currentW + 1);
                 movie.weight = newW;
                 if (!movie.boosters) movie.boosters = [];
-                movie.boosters.push(name);
+                movie.boosters.push({
+                    name: name,
+                    timestamp: Date.now(),
+                    source: 'manual'
+                });
                 debouncedSaveState();
                 updateMovieList();
             });
