@@ -20,7 +20,8 @@ import {
     refreshKnockoutBoxVisibility,
     highlightKnockoutCandidate,
     handleSliceSelection,
-    updateDisplayedOdds
+    updateDisplayedOdds,
+    promptForInput
 } from './ui.js';
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
@@ -366,13 +367,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (elements.randomBoostBtn) {
-        elements.randomBoostBtn.addEventListener('click', () => {
-            const wheelSection = document.querySelector('.wheel-section');
-            if (wheelSection) {
-                wheelSection.scrollIntoView({ behavior: 'smooth' });
-            }
-            spinWheel('random-boost');
-        });
+        if (elements.randomBoostBtn) {
+            elements.randomBoostBtn.addEventListener('click', () => {
+                promptForInput('Who is this boost for?', 'Booster Name', (name) => {
+                    const wheelSection = document.querySelector('.wheel-section');
+                    if (wheelSection) {
+                        wheelSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    spinWheel('random-boost', { booster: name });
+                });
+            });
+        }
     }
 
     // Custom Entry Modal Logic
