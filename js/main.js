@@ -100,18 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
         discordTestBtn: document.getElementById('discord-test-btn'),
 
         // Filters & Options
-        searchInput: document.getElementById('movie-search'), // Check HTML
-        randomBoostBtn: document.getElementById('random-boost-btn'),
+        searchInput: document.getElementById('movie-search'),
+        boostStationBtn: document.getElementById('boost-station-btn'),
         spinModeRadios: document.querySelectorAll('input[name="spin-mode"]'),
         finalistsAlwaysVisibleToggle: document.getElementById('finalists-always-visible'),
         finalistsHideToggle: document.getElementById('finalists-hide-box'),
-        showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
+        showCustomsToggle: document.getElementById('filter-show-customs'),
         themeSelect: document.getElementById('theme-select'),
         customEntryForm: document.getElementById('custom-entry-form'),
         customEntryInput: document.getElementById('custom-entry-name'),
         openCustomModalBtn: document.getElementById('open-custom-modal'),
         customEntryModal: document.getElementById('custom-entry-modal'),
         customModalCloseBtn: document.getElementById('custom-modal-close'),
+
+        // Boost Station
+        boostModal: document.getElementById('boost-modal'),
+        boostModalCloseBtn: document.getElementById('boost-modal-close'),
+        boostBoosterName: document.getElementById('boost-booster-name'),
+        boostMovieFilter: document.getElementById('boost-movie-filter'),
+        boostMovieSelect: document.getElementById('boost-movie-select'),
+        btnBoostSpecific: document.getElementById('btn-boost-specific'),
+        btnBoostRandom: document.getElementById('btn-boost-random'),
 
         // Winner Modal
         winModal: document.getElementById('win-modal'),
@@ -366,19 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (elements.randomBoostBtn) {
-        if (elements.randomBoostBtn) {
-            elements.randomBoostBtn.addEventListener('click', () => {
-                promptForInput('Who is this boost for?', 'Booster Name', (name) => {
-                    const wheelSection = document.querySelector('.wheel-section');
-                    if (wheelSection) {
-                        wheelSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    spinWheel('random-boost', { booster: name });
-                });
-            });
-        }
-    }
+
 
     // Custom Entry Modal Logic
     if (elements.openCustomModalBtn && elements.customEntryModal) {

@@ -196,7 +196,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    }
+}
 
 .history-item {
     display: grid;
@@ -311,4 +311,43 @@
     .history-item__actions {
         justify-content: flex-start;
     }
+}
+
+/* Boost Station */
+.boost-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.boost-selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.boost-selector-group select {
+    height: auto !important;
+    min-height: 150px;
+    background-image: none !important;
+    /* Remove custom arrow for multi-select feel */
+    padding: 0.5rem !important;
+}
+
+.boost-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.boost-or {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
 }

@@ -185,6 +185,7 @@ export function initUI(domElements) {
 
     updateWheelAsideLayout = createWheelAsideUpdater(elements);
     initVirtualList();
+    initBoostStation();
     resetSliceEditor();
 }
 
@@ -1995,6 +1996,134 @@ function reorderMovieListForKnockout() {
     sorted.forEach((item) => {
         elements.movieListEl.appendChild(item);
     });
+}
+
+// Boost Station Logic
+function initBoostStation() {
+    if (elements.boostStationBtn) {
+        elements.boostStationBtn.addEventListener('click', openBoostStation);
+    }
+    if (elements.boostModalCloseBtn) {
+        elements.boostModalCloseBtn.addEventListener('click', closeBoostStation);
+    }
+    if (elements.boostModal) {
+        elements.boostModal.addEventListener('click', (e) => {
+            if (e.target === elements.boostModal) closeBoostStation();
+        });
+    }
+    if (elements.boostMovieFilter) {
+        elements.boostMovieFilter.addEventListener('input', (e) => {
+            filterBoostOptions(e.target.value);
+        });
+    }
+    if (elements.boostMovieSelect) {
+        elements.boostMovieSelect.addEventListener('change', () => {
+            if (elements.btnBoostSpecific) {
+                elements.btnBoostSpecific.disabled = !elements.boostMovieSelect.value;
+            }
+        });
+        // Allow double click to confirm
+        elements.boostMovieSelect.addEventListener('dblclick', () => {
+            if (elements.boostMovieSelect.value) handleBoostSpecific();
+        });
+    }
+    if (elements.btnBoostSpecific) {
+        elements.btnBoostSpecific.addEventListener('click', handleBoostSpecific);
+    }
+    if (elements.btnBoostRandom) {
+        elements.btnBoostRandom.addEventListener('click', handleBoostRandom);
+    }
+}
+
+function openBoostStation() {
+    if (!elements.boostModal) return;
+    populateBoostSelect();
+    if (elements.boostBoosterName) elements.boostBoosterName.value = '';
+    if (elements.boostMovieFilter) elements.boostMovieFilter.value = '';
+    if (elements.btnBoostSpecific) elements.btnBoostSpecific.disabled = true;
+
+    elements.boostModal.hidden = false;
+    requestAnimationFrame(() => elements.boostModal.classList.add('show'));
+    if (elements.boostBoosterName) elements.boostBoosterName.focus();
+}
+
+function closeBoostStation() {
+    if (!elements.boostModal) return;
+    elements.boostModal.classList.remove('show');
+    setTimeout(() => { elements.boostModal.hidden = true; }, 200);
+}
+
+function populateBoostSelect() {
+    if (!elements.boostMovieSelect) return;
+    elements.boostMovieSelect.innerHTML = '';
+
+    // Sort movies alphabetically for easier finding
+    const sorted = [...appState.movies].sort((a, b) => a.name.localeCompare(b.name));
+
+    sorted.forEach(movie => {
+        const option = document.createElement('option');
+        option.value = movie.id;
+        option.textContent = `${movie.name} (${movie.year || 'N/A'})`;
+        elements.boostMovieSelect.appendChild(option);
+    });
+}
+
+function filterBoostOptions(query) {
+    if (!elements.boostMovieSelect) return;
+    const term = query.toLowerCase();
+    const options = Array.from(elements.boostMovieSelect.options);
+
+    options.forEach(opt => {
+        const match = opt.textContent.toLowerCase().includes(term);
+        opt.hidden = !match;
+    });
+
+    // Auto-select first visible if current selection is hidden
+    if (elements.boostMovieSelect.value) {
+        const current = elements.boostMovieSelect.querySelector(`option[value="${elements.boostMovieSelect.value}"]`);
+        if (current && current.hidden) elements.boostMovieSelect.value = '';
+    }
+
+    // Disable button if nothing selected
+    if (elements.btnBoostSpecific) {
+        elements.btnBoostSpecific.disabled = !elements.boostMovieSelect.value;
+    }
+}
+
+function handleBoostSpecific() {
+    const movieId = elements.boostMovieSelect ? elements.boostMovieSelect.value : null;
+    const name = elements.boostBoosterName ? elements.boostBoosterName.value.trim() : 'Anonymous';
+
+    if (!movieId) return;
+
+    const movie = appState.movies.find(m => m.id === movieId);
+    if (!movie) return;
+
+    // Boost Logic
+    const currentW = getStoredWeight(movie);
+    const newW = clampWeight(currentW + 1);
+    movie.weight = newW;
+    if (!movie.boosters) movie.boosters = [];
+    movie.boosters.push(name || 'Anonymous');
+
+    if (elements.statusMessage) {
+        elements.statusMessage.textContent = `Boosted "${movie.name}" to ${newW}x (Booster: ${name || 'Anonymous'})`;
+    }
+
+    debouncedSaveState();
+    updateMovieList();
+    closeBoostStation();
+}
+
+function handleBoostRandom() {
+    const name = elements.boostBoosterName ? elements.boostBoosterName.value.trim() : 'Anonymous';
+    closeBoostStation();
+
+    const wheelSection = document.querySelector('.wheel-section');
+    if (wheelSection) {
+        wheelSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    spinWheel('random-boost', { booster: name || 'Anonymous' });
 }
 
 function createWheelAsideUpdater(domElements) {

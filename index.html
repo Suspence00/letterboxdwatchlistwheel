@@ -133,8 +133,8 @@
         </div>
         <div class="card-header__section">
           <button type="button" class="btn" id="open-custom-modal">Add Custom Movie</button>
-          <button type="button" class="btn" id="random-boost-btn"
-            title="Spin with temporary 1x weights, winner gets +1x boost">☸️ Random Boost</button>
+          <button type="button" class="btn" id="boost-station-btn"
+            title="Open the Boost Station to add weight to specific or random movies">🚀 Boost</button>
           <button type="button" class="btn" id="select-all">Select all</button>
           <button type="button" class="btn" id="clear-selection">Clear all</button>
           <button type="button" class="btn" id="reset-weights">Reset all weights</button>
@@ -297,6 +297,22 @@
 
         <div class="win-modal__actions" style="justify-content: flex-end;">
           <button type="submit" class="btn btn--primary" id="add-custom-entry">Add to Wheel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="input-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="input-modal-title" hidden>
+    <div class="win-modal__content settings-modal__content" style="padding: 2rem;">
+      <button type="button" class="win-modal__close" id="input-modal-close" aria-label="Close dialog">&times;</button>
+      <h3 id="input-modal-title" class="win-modal__title" style="padding-left: 0;"></h3>
+      <form id="input-modal-form" class="custom-entry__form" style="margin-top: 1rem;">
+        <label for="input-modal-field" id="input-modal-label"
+          style="display:block; margin-bottom: 0.5rem; font-weight: 600;"></label>
+        <input type="text" id="input-modal-field" class="text-input" name="input-modal-field" autocomplete="off"
+          style="width: 100%; margin-bottom: 2rem; flex: 0 0 auto;" />
+        <div class="win-modal__actions" style="justify-content: flex-end;">
+          <button type="submit" class="btn btn--primary" id="input-modal-submit">Confirm</button>
         </div>
       </form>
     </div>
@@ -523,6 +539,35 @@
       <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
     </div>
   </section>
+
+  <div id="boost-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="boost-modal-title" hidden>
+    <div class="win-modal__content boost-modal__content">
+      <button type="button" class="win-modal__close" id="boost-modal-close"
+        aria-label="Close boost station">&times;</button>
+      <h3 id="boost-modal-title" class="win-modal__title">Boost Station</h3>
+
+      <div class="boost-form">
+        <label for="boost-booster-name">Booster Name</label>
+        <input type="text" id="boost-booster-name" class="text-input" placeholder="Who is boosting?"
+          autocomplete="off" />
+
+        <div class="boost-selector-group">
+          <label for="boost-movie-filter">Select Movie to Boost</label>
+          <input type="text" id="boost-movie-filter" class="text-input text-input--small" placeholder="Filter movies..."
+            autocomplete="off">
+          <select id="boost-movie-select" class="text-input text-input--select" size="6">
+            <!-- Populated by JS -->
+          </select>
+        </div>
+
+        <div class="boost-actions-row">
+          <button type="button" class="btn" id="btn-boost-specific" disabled>Boost Selected</button>
+          <span class="boost-or">OR</span>
+          <button type="button" class="btn btn--accent" id="btn-boost-random">Random Boost</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>console.log('Inline script executed');</script>
   <script type="module" src="js/main.js"></script>
