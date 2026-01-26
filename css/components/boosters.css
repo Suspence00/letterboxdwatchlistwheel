@@ -1,0 +1,41 @@
+/* Booster Styles */
+.movie-boosters {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-2);
+    margin-top: 0.2rem;
+    font-style: italic;
+}
+
+.weight-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-boost {
+    background: none;
+    border: 1px solid var(--surface-3);
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.btn-boost:hover {
+    background: var(--surface-3);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-boost:active {
+    transform: scale(0.95);
+}
