@@ -112,6 +112,19 @@
 
 .selection-controls {
     display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    width: min(960px, 100%);
+    flex-wrap: wrap;
+}
+
+.selection-sort {
+    flex: 0 0 240px;
+}
+
+.selection-sort .text-input--select {
+    width: 100%;
+    min-height: 2.1rem;
 }
 
 .file-input {
