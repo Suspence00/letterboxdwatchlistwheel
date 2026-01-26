@@ -2329,43 +2329,48 @@ function modifyBooster(movie, name, delta) {
         }
         movie.weight = newW;
         if (!movie.boosters) movie.boosters = [];
-        for (let i = 0; i < delta; i++) movie.boosters.push(name);
+        // Push object with timestamp
+        for (let i = 0; i < delta; i++) {
+            movie.boosters.push({
+                name: name,
+                timestamp: Date.now()
+            });
+        }
 
     } else if (delta < 0) {
         // Remove
         const removeCount = Math.abs(delta);
 
-        // 1. Count how many this person has to ensure we don't underflow logic
-        // (Though the UI shouldn't allow it if count is accurate)
-        const personIndices = movie.boosters.map((n, i) => n === name ? i : -1).filter(i => i !== -1);
+        // Filter indices matching name (handle both string and object)
+        const personIndices = movie.boosters.map((b, i) => {
+            const bName = typeof b === 'string' ? b : b.name;
+            return bName === name ? i : -1;
+        }).filter(i => i !== -1);
 
         if (personIndices.length === 0) return;
 
-        // 2. Determine how many to remove
         const toRemove = Math.min(removeCount, personIndices.length);
 
-        // 3. Remove them (by name instance)
-        // We iterate `toRemove` times, finding the Last index of that name each time.
+        // Remove from back
+        // We need to find the actual index in the main array each time because splice shifts indices
         for (let i = 0; i < toRemove; i++) {
-            const idx = movie.boosters.lastIndexOf(name);
-            if (idx > -1) movie.boosters.splice(idx, 1);
+            // Find LAST occurrence
+            let lastIdx = -1;
+            for (let j = movie.boosters.length - 1; j >= 0; j--) {
+                const b = movie.boosters[j];
+                const bName = typeof b === 'string' ? b : b.name;
+                if (bName === name) {
+                    lastIdx = j;
+                    break;
+                }
+            }
+            if (lastIdx > -1) {
+                movie.boosters.splice(lastIdx, 1);
+            }
         }
 
-        // 4. Update weight
-        // Weight = 1 (base) + boosters
-        // But we must respect the physical weight prop if it was manually set higher than boosters?
-        // Actually, boosters feature usually implies weight is driven by them + base.
-        // Let's recalculate safely: 
-        // If current weight > (boosters + 1), we decrease it by `toRemove`.
-        // If current weight <= (boosters + 1), we set it to (boosters + 1).
-
         const calculatedWeightFromBoosters = (movie.boosters ? movie.boosters.length : 0) + 1;
-        // If we just removed X boosters, the weight should drop by X, unless it hits 1.
         const targetW = clampWeight(Math.max(1, currentW - toRemove));
-
-        // Sanity check: ensure weight isn't less than what boosters imply? 
-        // Typically weight >= boosters + 1.
-        // So let's just do:
         movie.weight = clampWeight(Math.max(calculatedWeightFromBoosters, targetW));
     }
 

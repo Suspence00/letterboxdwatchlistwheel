@@ -113,13 +113,17 @@ function buildBackupPayload() {
                 isCustom: Boolean(movie.isCustom),
                 fromLizard: Boolean(movie.fromLizard),
                 weight: clampWeight(movie.weight),
-                color: sanitizeColor(movie.color, getDefaultColorForIndex(index))
+                color: sanitizeColor(movie.color, getDefaultColorForIndex(index)),
+                boosters: Array.isArray(movie.boosters) ? movie.boosters : []
             };
         }),
         history: Array.isArray(appState.history) ? appState.history : [],
         preferences: {
             hideFinalistsBox: Boolean(appState.preferences?.hideFinalistsBox),
-            showFinalistsFromStart: Boolean(appState.preferences?.showFinalistsFromStart)
+            showFinalistsFromStart: Boolean(appState.preferences?.showFinalistsFromStart),
+            theme: appState.preferences?.theme,
+            boosterColors: appState.preferences?.boosterColors || {},
+            themeColorOverrides: appState.preferences?.themeColorOverrides || {}
         },
         selected: Array.from(appState.selectedIds)
     };
@@ -297,7 +301,8 @@ function restoreBackupState(backup, options = {}) {
             fromLizard: Boolean(movie.fromLizard),
             isCustom: Boolean(movie.isCustom),
             weight: clampWeight(movie.weight),
-            color: sanitizeColor(movie.color, defaultColor)
+            color: sanitizeColor(movie.color, defaultColor),
+            boosters: Array.isArray(movie.boosters) ? movie.boosters : []
         };
     });
 
@@ -374,7 +379,10 @@ function getIdentity(movie, fallbackIndex) {
 function normalizePreferences(preferences = {}) {
     return {
         hideFinalistsBox: Boolean(preferences?.hideFinalistsBox),
-        showFinalistsFromStart: Boolean(preferences?.showFinalistsFromStart)
+        showFinalistsFromStart: Boolean(preferences?.showFinalistsFromStart),
+        theme: typeof preferences?.theme === 'string' ? preferences.theme : 'default',
+        boosterColors: typeof preferences?.boosterColors === 'object' ? preferences.boosterColors : {},
+        themeColorOverrides: typeof preferences?.themeColorOverrides === 'object' ? preferences.themeColorOverrides : {}
     };
 }
 
