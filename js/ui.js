@@ -10,7 +10,8 @@ import {
     clampWeight,
     sanitizeColor,
     escapeSelector,
-    getMovieOriginalIndex
+    getMovieOriginalIndex,
+    stringToColor
 } from './utils.js';
 import {
     drawWheel,

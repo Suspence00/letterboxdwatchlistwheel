@@ -152,6 +152,20 @@ export function hslToHex(h, s, l) {
 }
 
 /**
+ * Generates a stable color from a string
+ * @param {string} str Input string
+ * @returns {string} Hex color
+ */
+export function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
+}
+
+/**
  * Generates a dynamic color based on an index using the Golden Angle
  * @param {number} index 
  * @returns {string} Hex color string
