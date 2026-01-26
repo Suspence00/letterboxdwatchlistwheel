@@ -2203,6 +2203,14 @@ function populateSliceEditor(m) {
     if (elements.sliceWeightValue) elements.sliceWeightValue.textContent = getStoredWeight(m) + 'x';
 }
 
+// Helper to get booster color
+function getBoosterColor(name) {
+    if (appState.preferences.boosterColors && appState.preferences.boosterColors[name]) {
+        return appState.preferences.boosterColors[name];
+    }
+    return stringToColor(name);
+}
+
 function renderBoosterTags(container, movie) {
     if (!movie.boosters || !movie.boosters.length) return;
 
@@ -2219,7 +2227,14 @@ function renderBoosterTags(container, movie) {
         const tag = document.createElement('span');
         tag.className = 'booster-tag';
         tag.title = `Manage boosts for ${name}`;
-        tag.innerHTML = `${name} <span class="booster-tag__count">x${count}</span>`;
+
+        const color = getBoosterColor(name);
+        tag.style.backgroundColor = `${color}40`;
+        tag.style.borderColor = color;
+        tag.style.color = 'var(--text)';
+
+        tag.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${color};margin-right:4px;"></span>${name} <span class="booster-tag__count">x${count}</span>`;
+
         tag.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -2238,10 +2253,15 @@ function handleBoosterTagClick(movie, name, count) {
     overlay.className = 'win-modal show'; // Reuse existing modal styles
     overlay.style.zIndex = '3000';
 
+    const currentColor = getBoosterColor(name);
+
     overlay.innerHTML = `
         <div class="win-modal__content" style="max-width: 320px; text-align: left; padding: 1.5rem;">
             <button type="button" class="win-modal__close" style="top: 0.5rem; right: 0.5rem;">&times;</button>
-            <h3 class="win-modal__title" style="font-size: 1.2rem; margin-bottom: 0.25rem;">${name}</h3>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.25rem;">
+                 <h3 class="win-modal__title" style="font-size: 1.2rem; margin:0;">${name}</h3>
+                 <input type="color" id="booster-color-picker" value="${currentColor}" title="Change color for ${name}" style="background:none; border:none; width:30px; height:30px; cursor:pointer;">
+            </div>
             <p style="color: var(--muted); margin-bottom: 1.25rem; font-size: 0.9rem;">
                 Contributions to <strong>${movie.name}</strong>: ${count}
             </p>
@@ -2267,6 +2287,18 @@ function handleBoosterTagClick(movie, name, count) {
     overlay.querySelector('.win-modal__close').addEventListener('click', close);
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) close();
+    });
+
+    // Color Picker Logic
+    const colorPicker = overlay.querySelector('#booster-color-picker');
+    colorPicker.addEventListener('change', (e) => {
+        const newColor = e.target.value;
+        if (!appState.preferences.boosterColors) {
+            appState.preferences.boosterColors = {};
+        }
+        appState.preferences.boosterColors[name] = newColor;
+        saveState();
+        updateMovieList(); // Re-render tags
     });
 
     overlay.querySelector('#action-add-boost').addEventListener('click', () => {
