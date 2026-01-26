@@ -1,0 +1,75 @@
+/* Spin Mode Selector */
+.spin-mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spin-mode-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.spin-mode-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.spin-mode-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: var(--surface-2);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    height: 100%;
+    text-align: center;
+}
+
+.spin-mode-option input:checked+.spin-mode-card {
+    border-color: var(--accent);
+    background: var(--surface-3);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.spin-mode-option input:focus-visible+.spin-mode-card {
+    outline: 2px solid var(--text-2);
+    outline-offset: 2px;
+}
+
+.spin-mode-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-1);
+}
+
+.spin-mode-desc {
+    font-size: 0.85rem;
+    color: var(--text-2);
+    line-height: 1.4;
+}
+
+/* Random Boost Button */
+#random-boost-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+#random-boost-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+#random-boost-btn:active {
+    transform: translateY(0);
+}

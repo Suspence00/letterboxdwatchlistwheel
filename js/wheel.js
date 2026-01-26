@@ -508,6 +508,9 @@ function performSpin(selectedMovies, options = {}) {
         if (typeof ui.updateOdds === 'function') {
             ui.updateOdds();
         }
+        if (typeof ui.updateSpinButtonLabel === 'function') {
+            ui.updateSpinButtonLabel();
+        }
 
         const targetWeight = Math.random() * totalWeight;
         let chosenSegment = segments[segments.length - 1];
@@ -552,6 +555,9 @@ function performSpin(selectedMovies, options = {}) {
             } else {
                 cancelAnimationFrame(animationFrameId);
                 isSpinning = false;
+                if (typeof ui.updateSpinButtonLabel === 'function') {
+                    ui.updateSpinButtonLabel();
+                }
                 const pointerAngle = getPointerAngle();
                 const winningIndex = findSegmentIndexForAngle(segments, pointerAngle);
                 const winningSegment = winningIndex >= 0 ? segments[winningIndex] : null;
@@ -589,8 +595,10 @@ export async function spinWheel(spinMode = 'knockout') {
         return;
     }
 
+    const weightBackup = new Map();
     if (isRandomBoost) {
         selectedMovies.forEach((movie) => {
+            weightBackup.set(movie.id, movie.weight);
             movie.weight = clampWeight(1);
         });
         if (typeof ui.refreshMovies === 'function') {
@@ -601,6 +609,14 @@ export async function spinWheel(spinMode = 'knockout') {
     const spinSettings = isSingleSpin ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS;
 
     const { winningMovie } = await performSpin(selectedMovies, spinSettings);
+
+    if (isRandomBoost) {
+        selectedMovies.forEach((movie) => {
+            if (weightBackup.has(movie.id)) {
+                movie.weight = weightBackup.get(movie.id);
+            }
+        });
+    }
 
     if (!winningMovie) {
         ui.updateSpinButtonLabel();

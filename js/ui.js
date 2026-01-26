@@ -842,13 +842,13 @@ export function updateSpinButtonLabel() {
     }
 
     setWeightMode(inverseMode ? 'inverse' : 'normal');
-    if (lastStandingActive) {
-        elements.spinButton.textContent = 'Eliminating.';
-        return;
+    const selector = document.querySelector('.spin-mode-selector');
+    if (selector) {
+        selector.hidden = spinning || lastStandingActive;
     }
 
-    if (spinMode === 'random-boost') {
-        elements.spinButton.textContent = 'Random Boost Spin (+1x)';
+    if (lastStandingActive) {
+        elements.spinButton.textContent = 'Eliminating.';
         return;
     }
 
@@ -871,17 +871,17 @@ export function isAdvancedOptionsEnabled() {
 }
 
 export function getSpinMode() {
-    if (elements.randomBoostToggle && elements.randomBoostToggle.checked) {
-        return 'random-boost';
-    }
-    if (elements.oneSpinToggle && elements.oneSpinToggle.checked) {
-        return 'one-spin';
+    const radios = document.querySelectorAll('input[name="spin-mode"]');
+    for (const radio of radios) {
+        if (radio.checked) {
+            return radio.value;
+        }
     }
     return 'knockout';
 }
 
 export function isRandomBoostEnabled() {
-    return getSpinMode() === 'random-boost';
+    return false; // Random boost is now a transient single-shot action, not a persistent mode
 }
 
 export function isOneSpinModeEnabled() {

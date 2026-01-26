@@ -133,6 +133,8 @@
         </div>
         <div class="card-header__section">
           <button type="button" class="btn" id="open-custom-modal">Add Custom Movie</button>
+          <button type="button" class="btn" id="random-boost-btn"
+            title="Spin with temporary 1x weights, winner gets +1x boost">☸️ Random Boost</button>
           <button type="button" class="btn" id="select-all">Select all</button>
           <button type="button" class="btn" id="clear-selection">Clear all</button>
           <button type="button" class="btn" id="reset-weights">Reset all weights</button>
@@ -189,6 +191,22 @@
         </div>
       </div>
       <div class="card-body">
+        <div class="spin-mode-selector">
+          <label class="spin-mode-option">
+            <input type="radio" name="spin-mode" value="knockout" checked>
+            <div class="spin-mode-card">
+              <span class="spin-mode-title">Knockout Mode</span>
+              <span class="spin-mode-desc">Elimination rounds until one movie remains.</span>
+            </div>
+          </label>
+          <label class="spin-mode-option">
+            <input type="radio" name="spin-mode" value="one-spin">
+            <div class="spin-mode-card">
+              <span class="spin-mode-title">1 Spin Mode</span>
+              <span class="spin-mode-desc">Single dramatic spin. Weights increase winning change.</span>
+            </div>
+          </label>
+        </div>
         <div class="wheel-section">
           <div class="wheel-wrapper">
             <p class="result" id="result" aria-live="polite"></p>
@@ -355,24 +373,6 @@
                 <option value="modern">Modern</option>
               </select>
             </div>
-          </fieldset>
-
-          <fieldset class="settings-group">
-            <legend>Spin Modes</legend>
-            <label class="filter-toggle spin-mode-toggle" for="one-spin-toggle">
-              <input type="checkbox" id="one-spin-toggle" />
-              <div class="toggle-content">
-                <span>One Spin to Rule them all</span>
-                <span class="helper-text">Single dramatic spin using current weights to pick a winner.</span>
-              </div>
-            </label>
-            <label class="filter-toggle spin-mode-toggle" for="random-boost-toggle">
-              <input type="checkbox" id="random-boost-toggle" />
-              <div class="toggle-content">
-                <span>Random Boost</span>
-                <span class="helper-text">Resets all to 1x, then boosts winner +1x.</span>
-              </div>
-            </label>
           </fieldset>
 
           <fieldset class="settings-group">

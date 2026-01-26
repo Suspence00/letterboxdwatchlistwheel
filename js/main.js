@@ -5,7 +5,7 @@
 import { loadState, appState, saveState } from './state.js';
 
 import { initAudio } from './audio.js';
-import { initWheel } from './wheel.js';
+import { initWheel, spinWheel } from './wheel.js';
 import {
     initUI,
     updateMovieList,
@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Filters & Options
         searchInput: document.getElementById('movie-search'), // Check HTML
-        oneSpinToggle: document.getElementById('one-spin-toggle'),
-        randomBoostToggle: document.getElementById('random-boost-toggle'),
+        randomBoostBtn: document.getElementById('random-boost-btn'),
+        spinModeRadios: document.querySelectorAll('input[name="spin-mode"]'),
         finalistsAlwaysVisibleToggle: document.getElementById('finalists-always-visible'),
         finalistsHideToggle: document.getElementById('finalists-hide-box'),
         showCustomsToggle: document.getElementById('filter-show-customs'), // Check HTML
@@ -196,56 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Discord
     initDiscord(elements);
-
-    const syncSpinModeToggles = () => {
-        const { oneSpinToggle, randomBoostToggle } = elements;
-        if (!oneSpinToggle || !randomBoostToggle) {
-            return;
-        }
-
-        if (randomBoostToggle.checked) {
-            oneSpinToggle.checked = false;
-            oneSpinToggle.disabled = true;
-        } else {
-            oneSpinToggle.disabled = false;
-        }
-
-        if (oneSpinToggle.checked) {
-            randomBoostToggle.checked = false;
-            randomBoostToggle.disabled = true;
-        } else {
-            randomBoostToggle.disabled = false;
-        }
-    };
-
-    const randomBoostWeights = new Map();
-
-    const handleSpinModeChange = () => {
-        syncSpinModeToggles();
-        if (elements.randomBoostToggle && elements.randomBoostToggle.checked) {
-            randomBoostWeights.clear();
-            appState.movies.forEach((movie) => {
-                if (appState.selectedIds.has(movie.id)) {
-                    randomBoostWeights.set(movie.id, getStoredWeight(movie));
-                    movie.weight = 1;
-                }
-            });
-        } else {
-            if (randomBoostWeights.size) {
-                appState.movies.forEach((movie) => {
-                    if (randomBoostWeights.has(movie.id)) {
-                        const baseline = clampWeight(randomBoostWeights.get(movie.id));
-                        const current = clampWeight(getStoredWeight(movie));
-                        const restored = Math.max(current, baseline);
-                        movie.weight = restored;
-                    }
-                });
-            }
-            randomBoostWeights.clear();
-        }
-        updateMovieList();
-        updateSpinButtonLabel();
-    };
 
     const syncFinalistsToggles = () => {
         const hideBox = Boolean(appState.preferences?.hideFinalistsBox);
@@ -403,15 +353,27 @@ document.addEventListener('DOMContentLoaded', () => {
     syncFinalistsToggles();
     initThemeSelector();
 
-    if (elements.oneSpinToggle) {
-        elements.oneSpinToggle.addEventListener('change', handleSpinModeChange);
+    syncFinalistsToggles();
+    initThemeSelector();
+
+    if (elements.spinModeRadios) {
+        elements.spinModeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                updateMovieList();
+                updateSpinButtonLabel();
+            });
+        });
     }
 
-    if (elements.randomBoostToggle) {
-        elements.randomBoostToggle.addEventListener('change', handleSpinModeChange);
+    if (elements.randomBoostBtn) {
+        elements.randomBoostBtn.addEventListener('click', () => {
+            const wheelSection = document.querySelector('.wheel-section');
+            if (wheelSection) {
+                wheelSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            spinWheel('random-boost');
+        });
     }
-
-    syncSpinModeToggles();
 
     // Custom Entry Modal Logic
     if (elements.openCustomModalBtn && elements.customEntryModal) {
