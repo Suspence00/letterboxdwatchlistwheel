@@ -2018,8 +2018,12 @@ function initBoostStation() {
     }
     if (elements.boostMovieSelect) {
         elements.boostMovieSelect.addEventListener('change', () => {
+            const hasSelection = Boolean(elements.boostMovieSelect.value);
             if (elements.btnBoostSpecific) {
-                elements.btnBoostSpecific.disabled = !elements.boostMovieSelect.value;
+                elements.btnBoostSpecific.disabled = !hasSelection;
+            }
+            if (elements.btnBoostRemove) {
+                elements.btnBoostRemove.disabled = !hasSelection;
             }
         });
         // Allow double click to confirm
@@ -2029,6 +2033,9 @@ function initBoostStation() {
     }
     if (elements.btnBoostSpecific) {
         elements.btnBoostSpecific.addEventListener('click', handleBoostSpecific);
+    }
+    if (elements.btnBoostRemove) {
+        elements.btnBoostRemove.addEventListener('click', handleBoostRemove);
     }
     if (elements.btnBoostRandom) {
         elements.btnBoostRandom.addEventListener('click', handleBoostRandom);
@@ -2041,6 +2048,7 @@ function openBoostStation() {
     if (elements.boostBoosterName) elements.boostBoosterName.value = '';
     if (elements.boostMovieFilter) elements.boostMovieFilter.value = '';
     if (elements.btnBoostSpecific) elements.btnBoostSpecific.disabled = true;
+    if (elements.btnBoostRemove) elements.btnBoostRemove.disabled = true;
 
     elements.boostModal.hidden = false;
     requestAnimationFrame(() => elements.boostModal.classList.add('show'));
@@ -2063,7 +2071,9 @@ function populateBoostSelect() {
     sorted.forEach(movie => {
         const option = document.createElement('option');
         option.value = movie.id;
-        option.textContent = `${movie.name} (${movie.year || 'N/A'})`;
+        const weight = getStoredWeight(movie);
+        const weightLabel = weight > 1 ? ` [${weight}x]` : '';
+        option.textContent = `${movie.name} (${movie.year || 'N/A'})${weightLabel}`;
         elements.boostMovieSelect.appendChild(option);
     });
 }
@@ -2085,9 +2095,9 @@ function filterBoostOptions(query) {
     }
 
     // Disable button if nothing selected
-    if (elements.btnBoostSpecific) {
-        elements.btnBoostSpecific.disabled = !elements.boostMovieSelect.value;
-    }
+    const hasSelection = Boolean(elements.boostMovieSelect.value);
+    if (elements.btnBoostSpecific) elements.btnBoostSpecific.disabled = !hasSelection;
+    if (elements.btnBoostRemove) elements.btnBoostRemove.disabled = !hasSelection;
 }
 
 function handleBoostSpecific() {
@@ -2108,6 +2118,40 @@ function handleBoostSpecific() {
 
     if (elements.statusMessage) {
         elements.statusMessage.textContent = `Boosted "${movie.name}" to ${newW}x (Booster: ${name || 'Anonymous'})`;
+    }
+
+    debouncedSaveState();
+    updateMovieList();
+    closeBoostStation();
+}
+
+function handleBoostRemove() {
+    const movieId = elements.boostMovieSelect ? elements.boostMovieSelect.value : null;
+
+    if (!movieId) return;
+
+    const movie = appState.movies.find(m => m.id === movieId);
+    if (!movie) return;
+
+    // Remove Boost Logic
+    const currentW = getStoredWeight(movie);
+    if (currentW <= 1) {
+        if (elements.statusMessage) {
+            elements.statusMessage.textContent = `Cannot remove boost: "${movie.name}" is already at 1x`;
+        }
+        return;
+    }
+
+    const newW = clampWeight(currentW - 1);
+    movie.weight = newW;
+
+    // Remove last added booster if present
+    if (movie.boosters && movie.boosters.length > 0) {
+        movie.boosters.pop();
+    }
+
+    if (elements.statusMessage) {
+        elements.statusMessage.textContent = `Removed boost from "${movie.name}" (now ${newW}x)`;
     }
 
     debouncedSaveState();

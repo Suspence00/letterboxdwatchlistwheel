@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         boostMovieFilter: document.getElementById('boost-movie-filter'),
         boostMovieSelect: document.getElementById('boost-movie-select'),
         btnBoostSpecific: document.getElementById('btn-boost-specific'),
+        btnBoostRemove: document.getElementById('btn-boost-remove'),
         btnBoostRandom: document.getElementById('btn-boost-random'),
 
         // Winner Modal
