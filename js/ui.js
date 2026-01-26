@@ -2043,70 +2043,11 @@ function createWheelAsideUpdater(domElements) {
 }
 
 // Missing Utilities Restoration
-function getFilteredMovies() {
-    const query = appState.filter.normalizedQuery;
-    return appState.movies.filter((movie) => {
-        if (!appState.filter.showCustoms && movie.isCustom) return false;
-        if (!query) return true;
-        const text = (movie.name + ' ' + (movie.year || '')).toLowerCase();
-        return text.includes(query);
-    });
-}
-
-function getActiveFilterDescriptions() {
-    const d = [];
-    if (appState.filter.query) d.push('Search: ' + appState.filter.query);
-    if (!appState.filter.showCustoms) d.push('Hide Custom Entries');
-    return d;
-}
-
-function formatOddsPercent(val) {
-    return ((val || 0) * 100).toFixed(1) + '%';
-}
-
-function buildMovieOddsLabel(val, active, label) {
-    if (!active) return label;
-    return label + ': ' + formatOddsPercent(val);
-}
-
-export function getSpinMode() {
-    if (!elements.spinModeRadios) return 'knockout';
-    for (const r of elements.spinModeRadios) {
-        if (r.checked) return r.value;
-    }
-    return 'knockout';
-}
-
+// Restoration of truly missing functions
 function handleSpinPrep() {
     closeWinnerPopup({ restoreFocus: false });
     if (elements.statusMessage) elements.statusMessage.textContent = '';
     resetSliceEditor();
-    updateWheelAsideLayout();
-}
-
-export function updateSpinButtonLabel() {
-    if (!elements.spinButton) return;
-    if (getIsSpinning() || getIsLastStandingInProgress()) {
-        elements.spinButton.disabled = true;
-        elements.spinButton.textContent = getIsLastStandingInProgress() ? 'Auto-Spinning...' : 'Spinning...';
-        return;
-    }
-    const mode = getSpinMode();
-    const sel = getFilteredMovies().filter(m => appState.selectedIds.has(m.id));
-    elements.spinButton.disabled = sel.length === 0;
-    if (mode === 'random-boost') elements.spinButton.textContent = 'Random Boost Spin';
-    else if (mode === 'one-spin') elements.spinButton.textContent = 'Spin the Wheel';
-    else elements.spinButton.textContent = sel.length > 1 ? 'Start Knockout Round' : 'Spin for Winner';
-}
-
-export function handleSliceSelection(movie) {
-    if (activeSliceId === movie.id) {
-        activeSliceId = null;
-        if (elements.sliceEditor) elements.sliceEditor.hidden = true;
-    } else {
-        activeSliceId = movie.id;
-        populateSliceEditor(movie);
-    }
     updateWheelAsideLayout();
 }
 
@@ -2134,11 +2075,5 @@ function scheduleWheelUpdate(sel) {
         wheelUpdateFrame = null;
     });
 }
-
-// Virtualization Stubs
-function shouldVirtualize() { return false; }
-function resetVirtualList() { }
-function measureVirtualRowHeight() { }
-function requestVirtualRender() { }
 
 
