@@ -249,3 +249,43 @@
 .movie-list li.show-weights .movie-color {
     display: inline-flex;
 }
+
+/* Boosters */
+.movie-boosters {
+    /* Legacy override if needed */
+    display: none;
+}
+
+.movie-boosters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.booster-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.55rem;
+    background: rgba(var(--accent-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: 99px;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.booster-tag:hover {
+    background: rgba(var(--accent-rgb), 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.booster-tag__count {
+    opacity: 0.8;
+    font-size: 0.7rem;
+}
