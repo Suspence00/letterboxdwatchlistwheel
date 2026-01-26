@@ -1,2 +1,4 @@
 dist/
 node_modules/
+
+health_check.js
