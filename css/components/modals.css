@@ -322,6 +322,12 @@
     margin-top: 1rem;
 }
 
+.boost-form .text-input {
+    flex: 0 0 auto;
+    width: 100%;
+    /* Ensure it doesn't take 220px height from base forms.css */
+}
+
 .boost-selector-group {
     display: flex;
     flex-direction: column;
