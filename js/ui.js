@@ -25,40 +25,7 @@ import {
 } from './wheel.js';
 import { sendDiscordNotification } from './discord.js';
 
-const WEIGHT_MODES = {
-    normal: {
-        weightLabel: 'Weight',
-        weightHelp: 'Higher value = More likely to win',
-        riskLabel: 'Chance',
-        winLabel: 'Win Chance'
-    },
-    inverse: {
-        weightLabel: 'Safety',
-        weightHelp: 'Higher value = Less likely to be eliminated',
-        riskLabel: 'Risk',
-        winLabel: 'Survival Chance'
-    }
-};
 
-function getModeCopy(isInverse) {
-    return isInverse ? { ...WEIGHT_MODES.inverse } : { ...WEIGHT_MODES.normal };
-}
-
-function applyWeightCopy(copy) {
-    if (elements.sliceWeightLabel) {
-        elements.sliceWeightLabel.textContent = copy.weightLabel;
-    }
-    if (elements.sliceWeightHelp) {
-        elements.sliceWeightHelp.title = copy.weightHelp;
-        elements.sliceWeightHelp.setAttribute('aria-label', copy.weightHelp);
-    }
-    if (elements.sliceOddsLabelRisk) {
-        elements.sliceOddsLabelRisk.textContent = copy.riskLabel;
-    }
-    if (elements.sliceOddsLabelWin) {
-        elements.sliceOddsLabelWin.textContent = copy.winLabel;
-    }
-}
 
 // DOM Elements
 const elements = {};
