@@ -374,6 +374,8 @@
           id="tab-btn-discord">Discord</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-boards"
           id="tab-btn-boards">Boards</button>
+        <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-advanced"
+          id="tab-btn-advanced">Advanced</button>
       </div>
 
       <div class="settings-tab-content">
@@ -517,6 +519,17 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab 5: Advanced -->
+        <div id="tab-advanced" role="tabpanel" aria-labelledby="tab-btn-advanced" class="settings-panel" hidden>
+          <div class="data-transfer__grid">
+            <div class="data-transfer__card">
+              <h4>System Audit</h4>
+              <p class="helper-text">Run a 10,000 spin Monte Carlo simulation to verify fairness.</p>
+              <button type="button" class="btn" id="verify-fairness-btn">🛡️ Verify Fairness</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -605,6 +618,37 @@
   </div>
 
   <script>console.log('Inline script executed');</script>
+  <!-- Verification Modal -->
+  <div id="verify-modal" class="win-modal" hidden>
+    <div class="win-modal__content settings-modal__content" role="dialog" aria-modal="true"
+      aria-labelledby="verify-title">
+      <button type="button" class="win-modal__close" id="verify-close" aria-label="Close">×</button>
+      <h2 id="verify-title" class="win-modal__title">Fairness Audit Report</h2>
+
+      <div style="padding: 1.5rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+        <div id="verify-summary" style="margin-bottom: 1rem; color: #edf2f7;"></div>
+        <p class="helper-text" style="color: #a0aec0; margin-bottom: 1rem;">Simulation of <strong>10,000 spins</strong>
+          based on current weights.</p>
+        <div class="verify-table-container" style="display: block; visibility: visible;">
+          <table class="verify-table" id="verify-table">
+            <thead>
+              <tr>
+                <th>Movie</th>
+                <th>Weight</th>
+                <th>Expected</th>
+                <th>Actual</th>
+                <th>Diff</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/main.js"></script>
 </body>
 

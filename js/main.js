@@ -183,6 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
         newBoardName: document.getElementById('new-board-name'),
         boardsList: document.getElementById('boards-list'),
         tabBtnBoards: document.getElementById('tab-btn-boards'),
+        tabBtnAdvanced: document.getElementById('tab-btn-advanced'),
+
+        // Verification
+        verifyFairnessBtn: document.getElementById('verify-fairness-btn'),
+        verifyModal: document.getElementById('verify-modal'),
+        verifyTableBody: document.querySelector('#verify-table tbody'),
+        verifyCloseBtn: document.getElementById('verify-close'),
     };
 
     const canvas = document.getElementById('wheel');

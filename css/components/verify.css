@@ -1,0 +1,59 @@
+/* Verification Modal Styles */
+.verify-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.verify-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.verify-table th {
+    position: sticky;
+    top: 0;
+    background: #1a2634;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #a0aec0;
+    /* Hardcoded light grey */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    z-index: 1;
+}
+
+.verify-table td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #edf2f7;
+    /* Hardcoded white */
+}
+
+.verify-table tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Status Colors for Diff */
+.diff-good {
+    color: #4cd964;
+    /* Green */
+}
+
+.diff-ok {
+    color: var(--text-muted);
+}
+
+.diff-bad {
+    color: #ff3b30;
+    /* Red */
+    font-weight: bold;
+}
+
+.weight-cell {
+    font-family: monospace;
+    opacity: 0.8;
+}

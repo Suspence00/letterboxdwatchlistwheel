@@ -169,7 +169,7 @@ function getStoredColor(movie, fallback) {
     return movie.color || fallback;
 }
 
-function computeWheelModel(selectedMovies, options = {}) {
+export function computeWheelModel(selectedMovies, options = {}) {
     const { inverseModeOverride = null } = options;
     if (!selectedMovies.length) {
         return { segments: [], totalWeight: 0 };
