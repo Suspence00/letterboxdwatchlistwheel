@@ -2131,7 +2131,11 @@ function handleBoostSpecific() {
     const newW = clampWeight(currentW + 1);
     movie.weight = newW;
     if (!movie.boosters) movie.boosters = [];
-    movie.boosters.push(name || 'Anonymous');
+    movie.boosters.push({
+        name: name || 'Anonymous',
+        timestamp: Date.now(),
+        source: 'manual'
+    });
 
     if (elements.statusMessage) {
         elements.statusMessage.textContent = `Boosted "${movie.name}" to ${newW}x (Booster: ${name || 'Anonymous'})`;

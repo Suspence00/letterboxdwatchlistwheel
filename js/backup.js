@@ -257,7 +257,8 @@ function applyBackupWeights(backup, options = {}) {
         }
         lookup.set(identity, {
             color: sanitizeColor(movie.color, getDefaultColorForIndex(index)),
-            weight: clampWeight(movie.weight)
+            weight: clampWeight(movie.weight),
+            boosters: Array.isArray(movie.boosters) ? movie.boosters : []
         });
     });
 
@@ -274,6 +275,7 @@ function applyBackupWeights(backup, options = {}) {
         const update = lookup.get(identity);
         movie.weight = update.weight;
         movie.color = update.color;
+        movie.boosters = [...update.boosters];
         matched += 1;
     });
 

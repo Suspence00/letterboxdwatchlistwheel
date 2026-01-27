@@ -340,6 +340,12 @@
     background-image: none !important;
     /* Remove custom arrow for multi-select feel */
     padding: 0.5rem !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.boost-modal__content {
+    max-width: 650px;
 }
 
 .boost-actions-row {
