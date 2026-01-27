@@ -2,7 +2,16 @@
  * UI management for the Letterboxd Watchlist Wheel
  */
 
-import { appState, debouncedSaveState, clearHistory, removeHistoryEntry } from './state.js';
+import {
+    appState,
+    debouncedSaveState,
+    clearHistory,
+    removeHistoryEntry,
+    createWorkspace,
+    switchWorkspace,
+    renameWorkspace,
+    deleteWorkspace
+} from './state.js';
 import {
     getDefaultColorForIndex,
     getStoredColor,
@@ -186,9 +195,139 @@ export function initUI(domElements) {
     }
 
     updateWheelAsideLayout = createWheelAsideUpdater(elements);
+    if (elements.sliceEditorClearBtn) {
+        elements.sliceEditorClearBtn.addEventListener('click', () => resetSliceEditor());
+    }
+
+    // Workspaces
+    // Workspaces
+    if (elements.workspaceSelect) {
+        elements.workspaceSelect.addEventListener('change', (event) => {
+            const val = event.target.value;
+            if (val && switchWorkspace(val)) {
+                // Full refresh
+                updateMovieList();
+                renderHistory();
+                resetSliceEditor();
+                renderWorkspaceSwitcher(); // Update select state
+                renderBoardsList();
+            }
+        });
+    }
+
+    if (elements.createBoardForm) {
+        elements.createBoardForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = elements.newBoardName.value.trim();
+            if (name) {
+                const newId = createWorkspace(name);
+                switchWorkspace(newId);
+                elements.newBoardName.value = '';
+                // Refresh all
+                updateMovieList();
+                resetSliceEditor();
+                renderHistory();
+                renderWorkspaceSwitcher();
+                renderBoardsList();
+            }
+        });
+    }
+
+    updateWheelAsideLayout = createWheelAsideUpdater(elements);
     initVirtualList();
     initBoostControls();
     resetSliceEditor();
+
+    // Initial Render for Workspaces
+    renderWorkspaceSwitcher();
+    renderBoardsList();
+}
+
+function renderWorkspaceSwitcher() {
+    if (!elements.workspaceSelect) return;
+
+    elements.workspaceSelect.innerHTML = '';
+
+    // No optgroup needed anymore if we don't have "Manage" option
+    // But keeping it flat is cleaner for a simple select
+
+    appState.workspaces.forEach(ws => {
+        const option = document.createElement('option');
+        option.value = ws.id;
+        option.textContent = ws.name;
+        if (ws.id === appState.activeWorkspaceId) {
+            option.selected = true;
+        }
+        elements.workspaceSelect.appendChild(option);
+    });
+}
+
+function renderBoardsList() {
+    if (!elements.boardsList) return;
+    elements.boardsList.innerHTML = '';
+
+    appState.workspaces.forEach(ws => {
+        const li = document.createElement('li');
+        li.className = 'board-item';
+        if (ws.id === appState.activeWorkspaceId) {
+            li.classList.add('active');
+        }
+
+        const info = document.createElement('div');
+        info.className = 'board-item__info';
+
+        const name = document.createElement('span');
+        name.className = 'board-item__name';
+        name.textContent = ws.name;
+
+        const meta = document.createElement('span');
+        meta.className = 'board-item__meta';
+        const date = new Date(ws.lastModified || Date.now()).toLocaleDateString();
+        meta.textContent = `Last used: ${date}`;
+
+        info.appendChild(name);
+        info.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'board-item__actions';
+
+        const renameBtn = document.createElement('button');
+        renameBtn.type = 'button';
+        renameBtn.className = 'btn';
+        renameBtn.textContent = 'Rename';
+        renameBtn.addEventListener('click', () => {
+            promptForInput('Rename Board', 'New Name', (newName) => {
+                if (renameWorkspace(ws.id, newName)) {
+                    renderWorkspaceSwitcher();
+                    renderBoardsList();
+                }
+            });
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn danger';
+        deleteBtn.textContent = 'Delete';
+        if (ws.id === appState.activeWorkspaceId || appState.workspaces.length <= 1) {
+            deleteBtn.disabled = true;
+            deleteBtn.title = ws.id === appState.activeWorkspaceId ? "Cannot delete active board" : "Cannot delete last board";
+        }
+        deleteBtn.addEventListener('click', () => {
+            if (confirm(`Delete board "${ws.name}"? This cannot be undone.`)) {
+                if (deleteWorkspace(ws.id)) {
+                    renderWorkspaceSwitcher();
+                    renderBoardsList();
+                }
+            }
+        });
+
+        actions.appendChild(renameBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(info);
+        li.appendChild(actions);
+        elements.boardsList.appendChild(li);
+    });
 }
 
 export function getFilteredMovies() {

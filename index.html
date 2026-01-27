@@ -372,6 +372,8 @@
           id="tab-btn-data">Data</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-discord"
           id="tab-btn-discord">Discord</button>
+        <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-boards"
+          id="tab-btn-boards">Boards</button>
       </div>
 
       <div class="settings-tab-content">
@@ -483,6 +485,37 @@
               <button type="button" class="btn" id="discord-test-btn">Test Notification</button>
             </div>
           </fieldset>
+          </fieldset>
+        </div>
+
+        <!-- Tab 4: Boards Management -->
+        <div id="tab-boards" role="tabpanel" aria-labelledby="tab-btn-boards" class="settings-panel" hidden>
+          <div class="data-transfer__grid">
+            <div class="data-transfer__card">
+              <h4>Active Board</h4>
+              <p class="helper-text">Select which watchlist board you want to use.</p>
+              <select id="workspace-select" class="text-input text-input--select text-input--compact"
+                aria-label="Switch Workspace">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div class="data-transfer__card">
+              <h4>Create New Board</h4>
+              <form id="create-board-form" class="board-create-form">
+                <input type="text" id="new-board-name" class="text-input" placeholder="Board Name (e.g. Horror Month)"
+                  required autocomplete="off">
+                <button type="submit" class="btn btn--primary">Create</button>
+              </form>
+            </div>
+
+            <div class="data-transfer__card data-transfer__card--full">
+              <h4>My Boards</h4>
+              <ul id="boards-list" class="boards-list">
+                <!-- Populated by JS -->
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

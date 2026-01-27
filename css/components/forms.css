@@ -243,6 +243,10 @@
     padding: 0.85rem 1rem;
 }
 
+.data-transfer__card--full {
+    grid-column: 1 / -1;
+}
+
 .data-transfer__actions {
     display: flex;
     flex-wrap: wrap;
@@ -304,6 +308,19 @@
     background: rgba(255, 255, 255, 0.08);
     color: var(--text);
     font: inherit;
+}
+
+/* 
+ * FIX: Use this class to prevent flex items from stretching to unreasonable heights 
+ * in grid/flex containers (e.g. settings cards).
+ */
+.text-input--compact {
+    flex: 0 1 auto;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    height: auto;
+    max-height: 2.5rem;
+    align-self: flex-start;
 }
 
 .text-input::placeholder {

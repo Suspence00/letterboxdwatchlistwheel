@@ -2,7 +2,7 @@
  * Main entry point for the Letterboxd Watchlist Wheel
  */
 
-import { loadState, appState, saveState } from './state.js';
+import { loadState, appState, saveState, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace } from './state.js';
 
 import { initAudio } from './audio.js';
 import { initWheel, spinWheel } from './wheel.js';
@@ -174,6 +174,15 @@ document.addEventListener('DOMContentLoaded', () => {
         backupApplyWeightsBtn: document.getElementById('backup-apply'),
         backupRestoreBtn: document.getElementById('backup-restore'),
         backupImportHistoryToggle: document.getElementById('backup-import-history'),
+        backupRestoreBtn: document.getElementById('backup-restore'),
+        backupImportHistoryToggle: document.getElementById('backup-import-history'),
+
+        // Workspaces
+        workspaceSelect: document.getElementById('workspace-select'),
+        createBoardForm: document.getElementById('create-board-form'),
+        newBoardName: document.getElementById('new-board-name'),
+        boardsList: document.getElementById('boards-list'),
+        tabBtnBoards: document.getElementById('tab-btn-boards'),
     };
 
     const canvas = document.getElementById('wheel');

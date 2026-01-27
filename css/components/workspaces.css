@@ -1,0 +1,141 @@
+/* Header Workspace Switcher */
+.workspace-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.workspace-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.4rem 2.2rem 0.4rem 1rem;
+    color: var(--text, #fff);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Custom Chevron Arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 1rem;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.workspace-select:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.workspace-select:focus {
+    outline: none;
+    border-color: var(--accent, #ff8600);
+    box-shadow: 0 0 0 3px rgba(255, 134, 0, 0.2);
+}
+
+.workspace-select option {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 0.5rem;
+}
+
+/* Settings: Boards Management List */
+.boards-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.board-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.board-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.board-item.active {
+    border-color: var(--accent, #ff8600);
+    background: rgba(255, 134, 0, 0.08);
+}
+
+.board-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.board-item__name {
+    font-weight: 600;
+    color: var(--text, #fff);
+}
+
+.board-item__meta {
+    font-size: 0.75rem;
+    color: var(--text-muted, #8b9bb4);
+}
+
+.board-item__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Button overrides for list context */
+.board-item .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    margin-top: 0;
+}
+
+/* Create Form */
+.board-create-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.board-create-form input {
+    flex: 1;
+}
+
+.board-create-form button {
+    margin-top: 0;
+    /* Reset global button margin */
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .header-controls {
+        flex-wrap: wrap;
+    }
+
+    .workspace-control {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+
+    .workspace-select {
+        width: 100%;
+        max-width: none;
+        text-align: center;
+        background-position: right 1rem center;
+    }
+}
