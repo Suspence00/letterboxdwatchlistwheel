@@ -11,7 +11,8 @@ import {
     sanitizeColor,
     escapeSelector,
     getMovieOriginalIndex,
-    stringToColor
+    stringToColor,
+    debounce
 } from './utils.js';
 import {
     drawWheel,
@@ -2323,6 +2324,9 @@ function handleBoosterTagClick(movie, name, count) {
                 <button id="action-remove-all" class="btn btn--danger" style="justify-content: center;">
                     🗑️ Remove All
                 </button>
+                <button id="action-done" class="btn btn--primary" style="justify-content: center; margin-top: 0.25rem;">
+                    Done
+                </button>
             </div>
         </div>
     `;
@@ -2337,17 +2341,31 @@ function handleBoosterTagClick(movie, name, count) {
         if (e.target === overlay) close();
     });
 
+    const debouncedUpdate = debounce(() => updateMovieList(), 300);
+
     // Color Picker Logic
     const colorPicker = overlay.querySelector('#booster-color-picker');
-    colorPicker.addEventListener('change', (e) => {
+    const headerTitle = overlay.querySelector('.win-modal__title');
+
+    colorPicker.addEventListener('input', (e) => {
         const newColor = e.target.value;
         if (!appState.preferences.boosterColors) {
             appState.preferences.boosterColors = {};
         }
         appState.preferences.boosterColors[name] = newColor;
-        saveState();
-        updateMovieList(); // Re-render tags
+
+        // Immediate feedback in the popup
+        if (headerTitle) {
+            headerTitle.style.backgroundImage = 'none';
+            headerTitle.style.webkitTextFillColor = 'initial';
+            headerTitle.style.color = newColor;
+        }
+
+        debouncedSaveState();
+        debouncedUpdate();
     });
+
+    overlay.querySelector('#action-done').addEventListener('click', close);
 
     overlay.querySelector('#action-add-boost').addEventListener('click', () => {
         modifyBooster(movie, name, 1);
