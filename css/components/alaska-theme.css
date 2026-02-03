@@ -110,6 +110,10 @@ body.theme-alaska .movie-meta {
    Flag Accent (Header Background)
    ========================================= */
 
+.alaska-flag-accent {
+    display: none;
+}
+
 body.theme-alaska .alaska-flag-accent {
     display: block;
     position: fixed;
