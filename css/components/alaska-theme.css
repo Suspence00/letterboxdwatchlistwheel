@@ -1,0 +1,432 @@
+body.theme-alaska {
+    --accent: #1e3a8a;
+    /* Deep Flag Blue */
+    --accent-strong: #FFD700;
+    /* Gold for stars */
+    --background: #f0f9ff;
+    /* Glacial white/blue */
+    --card-bg: rgba(15, 23, 42, 0.7);
+    /* Dark semi-transparent slate */
+    --muted: #cbd5e1;
+    /* Lighter Slate for better readability */
+    --shadow: rgba(0, 0, 0, 0.4);
+    --text: #f1f5f9;
+    /* Off-white */
+
+    background:
+        radial-gradient(circle at 10% 20%, rgba(74, 222, 128, 0.15) 0%, transparent 50%),
+        /* Aurora Green */
+        radial-gradient(circle at 85% 70%, rgba(192, 132, 252, 0.1) 0%, transparent 50%),
+        /* Aurora Purple */
+        linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #172554 100%);
+    /* Slate -> Flag Blue */
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* =========================================
+   Layout & Components Overrides
+   ========================================= */
+
+body.theme-alaska .app-header {
+    background: transparent;
+    color: #1e3a8a;
+    /* Dark blue text for legibility on light bg */
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+body.theme-alaska .app-header h1 {
+    position: relative;
+    z-index: 2;
+    color: #ffd700;
+    /* Polaris Gold */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+body.theme-alaska .app-header p {
+    color: #e2e8f0;
+    /* Off-white for description */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+body.theme-alaska .card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+body.theme-alaska .btn.btn--primary {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-alaska .btn.btn--primary:hover {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-alaska .text-input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #f8fafc;
+}
+
+body.theme-alaska .text-input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+body.theme-alaska .movie-odds--secondary {
+    color: #e2e8f0;
+    /* Lighter/White-ish for readability */
+    font-weight: 500;
+}
+
+body.theme-alaska .movie-link {
+    color: #38bdf8;
+    /* Bright Sky Blue */
+}
+
+body.theme-alaska .movie-link:hover {
+    color: #7dd3fc;
+}
+
+body.theme-alaska .movie-meta {
+    color: #cbd5e1;
+    /* Lighter slate */
+}
+
+/* =========================================
+   Flag Accent (Header Background)
+   ========================================= */
+
+body.theme-alaska .alaska-flag-accent {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 300px;
+    /* Top banner area */
+    background: linear-gradient(to bottom, #1e3a8a 0%, transparent 100%);
+    /* Fade out blue to match light bg */
+    z-index: -1;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+}
+
+.alaska-star {
+    position: absolute;
+    background: #FFD700;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    width: 12px;
+    height: 12px;
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+    opacity: 0.9;
+}
+
+/* Distributed Big Dipper over the header background */
+/* Moving to the right side to avoid center text */
+.star-1 {
+    top: 30%;
+    left: 10%;
+    width: 10px;
+    height: 10px;
+}
+
+.star-2 {
+    top: 40%;
+    left: 15%;
+    width: 10px;
+    height: 10px;
+}
+
+.star-3 {
+    top: 55%;
+    left: 20%;
+    width: 10px;
+    height: 10px;
+}
+
+.star-4 {
+    top: 60%;
+    left: 28%;
+    width: 10px;
+    height: 10px;
+}
+
+.star-5 {
+    top: 65%;
+    left: 35%;
+    width: 10px;
+    height: 10px;
+}
+
+/* Handle */
+.star-6 {
+    top: 58%;
+    left: 42%;
+    width: 10px;
+    height: 10px;
+}
+
+.star-7 {
+    top: 50%;
+    left: 48%;
+    width: 10px;
+    height: 10px;
+}
+
+/* Polaris - The North Star (Top Rightish/Center High) */
+.star-8 {
+    top: 15%;
+    right: 15%;
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+/* =========================================
+   Wheel.FM Overrides
+   ========================================= */
+
+body.theme-alaska .wheel-fm {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(30, 58, 138, 0.15);
+}
+
+body.theme-alaska .wheel-fm__eyebrow {
+    color: #1e3a8a;
+}
+
+body.theme-alaska .wheel-fm__track-title {
+    color: #0f172a;
+}
+
+body.theme-alaska .wheel-fm__tagline,
+body.theme-alaska .wheel-fm__track-artist,
+body.theme-alaska .wheel-fm__volume-label,
+body.theme-alaska .wheel-fm__volume-value,
+body.theme-alaska .wheel-fm__time,
+body.theme-alaska .wheel-fm__status {
+    color: #64748b;
+}
+
+body.theme-alaska .wheel-fm__heading {
+    border-bottom-color: rgba(30, 58, 138, 0.1);
+}
+
+body.theme-alaska .wheel-fm__status {
+    border-top-color: rgba(30, 58, 138, 0.1);
+}
+
+body.theme-alaska .wheel-fm__control {
+    background: rgba(30, 58, 138, 0.05);
+    color: #1e3a8a;
+}
+
+body.theme-alaska .wheel-fm__control:hover {
+    background: rgba(30, 58, 138, 0.1);
+}
+
+body.theme-alaska .wheel-fm__control--play {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+body.theme-alaska .wheel-fm__control--play:hover {
+    background: #1e40af;
+}
+
+body.theme-alaska .wheel-fm__playlist-select {
+    background: white;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+body.theme-alaska .wheel-fm__playlist-select option {
+    background-color: white;
+    color: #1e293b;
+}
+
+body.theme-alaska .wheel-fm__minimize {
+    background: rgba(30, 58, 138, 0.05);
+    color: #1e3a8a;
+}
+
+body.theme-alaska .wheel-fm__minimize:hover {
+    background: rgba(30, 58, 138, 0.1);
+}
+
+
+/* =========================================
+   Polar Bear
+   ========================================= */
+
+.alaska-bear {
+    position: fixed;
+    bottom: 20px;
+    right: -100px;
+    width: 90px;
+    height: 55px;
+    background: #fff;
+    border-radius: 40px 50px 40px 30px;
+    /* Rounder body */
+    box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.05), 0 5px 15px rgba(0, 0, 0, 0.2);
+    animation: bear-walk 50s linear infinite;
+    z-index: 100;
+    pointer-events: none;
+    display: none;
+}
+
+body.theme-alaska .movie-odds {
+    color: #ffffff;
+    /* Pure White for maximum readability */
+    font-weight: 500;
+}
+
+/* Head */
+.alaska-bear::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: -20px;
+    width: 35px;
+    height: 30px;
+    background: #fff;
+    border-radius: 20px 15px 15px 15px;
+    box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Eye and Nose (using gradient) */
+.alaska-bear::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: -18px;
+    width: 4px;
+    height: 4px;
+    background: #1e293b;
+    /* Eye */
+    border-radius: 50%;
+    box-shadow:
+        -12px 2px 0 1px #1e293b;
+    /* Nose */
+}
+
+/* Ears */
+.alaska-bear-ear {
+    position: absolute;
+    top: 2px;
+    left: -8px;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Legs */
+.alaska-bear-leg {
+    position: absolute;
+    bottom: -10px;
+    width: 16px;
+    height: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+    transform-origin: top center;
+}
+
+.leg-1 {
+    left: 15px;
+    animation: leg-swing 1.5s ease-in-out infinite;
+    z-index: 2;
+}
+
+.leg-2 {
+    left: 45px;
+    animation: leg-swing 1.5s ease-in-out infinite 0.75s;
+    z-index: 2;
+}
+
+/* Back legs (darker for depth) */
+.leg-3 {
+    right: 15px;
+    background: #e2e8f0;
+    animation: leg-swing 1.5s ease-in-out infinite;
+    z-index: 0;
+}
+
+.leg-4 {
+    right: 45px;
+    background: #e2e8f0;
+    animation: leg-swing 1.5s ease-in-out infinite 0.75s;
+    z-index: 0;
+}
+
+@keyframes bear-walk {
+    0% {
+        transform: translateX(0) scaleX(1);
+    }
+
+    49% {
+        transform: translateX(-110vw) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(-110vw) scaleX(-1);
+    }
+
+    /* Flip to walk back? No, just infinite one way is fine for now */
+    100% {
+        transform: translateX(-120vw) scaleX(1);
+    }
+}
+
+/* Smoother walk cycle */
+@keyframes leg-swing {
+
+    0%,
+    100% {
+        transform: rotate(-10deg);
+    }
+
+    50% {
+        transform: rotate(10deg);
+    }
+}
+
+/* =========================================
+   Snowfall
+   ========================================= */
+
+body.theme-alaska .seasonal-accent {
+    display: none !important;
+}
+
+body.theme-alaska .holiday-snow {
+    animation: snow-fall 25s linear infinite;
+    opacity: 0.6;
+}
+
+body.theme-alaska .holiday-snow::before {
+    animation: snow-fall 35s linear infinite;
+}
+
+body.theme-alaska .holiday-snow::after {
+    animation: snow-fall 45s linear infinite;
+}

@@ -89,6 +89,19 @@ export const modernPalette = [
     '#0a84ff'  // Blue (Repeat)
 ];
 
+export const alaskaPalette = [
+    '#1e3a8a', // Flag Blue
+    '#FFD700', // Polaris Gold
+    '#0ea5e9', // Sky Blue
+    '#c084fc', // Aurora Purple
+    '#4ade80', // Aurora Green
+    '#334155', // Slate Rock
+    '#f1f5f9', // Snow White
+    '#0369a1', // Deep Sea
+    '#e11d48', // Salmon Red
+    '#facc15'  // Summer Sun
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
 const getActiveTheme = () => {
@@ -107,6 +120,9 @@ const getActiveTheme = () => {
     if (document.body && document.body.classList.contains('theme-modern')) {
         return 'modern';
     }
+    if (document.body && document.body.classList.contains('theme-alaska')) {
+        return 'alaska';
+    }
     return 'default';
 };
 
@@ -123,6 +139,9 @@ const getActivePalette = () => {
     }
     if (theme === 'modern') {
         return modernPalette;
+    }
+    if (theme === 'alaska') {
+        return alaskaPalette;
     }
     return basePalette;
 };
