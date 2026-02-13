@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Give your Letterboxd watchlist a dramatic spin to decide what to watch next. Pure HTML/CSS/JS—no build step.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Suspence00/letterboxdwatchlistwheel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Suspence00/letterboxdwatchlistwheel/issues"
+  },
+  "homepage": "https://github.com/Suspence00/letterboxdwatchlistwheel#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
