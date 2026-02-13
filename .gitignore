@@ -1,4 +1,5 @@
-dist/
 node_modules/
-
-health_check.js
+playwright-report/
+test-results/
+.DS_Store
+*.wheel
