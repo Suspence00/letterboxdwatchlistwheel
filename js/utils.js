@@ -102,6 +102,19 @@ export const alaskaPalette = [
     '#facc15'  // Summer Sun
 ];
 
+export const chineseNewYearPalette = [
+    '#D8261C', // CNY Red
+    '#F9C74F', // Gold
+    '#900C3F', // Deep Red
+    '#FFD700', // Bright Gold
+    '#000000', // Ink Black
+    '#C70039', // Crimson
+    '#FF5733', // Orange Red
+    '#581845', // Plum
+    '#FFC300', // Yellow Gold
+    '#800000'  // Maroon
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
 const getActiveTheme = () => {
@@ -123,6 +136,9 @@ const getActiveTheme = () => {
     if (document.body && document.body.classList.contains('theme-alaska')) {
         return 'alaska';
     }
+    if (document.body && document.body.classList.contains('theme-cny')) {
+        return 'cny';
+    }
     return 'default';
 };
 
@@ -142,6 +158,9 @@ const getActivePalette = () => {
     }
     if (theme === 'alaska') {
         return alaskaPalette;
+    }
+    if (theme === 'cny') {
+        return chineseNewYearPalette;
     }
     return basePalette;
 };

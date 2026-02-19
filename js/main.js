@@ -37,7 +37,8 @@ import {
     holidayPalette,
     cyberPalette,
     modernPalette,
-    alaskaPalette
+    alaskaPalette,
+    chineseNewYearPalette
 } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -250,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (value === 'cyber') return 'cyber';
         if (value === 'modern') return 'modern';
         if (value === 'alaska') return 'alaska';
+        if (value === 'cny') return 'cny';
         return 'default';
     };
     const getPaletteForTheme = (theme) => {
@@ -258,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (theme === 'cyber') return cyberPalette;
         if (theme === 'modern') return modernPalette;
         if (theme === 'alaska') return alaskaPalette;
+        if (theme === 'cny') return chineseNewYearPalette;
         return basePalette;
     };
 
@@ -307,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('theme-cyber', safeTheme === 'cyber');
         document.body.classList.toggle('theme-modern', safeTheme === 'modern');
         document.body.classList.toggle('theme-alaska', safeTheme === 'alaska');
+        document.body.classList.toggle('theme-cny', safeTheme === 'cny');
         if (elements.themeSelect) {
             elements.themeSelect.value = safeTheme;
         }

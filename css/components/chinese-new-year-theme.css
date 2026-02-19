@@ -1,0 +1,146 @@
+body.theme-cny {
+    --accent: #F9C74F;
+    --accent-strong: #D8261C;
+    --background: #581845;
+    --card-bg: rgba(100, 10, 30, 0.92);
+    --muted: #E0C097;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --text: #F9C74F;
+    background: radial-gradient(circle at top, #900C3F, #581845 60%, #300010 100%);
+    color: var(--text);
+}
+
+body.theme-cny .app,
+body.theme-cny .app-footer,
+body.theme-cny .app-header {
+    position: relative;
+    z-index: 1;
+}
+
+body.theme-cny .app-header h1 {
+    text-shadow: 0 0 20px rgba(249, 199, 79, 0.6), 0 0 40px rgba(216, 38, 28, 0.4);
+    color: #F9C74F;
+}
+
+body.theme-cny .btn {
+    border-color: #F9C74F;
+}
+
+body.theme-cny .btn.primary {
+    background: linear-gradient(135deg, #D8261C, #900C3F);
+    color: #F9C74F;
+    border: 1px solid #F9C74F;
+}
+
+body.theme-cny .btn.primary:hover {
+    background: linear-gradient(135deg, #F9C74F, #FFD700);
+    color: #900C3F;
+}
+
+/* Lantern Decorations */
+.cny-decorations {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    pointer-events: none;
+    justify-content: space-between;
+    padding: 0 5%;
+}
+
+body.theme-cny .cny-decorations {
+    display: flex;
+}
+
+.lantern-container {
+    position: relative;
+    height: 100%;
+    animation: lantern-sway 4s ease-in-out infinite;
+    transform-origin: top center;
+}
+
+.lantern-container:nth-child(2) {
+    animation-delay: -1s;
+}
+
+.lantern-container:nth-child(3) {
+    animation-delay: -2s;
+}
+
+/* Simplified CSS Lantern */
+.lantern {
+    width: 40px;
+    height: 50px;
+    background: #D8261C;
+    border-radius: 20px;
+    margin-top: 20px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(216, 38, 28, 0.6);
+}
+
+.lantern::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 10px;
+    background: #F9C74F;
+    border-radius: 3px;
+}
+
+.lantern::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 15px;
+    background: #F9C74F;
+}
+
+.lantern-string {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 20px;
+    background: #F9C74F;
+}
+
+.lantern-tassel {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+}
+
+.lantern-tassel span {
+    width: 2px;
+    height: 10px;
+    background: #F9C74F;
+}
+
+@keyframes lantern-sway {
+
+    0%,
+    100% {
+        transform: rotate(-3deg);
+    }
+
+    50% {
+        transform: rotate(3deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lantern-container {
+        animation: none;
+    }
+}
