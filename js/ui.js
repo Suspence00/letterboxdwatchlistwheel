@@ -839,7 +839,7 @@ function buildMovieListItem(movie, index, context) {
         const weightSelect = document.createElement('select');
         weightSelect.id = weightSelectId;
         weightSelect.className = 'movie-weight__select';
-        for (let value = 1; value <= 10; value += 1) {
+        for (let value = 1; value <= 5; value += 1) {
             const option = document.createElement('option');
             option.value = String(value);
             option.textContent = `${value}x`;

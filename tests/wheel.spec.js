@@ -22,7 +22,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     // 2. Verify Movies Loaded
     // The sample CSV has 10 entries (based on the previous failure saying expected 4 received 10)
     await expect(page.locator('#movie-list li')).toHaveCount(10);
-    await expect(page.locator('text=Alien')).toBeVisible();
+    await expect(page.locator('text=The Witch')).toBeVisible();
     await expect(page.locator('text=Parasite')).toBeVisible();
   });
 
@@ -65,12 +65,10 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await fileChooser.setFiles(SAMPLE_CSV_PATH);
 
     // Scroll to the element first to ensure it's in view, just in case
-    const knockoutRadio = page.locator('input[value="knockout"]');
-    await knockoutRadio.scrollIntoViewIfNeeded();
-
     // Select Knockout Mode (default)
-    // Use force:true because the input might be visually hidden or covered by the custom radio UI
-    await knockoutRadio.click({ force: true });
+    const knockoutCard = page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' });
+    await knockoutCard.scrollIntoViewIfNeeded();
+    await knockoutCard.click();
 
     // Verify "Elimination" button text or state
     const spinBtn = page.locator('#spin-button');
@@ -84,19 +82,16 @@ test.describe('Letterboxd Watchlist Wheel', () => {
   });
 
   test('Spin Modes: 1 Spin', async ({ page }) => {
-     // Load sample data
+    // Load sample data
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.click('text=Upload CSV File');
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(SAMPLE_CSV_PATH);
 
-    // Scroll to the element first
-    const oneSpinRadio = page.locator('input[value="one-spin"]');
-    await oneSpinRadio.scrollIntoViewIfNeeded();
-
     // Select 1 Spin Mode
-    // Use force:true because the input might be visually hidden or covered by the custom radio UI
-    await oneSpinRadio.click({ force: true });
+    const oneSpinCard = page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' });
+    await oneSpinCard.scrollIntoViewIfNeeded();
+    await oneSpinCard.click();
 
     // Verify Button Text
     await expect(page.locator('#spin-button')).toHaveText('Spin the One Spin to Rule them all');
@@ -132,13 +127,13 @@ test.describe('Letterboxd Watchlist Wheel', () => {
   });
 
   test('Settings: Theme Switching', async ({ page }) => {
-     await page.click('#settings-open');
+    await page.click('#settings-open');
 
-     const themeSelect = page.locator('#theme-select');
-     await themeSelect.selectOption('cyber');
+    const themeSelect = page.locator('#theme-select');
+    await themeSelect.selectOption('cyber');
 
-     // Check body class
-     await expect(page.locator('body')).toHaveClass(/theme-cyber/);
+    // Check body class
+    await expect(page.locator('body')).toHaveClass(/theme-cyber/);
   });
 
   test('Boost System: Dropdowns & Tags', async ({ page }) => {
@@ -156,17 +151,14 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(firstWeightSelect).toHaveValue('2');
 
     // 2. Inline Boost Button (+)
-    // Mock dialog
-    page.on('dialog', async dialog => {
-        if (dialog.message().includes('Who is boosting')) {
-            await dialog.accept('TestBooster');
-        } else {
-            await dialog.dismiss();
-        }
-    });
-
     const boostBtn = page.locator('.btn-boost').first();
     await boostBtn.click();
+
+    // Fill custom prompt modal
+    const modalInput = page.locator('#input-modal-field');
+    await expect(modalInput).toBeVisible();
+    await modalInput.fill('TestBooster');
+    await page.click('#input-modal-submit');
 
     // 3. Verify Booster Tag appears
     // Use a more relaxed locator or wait explicitly
