@@ -115,6 +115,19 @@ export const chineseNewYearPalette = [
     '#800000'  // Maroon
 ];
 
+export const stPatricksPalette = [
+    '#008000', // Green
+    '#FFD700', // Gold
+    '#004d00', // Dark Green
+    '#ffffff', // White
+    '#00aa00', // Kelly Green
+    '#DAA520', // Goldenrod
+    '#1b4d3e', // Brunswick Green
+    '#228b22', // Forest Green
+    '#fdda24', // Yellow Gold
+    '#006400'  // Darker Green
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
 const getActiveTheme = () => {
@@ -139,6 +152,9 @@ const getActiveTheme = () => {
     if (document.body && document.body.classList.contains('theme-cny')) {
         return 'cny';
     }
+    if (document.body && document.body.classList.contains('theme-st-patricks')) {
+        return 'st-patricks';
+    }
     return 'default';
 };
 
@@ -161,6 +177,9 @@ const getActivePalette = () => {
     }
     if (theme === 'cny') {
         return chineseNewYearPalette;
+    }
+    if (theme === 'st-patricks') {
+        return stPatricksPalette;
     }
     return basePalette;
 };

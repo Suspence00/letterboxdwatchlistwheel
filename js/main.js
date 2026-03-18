@@ -38,7 +38,8 @@ import {
     cyberPalette,
     modernPalette,
     alaskaPalette,
-    chineseNewYearPalette
+    chineseNewYearPalette,
+    stPatricksPalette
 } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -252,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (value === 'modern') return 'modern';
         if (value === 'alaska') return 'alaska';
         if (value === 'cny') return 'cny';
+        if (value === 'st-patricks') return 'st-patricks';
         return 'default';
     };
     const getPaletteForTheme = (theme) => {
@@ -261,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (theme === 'modern') return modernPalette;
         if (theme === 'alaska') return alaskaPalette;
         if (theme === 'cny') return chineseNewYearPalette;
+        if (theme === 'st-patricks') return stPatricksPalette;
         return basePalette;
     };
 
@@ -311,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('theme-modern', safeTheme === 'modern');
         document.body.classList.toggle('theme-alaska', safeTheme === 'alaska');
         document.body.classList.toggle('theme-cny', safeTheme === 'cny');
+        document.body.classList.toggle('theme-st-patricks', safeTheme === 'st-patricks');
         if (elements.themeSelect) {
             elements.themeSelect.value = safeTheme;
         }
