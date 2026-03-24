@@ -188,7 +188,8 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
                 themeColorOverrides: safeOverrides,
-                discordWebhookUrl: loaded.preferences.discordWebhookUrl || ''
+                discordWebhookUrl: loaded.preferences.discordWebhookUrl || '',
+                radarr: loaded.preferences.radarr || null
             };
         } else {
             appState.preferences = {

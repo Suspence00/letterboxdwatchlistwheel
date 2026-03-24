@@ -36,6 +36,7 @@ import {
     getSelectionOdds
 } from './wheel.js';
 import { sendDiscordNotification } from './discord.js';
+import { isRadarrConfigured, addMovieToRadarr } from './radarr.js';
 
 
 
@@ -1725,6 +1726,9 @@ export function showWinnerPopup(movie, context = {}) {
     if (elements.winModalCloseBtn) {
         elements.winModalCloseBtn.focus();
     }
+
+    // Radarr: show/hide the "Add to Radarr" button
+    setupRadarrButton(movie);
 }
 
 export function closeWinnerPopup({ restoreFocus = true } = {}) {
@@ -1747,7 +1751,94 @@ export function closeWinnerPopup({ restoreFocus = true } = {}) {
         }
         lastFocusedBeforeModal = null;
         modalHideTimeoutId = null;
+        resetRadarrButton();
     }, 220);
+}
+
+let radarrButtonHandler = null;
+
+function setupRadarrButton(movie) {
+    const btn = elements.winModalRadarrBtn;
+    const statusEl = elements.winModalRadarrStatus;
+
+    if (!btn) return;
+
+    // Clean up previous handler
+    if (radarrButtonHandler) {
+        btn.removeEventListener('click', radarrButtonHandler);
+        radarrButtonHandler = null;
+    }
+
+    // Only show if Radarr is configured
+    if (!isRadarrConfigured()) {
+        btn.classList.add('hidden');
+        if (statusEl) statusEl.hidden = true;
+        return;
+    }
+
+    btn.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Add to Radarr';
+    if (statusEl) {
+        statusEl.hidden = true;
+        statusEl.textContent = '';
+    }
+
+    radarrButtonHandler = async () => {
+        btn.disabled = true;
+        btn.textContent = 'Adding…';
+        if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.textContent = 'Looking up movie in Radarr…';
+            statusEl.className = 'status radarr-modal-status';
+        }
+
+        try {
+            const result = await addMovieToRadarr(movie);
+            if (statusEl) {
+                statusEl.textContent = result.message;
+                statusEl.className = result.success
+                    ? 'status radarr-modal-status status--success'
+                    : 'status radarr-modal-status status--error';
+            }
+            if (result.success) {
+                btn.textContent = '✓ Added';
+            } else {
+                btn.textContent = 'Add to Radarr';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Radarr add failed:', error);
+            if (statusEl) {
+                statusEl.textContent = 'An unexpected error occurred.';
+                statusEl.className = 'status radarr-modal-status status--error';
+            }
+            btn.textContent = 'Add to Radarr';
+            btn.disabled = false;
+        }
+    };
+
+    btn.addEventListener('click', radarrButtonHandler);
+}
+
+function resetRadarrButton() {
+    const btn = elements.winModalRadarrBtn;
+    const statusEl = elements.winModalRadarrStatus;
+
+    if (radarrButtonHandler && btn) {
+        btn.removeEventListener('click', radarrButtonHandler);
+        radarrButtonHandler = null;
+    }
+
+    if (btn) {
+        btn.classList.add('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Add to Radarr';
+    }
+    if (statusEl) {
+        statusEl.hidden = true;
+        statusEl.textContent = '';
+    }
 }
 
 function buildMetadataKey(movie) {

@@ -421,7 +421,10 @@
           rel="noopener noreferrer">View on Letterboxd</a>
         <a id="win-modal-trailer" class="win-modal__action win-modal__action--trailer hidden" href="#" target="_blank"
           rel="noopener noreferrer">Find a trailer</a>
+        <button type="button" id="win-modal-radarr" class="win-modal__action win-modal__action--radarr hidden"
+          aria-label="Add to Radarr">Add to Radarr</button>
       </div>
+      <p id="win-modal-radarr-status" class="status radarr-modal-status" role="status" aria-live="polite" hidden></p>
     </div>
   </div>
 
@@ -455,6 +458,8 @@
           id="tab-btn-data">Data</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-discord"
           id="tab-btn-discord">Discord</button>
+        <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-radarr"
+          id="tab-btn-radarr">Radarr</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-boards"
           id="tab-btn-boards">Boards</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-advanced"
@@ -573,6 +578,67 @@
               <button type="button" class="btn" id="discord-test-btn">Test Notification</button>
             </div>
           </fieldset>
+          </fieldset>
+        </div>
+
+        <!-- Tab: Radarr Integration -->
+        <div id="tab-radarr" role="tabpanel" aria-labelledby="tab-btn-radarr" class="settings-panel" hidden>
+          <fieldset class="settings-group">
+            <legend>Radarr Connection</legend>
+            <div class="settings-row">
+              <p class="helper-text">Automatically add the winning movie to your Radarr library.</p>
+              <details class="discord-help">
+                <summary class="discord-help__summary" aria-label="How to configure">?</summary>
+                <div class="discord-help__content">
+                  <p><strong>How to get your Radarr API key:</strong></p>
+                  <ol>
+                    <li>Open Radarr and go to <strong>Settings</strong> → <strong>General</strong>.</li>
+                    <li>Find the <strong>API Key</strong> under the Security section.</li>
+                    <li>Copy the key and paste it below.</li>
+                  </ol>
+                  <p><strong>Note:</strong> If Radarr is behind a reverse proxy, you may need to enable CORS headers.</p>
+                </div>
+              </details>
+            </div>
+
+            <div class="backup-modal__fields">
+              <label for="radarr-url">Radarr URL</label>
+              <input type="text" id="radarr-url" class="text-input"
+                placeholder="http://localhost:7878" autocomplete="off">
+
+              <label for="radarr-api-key">API Key</label>
+              <div class="radarr-api-key-row">
+                <input type="password" id="radarr-api-key" class="text-input"
+                  placeholder="Your Radarr API key" autocomplete="off">
+                <button type="button" class="btn btn--small radarr-api-key-toggle" id="radarr-api-key-toggle"
+                  aria-label="Show API key">Show</button>
+              </div>
+            </div>
+
+            <div class="backup-modal__actions">
+              <button type="button" class="btn" id="radarr-test-btn">Test Connection</button>
+            </div>
+            <p class="status" id="radarr-status" role="status" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="settings-group">
+            <legend>Library Defaults</legend>
+            <div class="backup-modal__fields">
+              <label for="radarr-quality-profile">Quality Profile</label>
+              <select id="radarr-quality-profile" class="text-input text-input--select" disabled>
+                <option value="">Connect to populate…</option>
+              </select>
+
+              <label for="radarr-root-folder">Root Folder</label>
+              <select id="radarr-root-folder" class="text-input text-input--select" disabled>
+                <option value="">Connect to populate…</option>
+              </select>
+            </div>
+
+            <label class="filter-toggle" for="radarr-search-on-add">
+              <input type="checkbox" id="radarr-search-on-add" checked />
+              <span>Search for movie after adding</span>
+            </label>
           </fieldset>
         </div>
 

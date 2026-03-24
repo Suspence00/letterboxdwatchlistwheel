@@ -26,6 +26,7 @@ import {
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
 import { initDiscord } from './discord.js';
+import { initRadarr } from './radarr.js';
 import {
     basePalette,
     clampWeight,
@@ -193,6 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyModal: document.getElementById('verify-modal'),
         verifyTableBody: document.querySelector('#verify-table tbody'),
         verifyCloseBtn: document.getElementById('verify-close'),
+
+        // Radarr
+        radarrUrlInput: document.getElementById('radarr-url'),
+        radarrApiKeyInput: document.getElementById('radarr-api-key'),
+        radarrApiKeyToggle: document.getElementById('radarr-api-key-toggle'),
+        radarrTestBtn: document.getElementById('radarr-test-btn'),
+        radarrStatus: document.getElementById('radarr-status'),
+        radarrQualitySelect: document.getElementById('radarr-quality-profile'),
+        radarrRootSelect: document.getElementById('radarr-root-folder'),
+        radarrSearchToggle: document.getElementById('radarr-search-on-add'),
+        winModalRadarrBtn: document.getElementById('win-modal-radarr'),
+        winModalRadarrStatus: document.getElementById('win-modal-radarr-status'),
     };
 
     const canvas = document.getElementById('wheel');
@@ -226,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Discord
     initDiscord(elements);
+
+    // Initialize Radarr
+    initRadarr(elements);
 
     const syncFinalistsToggles = () => {
         const hideBox = Boolean(appState.preferences?.hideFinalistsBox);
