@@ -1,0 +1,243 @@
+/* Forest Camp Theme - Cozy Woodland Aesthetic */
+
+.forest-decorations {
+    display: none;
+    pointer-events: none;
+}
+
+body.theme-forest .forest-decorations {
+    display: block;
+}
+
+body.theme-forest {
+    --background: #111b15; /* Deep Forest Green */
+    --card-bg: rgba(23, 36, 29, 0.94); /* Warm Woodland Green */
+    --text: #f0ede6;       /* Birch Bark Cream */
+    --muted: #9faea4;      /* Sage Green-Grey */
+    --accent: #e58f24;     /* Campfire Amber */
+    --accent-strong: #e25822; /* Flame Red-Orange */
+    --shadow: rgba(0, 0, 0, 0.5);
+    
+    background: 
+        radial-gradient(circle at top right, rgba(229, 143, 36, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at bottom left, rgba(96, 125, 59, 0.12) 0%, transparent 45%),
+        #111b15;
+    color: var(--text);
+}
+
+body.theme-forest .app-header h1 {
+    color: #f0ede6 !important;
+    text-shadow: 
+        0 0 10px rgba(229, 143, 36, 0.4), 
+        2px 2px 0px #0b120e;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+body.theme-forest .app-header p {
+    color: #9faea4;
+    font-style: italic;
+}
+
+body.theme-forest .card {
+    border: 1px solid rgba(96, 125, 59, 0.25);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.45), 
+        inset 0 0 15px rgba(229, 143, 36, 0.08);
+}
+
+body.theme-forest .card h2,
+body.theme-forest .settings-group legend {
+    color: #e58f24;
+    font-family: 'Georgia', serif;
+}
+
+body.theme-forest .btn.btn--primary {
+    background: linear-gradient(135deg, #e58f24 0%, #a03c00 100%);
+    box-shadow: 0 4px 15px rgba(229, 143, 36, 0.3);
+    border: 1px solid rgba(229, 143, 36, 0.35);
+    font-weight: bold;
+}
+
+body.theme-forest .btn.btn--primary:hover {
+    background: linear-gradient(135deg, #f09f3c 0%, #c44d00 100%);
+    box-shadow: 0 6px 20px rgba(229, 143, 36, 0.5), 0 0 10px rgba(226, 88, 34, 0.3);
+    transform: translateY(-2px);
+}
+
+body.theme-forest .btn {
+    border-color: rgba(96, 125, 59, 0.35);
+}
+
+body.theme-forest .text-input {
+    background: rgba(12, 20, 16, 0.9);
+    border-color: rgba(96, 125, 59, 0.45);
+    color: #f0ede6;
+}
+
+body.theme-forest .text-input:focus {
+    border-color: #e58f24;
+    outline: 2px solid #e25822;
+    box-shadow: 0 0 12px rgba(229, 143, 36, 0.35);
+}
+
+body.theme-forest .movie-odds--secondary {
+    color: #e58f24;
+}
+
+body.theme-forest .movie-link:hover {
+    color: #e58f24;
+}
+
+body.theme-forest .seasonal-accent {
+    display: none !important;
+}
+
+/* Campfire Animation in Bottom Right Corner */
+.campfire {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    z-index: 5;
+}
+
+.campfire-wood {
+    position: absolute;
+    bottom: 4px;
+    left: 10%;
+    width: 80%;
+    height: 7px;
+    background: #50311c;
+    border-radius: 4px;
+}
+
+.campfire-wood::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #3e2412;
+    transform: rotate(18deg);
+    border-radius: 4px;
+}
+
+.campfire-wood::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #3e2412;
+    transform: rotate(-18deg);
+    border-radius: 4px;
+}
+
+.campfire-flame {
+    position: absolute;
+    bottom: 10px;
+    border-radius: 50% 50% 20% 20%;
+    transform-origin: bottom center;
+    filter: blur(0.5px);
+}
+
+.flame-1 {
+    left: 18px;
+    width: 24px;
+    height: 38px;
+    background: #e25822;
+    animation: fire-flicker 1.1s ease-in-out infinite alternate;
+    opacity: 0.85;
+}
+
+.flame-2 {
+    left: 23px;
+    width: 16px;
+    height: 30px;
+    background: #e58f24;
+    animation: fire-flicker 0.8s ease-in-out infinite alternate-reverse;
+    opacity: 0.9;
+}
+
+.flame-3 {
+    left: 27px;
+    width: 10px;
+    height: 18px;
+    background: #f5d061;
+    animation: fire-flicker 0.5s ease-in-out infinite alternate;
+    opacity: 0.95;
+}
+
+.campfire-sparks {
+    position: absolute;
+    width: 100%;
+    height: 80px;
+    bottom: 35px;
+    left: 0;
+    background: radial-gradient(circle, #f5d061 1px, transparent 1.2px);
+    background-size: 16px 16px;
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 100%);
+    animation: fire-sparks 3s linear infinite;
+}
+
+/* Silhouette of Pine Trees in Bottom Left Corner */
+.forest-trees {
+    position: fixed;
+    bottom: 0;
+    left: 25px;
+    width: 120px;
+    height: 70px;
+    z-index: 0;
+    opacity: 0.18;
+}
+
+.tree-silhouette {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 45px solid #000000;
+}
+
+.silhouette-1 {
+    left: 0;
+    border-left-width: 22px;
+    border-right-width: 22px;
+    border-bottom-width: 55px;
+}
+
+.silhouette-2 {
+    left: 25px;
+    border-left-width: 28px;
+    border-right-width: 28px;
+    border-bottom-width: 70px;
+}
+
+.silhouette-3 {
+    left: 65px;
+    border-left-width: 18px;
+    border-right-width: 18px;
+    border-bottom-width: 40px;
+}
+
+/* ----------- Animations ----------- */
+@keyframes fire-flicker {
+    0% {
+        transform: scaleY(0.92) scaleX(0.96) rotate(-1deg);
+    }
+    100% {
+        transform: scaleY(1.08) scaleX(1.04) rotate(1deg);
+    }
+}
+
+@keyframes fire-sparks {
+    0% {
+        background-position: 0 80px;
+    }
+    100% {
+        background-position: 4px -80px;
+    }
+}

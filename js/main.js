@@ -34,13 +34,7 @@ import {
     getMovieOriginalIndex,
     getPaletteColorForIndex,
     getStoredWeight,
-    hanukkahPalette,
-    holidayPalette,
-    cyberPalette,
-    modernPalette,
-    alaskaPalette,
-    chineseNewYearPalette,
-    stPatricksPalette
+    THEMES
 } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -263,24 +257,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const normalizeTheme = (value) => {
-        if (value === 'holiday') return 'holiday';
-        if (value === 'hanukkah') return 'hanukkah';
-        if (value === 'cyber') return 'cyber';
-        if (value === 'modern') return 'modern';
-        if (value === 'alaska') return 'alaska';
-        if (value === 'cny') return 'cny';
-        if (value === 'st-patricks') return 'st-patricks';
-        return 'default';
+        const themeExists = THEMES.some(t => t.id === value);
+        return themeExists ? value : 'default';
     };
-    const getPaletteForTheme = (theme) => {
-        if (theme === 'holiday') return holidayPalette;
-        if (theme === 'hanukkah') return hanukkahPalette;
-        if (theme === 'cyber') return cyberPalette;
-        if (theme === 'modern') return modernPalette;
-        if (theme === 'alaska') return alaskaPalette;
-        if (theme === 'cny') return chineseNewYearPalette;
-        if (theme === 'st-patricks') return stPatricksPalette;
-        return basePalette;
+
+    const getPaletteForTheme = (themeId) => {
+        const theme = THEMES.find(t => t.id === themeId);
+        return theme ? theme.palette : basePalette;
     };
 
     const applyThemePalette = (previousTheme, nextTheme, options = {}) => {
@@ -324,22 +307,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const safeTheme = normalizeTheme(theme);
         const previousTheme = appState.preferences.theme || 'default';
         applyThemePalette(previousTheme, safeTheme, { force });
-        document.body.classList.toggle('theme-holiday', safeTheme === 'holiday');
-        document.body.classList.toggle('theme-hanukkah', safeTheme === 'hanukkah');
-        document.body.classList.toggle('theme-cyber', safeTheme === 'cyber');
-        document.body.classList.toggle('theme-modern', safeTheme === 'modern');
-        document.body.classList.toggle('theme-alaska', safeTheme === 'alaska');
-        document.body.classList.toggle('theme-cny', safeTheme === 'cny');
-        document.body.classList.toggle('theme-st-patricks', safeTheme === 'st-patricks');
+        
+        // Remove all registered theme classes from body
+        THEMES.forEach(t => {
+            if (t.id !== 'default') {
+                document.body.classList.remove(`theme-${t.id}`);
+            }
+        });
+        // Add active theme class
+        if (safeTheme !== 'default') {
+            document.body.classList.add(`theme-${safeTheme}`);
+        }
+        
         if (elements.themeSelect) {
             elements.themeSelect.value = safeTheme;
         }
         appState.preferences.theme = safeTheme;
+
+        // Show/hide retro Tip of the Day window
+        const retroWindow = document.querySelector('.retro-window');
+        if (retroWindow) {
+            retroWindow.style.display = safeTheme === 'retro-95' ? 'block' : 'none';
+        }
     };
 
-
+    const populateThemeSelect = () => {
+        if (!elements.themeSelect) return;
+        elements.themeSelect.innerHTML = THEMES.map(theme => 
+            `<option value="${theme.id}">${theme.name}</option>`
+        ).join('');
+    };
 
     const initThemeSelector = () => {
+        populateThemeSelect();
         applyTheme(appState.preferences?.theme, { force: true });
 
         if (elements.themeSelect) {
@@ -350,6 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateMovieList();
             });
         }
+
+        // Add Tip of the Day close handler for Retro 95
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.retro-window-close') || event.target.closest('.btn-close-tip')) {
+                const retroWindow = document.querySelector('.retro-window');
+                if (retroWindow) {
+                    retroWindow.style.display = 'none';
+                }
+            }
+        });
     };
 
     initBackup(elements, {

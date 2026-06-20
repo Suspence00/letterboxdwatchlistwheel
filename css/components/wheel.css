@@ -309,6 +309,9 @@
 
 .wheel-stage canvas {
     transition: filter 0.4s ease;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
 }
 
 .wheel-stage--amped {

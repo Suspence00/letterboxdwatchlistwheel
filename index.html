@@ -91,6 +91,59 @@
       </div>
     </div>
   </div>
+
+  <div class="america-decorations" aria-hidden="true">
+    <div class="firework-burst burst-1"></div>
+    <div class="firework-burst burst-2"></div>
+    <div class="firework-burst burst-3"></div>
+    <div class="firework-burst burst-4"></div>
+    <div class="firework-burst burst-5"></div>
+    <div class="firework-burst burst-6"></div>
+    <div class="america-flag-banner">🇺🇸</div>
+  </div>
+
+  <div class="retro-95-decorations" aria-hidden="true">
+    <div class="retro-window">
+      <div class="retro-window-titlebar">
+        <span class="retro-window-title">Tip of the Day</span>
+        <button class="retro-window-close" aria-label="Close">×</button>
+      </div>
+      <div class="retro-window-body">
+        <div class="retro-tip-icon">💡</div>
+        <div class="retro-tip-content">
+          <p class="retro-tip-heading">Did you know?</p>
+          <p>You can toggle custom watchlist entries and adjust their weights to influence the wheel's selector!</p>
+        </div>
+      </div>
+      <div class="retro-window-footer">
+        <button class="retro-window-btn btn-close-tip">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="spooky-decorations" aria-hidden="true">
+    <div class="spooky-bat bat-1"></div>
+    <div class="spooky-bat bat-2"></div>
+    <div class="spooky-bat bat-3"></div>
+    <div class="spooky-web-topleft"></div>
+    <div class="spooky-web-topright"></div>
+  </div>
+
+  <div class="forest-decorations" aria-hidden="true">
+    <div class="campfire">
+      <div class="campfire-wood"></div>
+      <div class="campfire-flame flame-1"></div>
+      <div class="campfire-flame flame-2"></div>
+      <div class="campfire-flame flame-3"></div>
+      <div class="campfire-sparks"></div>
+    </div>
+    <div class="forest-trees">
+      <div class="tree-silhouette silhouette-1"></div>
+      <div class="tree-silhouette silhouette-2"></div>
+      <div class="tree-silhouette silhouette-3"></div>
+    </div>
+  </div>
+
   <header class="app-header">
     <div class="header-controls">
       <h1>Letterboxd Watchlist Wheel</h1>
@@ -359,7 +412,7 @@
                 </section>
               </div>
               <div class="wheel-stage">
-                <canvas id="wheel" width="720" height="720" role="img" aria-label="Wheel of selected movies"></canvas>
+                <canvas id="wheel" width="1080" height="1080" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
               </div>
             </div>
@@ -509,6 +562,10 @@
                 <option value="alaska">Alaska</option>
                 <option value="cny">Chinese New Year</option>
                 <option value="st-patricks">St. Patrick's Day</option>
+                <option value="america">4th of July</option>
+                <option value="retro-95">Retro 95</option>
+                <option value="spooky">Spooky Halloween</option>
+                <option value="forest">Forest Camp</option>
               </select>
             </div>
           </fieldset>

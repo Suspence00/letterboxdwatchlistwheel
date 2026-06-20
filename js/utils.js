@@ -128,63 +128,97 @@ export const stPatricksPalette = [
     '#006400'  // Darker Green
 ];
 
+export const americaPalette = [
+    '#D2143A', // Old Glory Red
+    '#EAF2F8', // Star White
+    '#123380', // Old Glory Blue
+    '#1b45b4', // Bright Blue
+    '#A60F2D', // Deep Red
+    '#CDD8E4', // Silver Accent
+    '#2B5DC5', // Bright Blue
+    '#0B1E4A', // Dark Navy
+    '#E22D4F', // Light Red
+    '#FFFFFF'  // Pure White
+];
+
+export const retro95Palette = [
+    '#000080', // Win95 Active Titlebar Blue
+    '#808080', // Win95 Muted Grey
+    '#800000', // Dark Maroon
+    '#008080', // Desktop Teal
+    '#808000', // Windows Olive
+    '#0000FF', // Pure Blue
+    '#C0C0C0', // Light Grey
+    '#800080', // Classic Purple
+    '#FFFF00', // Bright Yellow
+    '#008000'  // Classic Green
+];
+
+export const spookyPalette = [
+    '#FF7518', // Pumpkin Orange
+    '#4B0082', // Indigo Purple
+    '#39FF14', // Slime Green
+    '#D95D0F', // Flame Amber
+    '#8B0000', // Dark Blood Red
+    '#7B1FA2', // Bright Purple
+    '#E0DCD3', // Ghostly Bone
+    '#311B92', // Midnight Violet
+    '#FF5722', // Deep Orange
+    '#1A0C2B'  // Pitch Black Purple
+];
+
+export const forestPalette = [
+    '#2E5A44', // Pine Green
+    '#E58F24', // Campfire Amber
+    '#E25822', // Flame Red
+    '#8B5A2B', // Bark Wood Brown
+    '#1E3F20', // Shadow Pine
+    '#F5D061', // Starry Gold
+    '#607D3B', // Mossy Green
+    '#4A7A96', // Cold River Blue
+    '#323835', // Charcoal Grey
+    '#D2D7D3'  // Birch Silver
+];
+
+export const THEMES = [
+    { id: 'default', name: 'Classic', palette: basePalette },
+    { id: 'holiday', name: 'Christmas', palette: holidayPalette },
+    { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },
+    { id: 'cyber', name: 'Cyber', palette: cyberPalette },
+    { id: 'modern', name: 'Modern', palette: modernPalette },
+    { id: 'alaska', name: 'Alaska', palette: alaskaPalette },
+    { id: 'cny', name: 'Chinese New Year', palette: chineseNewYearPalette },
+    { id: 'st-patricks', name: 'St. Patrick\'s Day', palette: stPatricksPalette },
+    { id: 'america', name: '4th of July', palette: americaPalette },
+    { id: 'retro-95', name: 'Retro 95', palette: retro95Palette },
+    { id: 'spooky', name: 'Spooky Halloween', palette: spookyPalette },
+    { id: 'forest', name: 'Forest Camp', palette: forestPalette }
+];
+
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
-const getActiveTheme = () => {
-    if (typeof document === 'undefined') {
+export const getActiveTheme = () => {
+    if (typeof document === 'undefined' || !document.body) {
         return 'default';
     }
-    if (document.body && document.body.classList.contains('theme-holiday')) {
-        return 'holiday';
-    }
-    if (document.body && document.body.classList.contains('theme-hanukkah')) {
-        return 'hanukkah';
-    }
-    if (document.body && document.body.classList.contains('theme-cyber')) {
-        return 'cyber';
-    }
-    if (document.body && document.body.classList.contains('theme-modern')) {
-        return 'modern';
-    }
-    if (document.body && document.body.classList.contains('theme-alaska')) {
-        return 'alaska';
-    }
-    if (document.body && document.body.classList.contains('theme-cny')) {
-        return 'cny';
-    }
-    if (document.body && document.body.classList.contains('theme-st-patricks')) {
-        return 'st-patricks';
+    for (const className of document.body.classList) {
+        if (className.startsWith('theme-')) {
+            const potentialTheme = className.replace('theme-', '');
+            if (THEMES.some(t => t.id === potentialTheme)) {
+                return potentialTheme;
+            }
+        }
     }
     return 'default';
 };
 
-const getActivePalette = () => {
-    const theme = getActiveTheme();
-    if (theme === 'holiday') {
-        return holidayPalette;
-    }
-    if (theme === 'hanukkah') {
-        return hanukkahPalette;
-    }
-    if (theme === 'cyber') {
-        return cyberPalette;
-    }
-    if (theme === 'modern') {
-        return modernPalette;
-    }
-    if (theme === 'alaska') {
-        return alaskaPalette;
-    }
-    if (theme === 'cny') {
-        return chineseNewYearPalette;
-    }
-    if (theme === 'st-patricks') {
-        return stPatricksPalette;
-    }
-    return basePalette;
+export const getActivePalette = () => {
+    const themeId = getActiveTheme();
+    const theme = THEMES.find(t => t.id === themeId);
+    return theme ? theme.palette : basePalette;
 };
 
-const isThemePaletteLocked = () => getActiveTheme() !== 'default';
+export const isThemePaletteLocked = () => getActiveTheme() !== 'default';
 
 /**
  * Converts HSL color values to Hex string

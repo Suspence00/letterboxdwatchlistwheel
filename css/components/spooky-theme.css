@@ -1,0 +1,208 @@
+/* Spooky Halloween Theme */
+
+.spooky-decorations {
+    display: none;
+    pointer-events: none;
+}
+
+body.theme-spooky .spooky-decorations {
+    display: block;
+}
+
+body.theme-spooky {
+    --background: #0d0814;
+    --card-bg: rgba(22, 14, 33, 0.95);
+    --text: #e0dcd3; /* Ghostly Bone */
+    --muted: #9185a0;
+    --accent: #ff7518; /* Pumpkin Orange */
+    --accent-strong: #39ff14; /* Slime Green */
+    --shadow: rgba(0, 0, 0, 0.65);
+    
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(75, 0, 130, 0.2) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(255, 117, 24, 0.08) 0%, transparent 45%),
+        #0d0814;
+    color: var(--text);
+}
+
+body.theme-spooky .app-header h1 {
+    color: #ff7518 !important;
+    text-shadow: 
+        0 0 8px rgba(57, 255, 20, 0.5), 
+        3px 3px 0px #000000;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+body.theme-spooky .app-header p {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    color: #39ff14;
+    opacity: 0.8;
+}
+
+body.theme-spooky .card {
+    border: 1px solid rgba(255, 117, 24, 0.25);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.6), 
+        inset 0 0 15px rgba(75, 0, 130, 0.25);
+}
+
+body.theme-spooky .card h2,
+body.theme-spooky .settings-group legend {
+    color: #ff7518;
+    font-family: 'Georgia', serif;
+    letter-spacing: 1px;
+}
+
+body.theme-spooky .btn.btn--primary {
+    background: linear-gradient(135deg, #ff7518 0%, #8b0000 100%);
+    box-shadow: 0 4px 15px rgba(255, 117, 24, 0.4);
+    border: 1px solid rgba(255, 117, 24, 0.4);
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+}
+
+body.theme-spooky .btn.btn--primary:hover {
+    background: linear-gradient(135deg, #ff8c39 0%, #b30000 100%);
+    box-shadow: 0 6px 20px rgba(255, 117, 24, 0.6), 0 0 12px rgba(57, 255, 20, 0.4);
+    transform: translateY(-2px);
+}
+
+body.theme-spooky .btn {
+    border-color: rgba(75, 0, 130, 0.4);
+}
+
+body.theme-spooky .text-input {
+    background: rgba(13, 8, 20, 0.9);
+    border-color: rgba(75, 0, 130, 0.6);
+    color: #e0dcd3;
+}
+
+body.theme-spooky .text-input:focus {
+    border-color: #39ff14;
+    outline: 2px solid #ff7518;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+}
+
+body.theme-spooky .movie-odds--secondary {
+    color: #39ff14;
+}
+
+body.theme-spooky .movie-link:hover {
+    color: #ff7518;
+}
+
+body.theme-spooky .seasonal-accent {
+    display: none !important;
+}
+
+/* Flying Bats Decoration */
+.spooky-bat {
+    position: fixed;
+    width: 28px;
+    height: 16px;
+    background-color: #050308;
+    z-index: 0;
+    pointer-events: none;
+    clip-path: polygon(
+        50% 30%, 65% 10%, 75% 25%, 90% 10%, 100% 30%, 85% 55%, 70% 45%, 50% 85%, 
+        30% 45%, 15% 55%, 0% 30%, 10% 10%, 25% 25%, 35% 10%
+    );
+    opacity: 0.6;
+}
+
+.bat-1 {
+    animation: bat-fly-left-to-right 14s linear infinite;
+}
+
+.bat-2 {
+    animation: bat-fly-right-to-left 20s linear infinite;
+    animation-delay: 3s;
+}
+
+.bat-3 {
+    animation: bat-fly-left-to-right 17s linear infinite;
+    animation-delay: 7s;
+}
+
+/* Spiderwebs in Corners */
+.spooky-web-topleft {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 140px;
+    height: 140px;
+    opacity: 0.25;
+    background: 
+        radial-gradient(circle at top left, transparent 20%, rgba(255, 117, 24, 0.2) 21%, rgba(255, 117, 24, 0.2) 23%, transparent 24%,
+                        transparent 39%, rgba(255, 117, 24, 0.2) 40%, rgba(255, 117, 24, 0.2) 42%, transparent 43%,
+                        transparent 59%, rgba(255, 117, 24, 0.2) 60%, rgba(255, 117, 24, 0.2) 62%, transparent 63%),
+        linear-gradient(30deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%),
+        linear-gradient(60deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.spooky-web-topright {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 140px;
+    height: 140px;
+    opacity: 0.25;
+    background: 
+        radial-gradient(circle at top right, transparent 20%, rgba(255, 117, 24, 0.2) 21%, rgba(255, 117, 24, 0.2) 23%, transparent 24%,
+                        transparent 39%, rgba(255, 117, 24, 0.2) 40%, rgba(255, 117, 24, 0.2) 42%, transparent 43%,
+                        transparent 59%, rgba(255, 117, 24, 0.2) 60%, rgba(255, 117, 24, 0.2) 62%, transparent 63%),
+        linear-gradient(-30deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%),
+        linear-gradient(-60deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* ----------- Animations ----------- */
+@keyframes bat-fly-left-to-right {
+    0% {
+        left: -40px;
+        top: 25%;
+        transform: translateY(0) scale(1);
+    }
+    25% {
+        transform: translateY(-15px) scaleY(0.4);
+    }
+    50% {
+        transform: translateY(0) scale(1.1);
+    }
+    75% {
+        transform: translateY(-15px) scaleY(0.4);
+    }
+    100% {
+        left: 100vw;
+        top: 15%;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes bat-fly-right-to-left {
+    0% {
+        right: -40px;
+        top: 40%;
+        transform: scaleX(-1) translateY(0) scale(0.85);
+    }
+    25% {
+        transform: scaleX(-1) translateY(-20px) scaleY(0.4) scaleX(0.85);
+    }
+    50% {
+        transform: scaleX(-1) translateY(0) scale(0.95);
+    }
+    75% {
+        transform: scaleX(-1) translateY(-20px) scaleY(0.4) scaleX(0.85);
+    }
+    100% {
+        right: 100vw;
+        top: 25%;
+        transform: scaleX(-1) translateY(0) scale(0.85);
+    }
+}

@@ -295,8 +295,8 @@ export function drawEmptyWheel() {
 function wrapText(context, text, maxWidth, maxArcLength) {
     if (!text) return;
 
-    const maxFontSize = 16;
-    const minFontSize = 9;
+    const maxFontSize = 24;
+    const minFontSize = 13;
 
     let fontSize = maxFontSize;
     let layout = layoutText(context, text, maxWidth, fontSize);
@@ -314,9 +314,16 @@ function wrapText(context, text, maxWidth, maxArcLength) {
     context.font = `600 ${fontSize}px Inter, sans-serif`;
     context.textBaseline = 'middle';
 
+    context.fillStyle = '#ffffff';
+    context.strokeStyle = '#000000';
+    context.lineWidth = 3;
+    context.lineJoin = 'round';
+
     const totalHeight = layout.lineHeight * (layout.lines.length - 1);
     layout.lines.forEach((line, index) => {
-        context.fillText(line, maxWidth, -totalHeight / 2 + index * layout.lineHeight);
+        const y = -totalHeight / 2 + index * layout.lineHeight;
+        context.strokeText(line, maxWidth, y);
+        context.fillText(line, maxWidth, y);
     });
 }
 

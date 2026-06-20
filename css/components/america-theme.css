@@ -1,0 +1,341 @@
+/* America Theme - 4th of July */
+
+.america-decorations {
+    display: none;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+body.theme-america .america-decorations {
+    display: block;
+}
+
+body.theme-america {
+    --background: #060e22;
+    --card-bg: rgba(12, 24, 51, 0.95);
+    --text: #ffffff;
+    --muted: #b0c0d8;
+    --accent: #d2143a; /* Old Glory Red */
+    --accent-strong: #123380; /* Old Glory Blue */
+    --shadow: rgba(0, 0, 0, 0.5);
+    
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(18, 51, 128, 0.2) 0%, transparent 40%),
+        radial-gradient(circle at 70% 60%, rgba(210, 20, 58, 0.15) 0%, transparent 45%),
+        #060e22;
+    color: var(--text);
+}
+
+body.theme-america .app-header h1 {
+    text-shadow: 
+        0 0 15px rgba(210, 20, 58, 0.6), 
+        3px 3px 0px #123380, 
+        -1px -1px 0px #ffffff;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+body.theme-america .btn.btn--primary {
+    background: linear-gradient(135deg, #d2143a 0%, #123380 100%);
+    box-shadow: 0 4px 15px rgba(210, 20, 58, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+body.theme-america .btn.btn--primary:hover {
+    background: linear-gradient(135deg, #eb224b 0%, #1f50c0 100%);
+    box-shadow: 0 6px 20px rgba(210, 20, 58, 0.6), 0 0 12px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+body.theme-america .card {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.4), 
+        inset 0 0 20px rgba(18, 51, 128, 0.2);
+}
+
+body.theme-america .text-input {
+    background: rgba(8, 16, 38, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+body.theme-america .text-input:focus {
+    outline: 2px solid #123380;
+    border-color: #d2143a;
+    box-shadow: 0 0 15px rgba(210, 20, 58, 0.5);
+}
+
+body.theme-america .seasonal-accent {
+    display: none !important;
+}
+
+/* Waving American Flag - Emoji style */
+.america-flag-banner {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    font-size: 52px !important;
+    line-height: 1 !important;
+    display: block !important;
+    z-index: 100;
+    animation: flag-wave 3s ease-in-out infinite;
+    transform-origin: top right;
+    pointer-events: none;
+}
+
+/* Fireworks Burst Animation - Strictly Red, White, and Blue (NO GOLD/YELLOW) */
+.firework-burst {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    opacity: 0;
+    z-index: -1;
+}
+
+.burst-1 {
+    top: 15%;
+    left: 12%;
+    animation: firework-star-red 4s infinite;
+    animation-delay: 0s;
+}
+
+.burst-2 {
+    top: 22%;
+    right: 18%;
+    animation: firework-ring-white 4s infinite;
+    animation-delay: 0.7s;
+}
+
+.burst-3 {
+    top: 35%;
+    left: 45%;
+    animation: firework-heart-blue 4s infinite;
+    animation-delay: 1.4s;
+}
+
+.burst-4 {
+    top: 40%;
+    left: 22%;
+    animation: firework-heart-red 4s infinite;
+    animation-delay: 2.1s;
+}
+
+.burst-5 {
+    top: 12%;
+    right: 38%;
+    animation: firework-star-white 4s infinite;
+    animation-delay: 2.8s;
+}
+
+.burst-6 {
+    top: 28%;
+    left: 68%;
+    animation: firework-ring-blue 4s infinite;
+    animation-delay: 3.5s;
+}
+
+/* ----------- Animations ----------- */
+@keyframes flag-wave {
+    0%, 100% {
+        transform: rotate(0deg) skewY(0deg);
+    }
+    50% {
+        transform: rotate(2.5deg) skewY(2deg) scale(0.98);
+    }
+}
+
+/* Shape: Star Burst (Red) */
+@keyframes firework-star-red {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #d2143a;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.8);
+        opacity: 0;
+        box-shadow: 
+            /* Outer Star Tips */
+            0px -75px 0 1.5px #d2143a,
+            71px -23px 0 1.5px #d2143a,
+            44px 61px 0 1.5px #d2143a,
+            -44px 61px 0 1.5px #d2143a,
+            -71px -23px 0 1.5px #d2143a,
+            /* Inner Star Angles */
+            0px 25px 0 1.5px #d2143a,
+            22px -7px 0 1.5px #d2143a,
+            14px 19px 0 1.5px #d2143a,
+            -14px 19px 0 1.5px #d2143a,
+            -22px -7px 0 1.5px #d2143a,
+            /* Inner Core Sparks */
+            0px -30px 0 0.8px #ffffff,
+            28px -9px 0 0.8px #ffffff,
+            18px 25px 0 0.8px #ffffff,
+            -18px 25px 0 0.8px #ffffff,
+            -28px -9px 0 0.8px #ffffff;
+    }
+}
+
+/* Shape: Star Burst (White) */
+@keyframes firework-star-white {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #ffffff;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.6);
+        opacity: 0;
+        box-shadow: 
+            /* Outer Star Tips */
+            0px -75px 0 1.5px #ffffff,
+            71px -23px 0 1.5px #ffffff,
+            44px 61px 0 1.5px #ffffff,
+            -44px 61px 0 1.5px #ffffff,
+            -71px -23px 0 1.5px #ffffff,
+            /* Inner Star Angles */
+            0px 25px 0 1.5px #ffffff,
+            22px -7px 0 1.5px #ffffff,
+            14px 19px 0 1.5px #ffffff,
+            -14px 19px 0 1.5px #ffffff,
+            -22px -7px 0 1.5px #ffffff,
+            /* Inner Core Sparks (Blue) */
+            0px -30px 0 0.8px #2b5dc5,
+            28px -9px 0 0.8px #2b5dc5,
+            18px 25px 0 0.8px #2b5dc5,
+            -18px 25px 0 0.8px #2b5dc5,
+            -28px -9px 0 0.8px #2b5dc5;
+    }
+}
+
+/* Shape: Heart Burst (Red) */
+@keyframes firework-heart-red {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #d2143a;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.5);
+        opacity: 0;
+        box-shadow:
+            /* Top Arcs */
+            0 -18px 0 1.5px #d2143a,
+            -20px -38px 0 1.5px #d2143a, 20px -38px 0 1.5px #d2143a,
+            -45px -32px 0 1.5px #d2143a, 45px -32px 0 1.5px #d2143a,
+            /* Outer Edges */
+            -55px -8px 0 1.5px #d2143a, 55px -8px 0 1.5px #d2143a,
+            -45px 18px 0 1.5px #d2143a, 45px 18px 0 1.5px #d2143a,
+            -25px 38px 0 1.5px #d2143a, 25px 38px 0 1.5px #d2143a,
+            /* Bottom Tip */
+            0px 55px 0 2px #d2143a,
+            /* Inner Sparkles (White) */
+            -15px -10px 0 0.8px #ffffff, 15px -10px 0 0.8px #ffffff,
+            -25px 5px 0 0.8px #ffffff, 25px 5px 0 0.8px #ffffff,
+            0 25px 0 0.8px #ffffff;
+    }
+}
+
+/* Shape: Heart Burst (Blue) */
+@keyframes firework-heart-blue {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #2b5dc5;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.7);
+        opacity: 0;
+        box-shadow:
+            /* Top Arcs */
+            0 -18px 0 1.5px #2b5dc5,
+            -20px -38px 0 1.5px #2b5dc5, 20px -38px 0 1.5px #2b5dc5,
+            -45px -32px 0 1.5px #2b5dc5, 45px -32px 0 1.5px #2b5dc5,
+            /* Outer Edges */
+            -55px -8px 0 1.5px #2b5dc5, 55px -8px 0 1.5px #2b5dc5,
+            -45px 18px 0 1.5px #2b5dc5, 45px 18px 0 1.5px #2b5dc5,
+            -25px 38px 0 1.5px #2b5dc5, 25px 38px 0 1.5px #2b5dc5,
+            /* Bottom Tip */
+            0px 55px 0 2px #2b5dc5,
+            /* Inner Sparkles (Red) */
+            -15px -10px 0 0.8px #d2143a, 15px -10px 0 0.8px #d2143a,
+            -25px 5px 0 0.8px #d2143a, 25px 5px 0 0.8px #d2143a,
+            0 25px 0 0.8px #d2143a;
+    }
+}
+
+/* Shape: Double Concentric Ring (White) */
+@keyframes firework-ring-white {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #ffffff;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.5);
+        opacity: 0;
+        box-shadow:
+            /* Outer Ring (White) */
+            0px -65px 0 1.5px #ffffff, 46px -46px 0 1.5px #ffffff,
+            65px 0px 0 1.5px #ffffff, 46px 46px 0 1.5px #ffffff,
+            0px 65px 0 1.5px #ffffff, -46px 46px 0 1.5px #ffffff,
+            -65px 0px 0 1.5px #ffffff, -46px -46px 0 1.5px #ffffff,
+            /* Inner Ring (Red) */
+            0px -35px 0 1px #d2143a, 25px -25px 0 1px #d2143a,
+            35px 0px 0 1px #d2143a, 25px 25px 0 1px #d2143a,
+            0px 35px 0 1px #d2143a, -25px 25px 0 1px #d2143a,
+            -35px 0px 0 1px #d2143a, -25px -25px 0 1px #d2143a;
+    }
+}
+
+/* Shape: Double Concentric Ring (Blue) */
+@keyframes firework-ring-blue {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+        box-shadow: 0 0 #2b5dc5;
+    }
+    5% {
+        opacity: 1;
+    }
+    45%, 100% {
+        transform: scale(2.9);
+        opacity: 0;
+        box-shadow:
+            /* Outer Ring (Blue) */
+            0px -65px 0 1.5px #2b5dc5, 46px -46px 0 1.5px #2b5dc5,
+            65px 0px 0 1.5px #2b5dc5, 46px 46px 0 1.5px #2b5dc5,
+            0px 65px 0 1.5px #2b5dc5, -46px 46px 0 1.5px #2b5dc5,
+            -65px 0px 0 1.5px #2b5dc5, -46px -46px 0 1.5px #2b5dc5,
+            /* Inner Ring (White) */
+            0px -35px 0 1px #ffffff, 25px -25px 0 1px #ffffff,
+            35px 0px 0 1px #ffffff, 25px 25px 0 1px #ffffff,
+            0px 35px 0 1px #ffffff, -25px 25px 0 1px #ffffff,
+            -35px 0px 0 1px #ffffff, -25px -25px 0 1px #ffffff;
+    }
+}

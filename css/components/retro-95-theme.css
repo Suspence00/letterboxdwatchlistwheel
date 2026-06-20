@@ -1,0 +1,507 @@
+/* Retro 95 Theme - Classic Windows 95 Aesthetic */
+
+.retro-95-decorations {
+    display: none;
+}
+
+body.theme-retro-95 .retro-95-decorations {
+    display: block;
+}
+
+body.theme-retro-95 {
+    --background: #008080; /* Windows 95 Teal Desktop */
+    --card-bg: #c0c0c0;    /* Classic MS Grey */
+    --text: #000000;
+    --muted: #555555;
+    --accent: #000080;     /* Active Titlebar Blue */
+    --accent-strong: #800000; /* Dark Maroon */
+    --shadow: rgba(0, 0, 0, 0.4);
+    
+    background-color: #008080 !important;
+    background-image: none !important;
+    color: #000000;
+}
+
+/* Force Classic System Typography (Without squashing font-sizes globally) */
+body.theme-retro-95,
+body.theme-retro-95 button,
+body.theme-retro-95 input,
+body.theme-retro-95 select,
+body.theme-retro-95 textarea,
+body.theme-retro-95 span,
+body.theme-retro-95 p,
+body.theme-retro-95 label,
+body.theme-retro-95 h1,
+body.theme-retro-95 h2,
+body.theme-retro-95 h3,
+body.theme-retro-95 legend {
+    font-family: "Segoe UI", Arial, Tahoma, "MS Sans Serif", sans-serif !important;
+    letter-spacing: 0px !important;
+    text-shadow: none !important;
+    text-transform: none !important;
+    box-shadow: none;
+    border-radius: 0px !important;
+}
+
+body.theme-retro-95 .app-header {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 1px 1px 0px 0px #000000 !important;
+    padding: 8px 16px !important;
+    margin-top: 10px;
+}
+
+body.theme-retro-95 .app-header h1 {
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #000000 !important;
+}
+
+body.theme-retro-95 .app-header p {
+    font-size: 11px !important;
+    color: #000000 !important;
+    margin-top: 4px;
+}
+
+/* Retro Beveled Cards */
+body.theme-retro-95 .card {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 1px 1px 0px 0px #000000 !important;
+    padding: 10px !important;
+    color: #000000 !important;
+    margin-bottom: 15px !important;
+}
+
+/* Window Titlebar style for card headings */
+body.theme-retro-95 .card h2,
+body.theme-retro-95 .settings-group legend {
+    background: linear-gradient(90deg, #000080, #1084d0) !important;
+    color: #ffffff !important;
+    padding: 3px 6px !important;
+    margin: -10px -10px 10px -10px !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    border: none !important;
+    float: none !important;
+    width: auto !important;
+    display: block !important;
+}
+
+/* Buttons */
+body.theme-retro-95 .btn {
+    background: #c0c0c0 !important;
+    color: #000000 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 1px 1px 0px 0px #000000 !important;
+    padding: 4px 12px !important;
+    cursor: pointer !important;
+    font-weight: normal !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+body.theme-retro-95 .btn:hover {
+    background: #d4d0c8 !important;
+}
+
+body.theme-retro-95 .btn:active {
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #ffffff !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+}
+
+body.theme-retro-95 .btn.btn--primary {
+    font-weight: bold !important;
+    border-color: #ffffff #808080 #808080 #ffffff !important;
+    outline: 1px solid #000000 !important;
+}
+
+/* Text Inputs */
+body.theme-retro-95 .text-input {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #ffffff !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+    padding: 4px !important;
+}
+
+body.theme-retro-95 .text-input:focus {
+    outline: 1px dotted #000000 !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+}
+
+/* Tip of the Day Dialog Window */
+body.theme-retro-95 .retro-window {
+    position: fixed;
+    top: 90px;
+    left: 20px;
+    width: 300px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.35), 1px 1px 0px 0px #000000;
+    z-index: 100;
+    padding: 2px;
+}
+
+body.theme-retro-95 .retro-window-titlebar {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #ffffff;
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+body.theme-retro-95 .retro-window-close {
+    background: #c0c0c0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #808080;
+    border-bottom: 1px solid #808080;
+    width: 14px;
+    height: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #000000;
+    padding: 0;
+}
+
+body.theme-retro-95 .retro-window-close:active {
+    border-top: 1px solid #808080;
+    border-left: 1px solid #808080;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+body.theme-retro-95 .retro-window-body {
+    background: #ffffff;
+    margin: 6px;
+    padding: 10px;
+    border-top: 2.5px solid #808080;
+    border-left: 2.5px solid #808080;
+    border-right: 2.5px solid #ffffff;
+    border-bottom: 2.5px solid #ffffff;
+    display: flex;
+    gap: 10px;
+}
+
+body.theme-retro-95 .retro-tip-icon {
+    font-size: 26px;
+    align-self: flex-start;
+}
+
+body.theme-retro-95 .retro-tip-content p {
+    margin: 0 0 5px 0;
+    font-size: 11px;
+    line-height: 1.35;
+    color: #000000;
+}
+
+body.theme-retro-95 .retro-tip-heading {
+    font-weight: bold;
+    font-size: 12px !important;
+}
+
+body.theme-retro-95 .retro-window-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 2px 6px 6px 6px;
+}
+
+body.theme-retro-95 .retro-window-btn {
+    background: #c0c0c0;
+    border-top: 1.5px solid #ffffff;
+    border-left: 1.5px solid #ffffff;
+    border-right: 1.5px solid #808080;
+    border-bottom: 1.5px solid #808080;
+    box-shadow: 1px 1px 0px 0px #000000;
+    padding: 3px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #000000;
+}
+
+body.theme-retro-95 .retro-window-btn:active {
+    border-top: 1.5px solid #808080;
+    border-left: 1.5px solid #808080;
+    border-right: 1.5px solid #ffffff;
+    border-bottom: 1.5px solid #ffffff;
+    box-shadow: inset 1px 1px 0px 0px #000000;
+}
+
+body.theme-retro-95 .wheel-container {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 1px 1px 0px 0px #000000 !important;
+}
+
+/* Modals */
+body.theme-retro-95 .modal-content {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5), 1px 1px 0px 0px #000000 !important;
+    border-radius: 0px !important;
+}
+
+body.theme-retro-95 .modal h2 {
+    background: linear-gradient(90deg, #000080, #1084d0) !important;
+    color: #ffffff !important;
+    padding: 3px 6px !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    margin: -15px -15px 15px -15px !important;
+}
+
+body.theme-retro-95 .modal-close {
+    color: #000000 !important;
+    font-weight: bold !important;
+}
+
+body.theme-retro-95 .settings-tab-btn {
+    border-radius: 0 !important;
+    border: 1px solid #808080 !important;
+    background: #d4d0c8 !important;
+    color: #000000 !important;
+}
+
+body.theme-retro-95 .settings-tab-btn[aria-selected="true"] {
+    background: #c0c0c0 !important;
+    border-bottom-color: transparent !important;
+    font-weight: bold !important;
+}
+
+/* High Legibility Movie List Box - Windows 95 ListView Style */
+body.theme-retro-95 .movie-list-wrapper {
+    background-color: #ffffff !important;
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #ffffff !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+    padding: 6px !important;
+    max-height: 480px !important;
+}
+
+body.theme-retro-95 .movie-list li {
+    background: transparent !important;
+    border-radius: 0px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    color: #000000 !important;
+    padding: 6px 8px !important;
+    margin: 0 !important;
+    gap: 8px !important;
+    transition: none !important;
+}
+
+body.theme-retro-95 .movie-list li.is-knocked-out {
+    opacity: 0.5;
+    background-color: #f7f7f7 !important;
+}
+
+/* ListView Hover Highlight: White text on blue background */
+body.theme-retro-95 .movie-list li:hover {
+    background: #000080 !important;
+    color: #ffffff !important;
+}
+
+body.theme-retro-95 .movie-list li:hover *,
+body.theme-retro-95 .movie-list li:hover .movie-meta,
+body.theme-retro-95 .movie-list li:hover .movie-odds,
+body.theme-retro-95 .movie-list li:hover .movie-odds--secondary {
+    color: #ffffff !important;
+}
+
+body.theme-retro-95 .movie-name {
+    color: #000000;
+    font-size: 13px !important;
+}
+
+body.theme-retro-95 .movie-meta {
+    color: #555555;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .movie-odds {
+    color: #000000;
+    font-size: 12px !important;
+}
+
+body.theme-retro-95 .movie-odds--secondary {
+    color: #555555;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .seasonal-accent {
+    display: none !important;
+}
+
+/* =========================================
+   Wheel.FM Retro Dialog Winamp Overrides
+   ========================================= */
+
+body.theme-retro-95 .wheel-fm {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #ffffff !important;
+    border-left: 2px solid #ffffff !important;
+    border-right: 2px solid #808080 !important;
+    border-bottom: 2px solid #808080 !important;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.3), 1px 1px 0px 0px #000000 !important;
+    border-radius: 0px !important;
+    padding: 10px !important;
+    color: #000000 !important;
+}
+
+body.theme-retro-95 .wheel-fm__heading {
+    background: linear-gradient(90deg, #000080, #1084d0) !important;
+    color: #ffffff !important;
+    padding: 3px 6px !important;
+    margin: -10px -10px 8px -10px !important;
+    width: calc(100% + 20px) !important;
+    border-bottom: none !important;
+    box-sizing: border-box !important;
+}
+
+body.theme-retro-95 .wheel-fm__eyebrow {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .wheel-fm__minimize {
+    background: #c0c0c0 !important;
+    color: #000000 !important;
+    border-top: 1px solid #ffffff !important;
+    border-left: 1px solid #ffffff !important;
+    border-right: 1px solid #808080 !important;
+    border-bottom: 1px solid #808080 !important;
+    border-radius: 0px !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    width: 14px !important;
+    height: 13px !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+}
+
+body.theme-retro-95 .wheel-fm__minimize:hover {
+    background: #dfdfdf !important;
+    transform: none !important;
+}
+
+/* Digital Media Player green screen display */
+body.theme-retro-95 .wheel-fm__player {
+    background: #000000 !important;
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #ffffff !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+    border-radius: 0px !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+body.theme-retro-95 .wheel-fm__track-title {
+    color: #2bfd1b !important;
+    font-family: "Courier New", Courier, monospace !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+}
+
+body.theme-retro-95 .wheel-fm__track-artist {
+    color: #2bfd1b !important;
+    font-family: "Courier New", Courier, monospace !important;
+    opacity: 0.8 !important;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .wheel-fm__time,
+body.theme-retro-95 .wheel-fm__status {
+    color: #2bfd1b !important;
+    font-family: "Courier New", Courier, monospace !important;
+    border-color: #222222 !important;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .wheel-fm__tagline {
+    color: #000000 !important;
+    font-size: 11px !important;
+    opacity: 0.75 !important;
+    margin-bottom: 2px !important;
+}
+
+/* Win95 Media controls */
+body.theme-retro-95 .wheel-fm__control {
+    background: #c0c0c0 !important;
+    color: #000000 !important;
+    border-top: 1.5px solid #ffffff !important;
+    border-left: 1.5px solid #ffffff !important;
+    border-right: 1.5px solid #808080 !important;
+    border-bottom: 1.5px solid #808080 !important;
+    box-shadow: 1px 1px 0px 0px #000000 !important;
+    border-radius: 0px !important;
+    width: 28px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11px !important;
+}
+
+body.theme-retro-95 .wheel-fm__control:active {
+    border-top: 1.5px solid #808080 !important;
+    border-left: 1.5px solid #808080 !important;
+    border-right: 1.5px solid #ffffff !important;
+    border-bottom: 1.5px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+}
+
+body.theme-retro-95 .wheel-fm__playlist-select {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #ffffff !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: inset 1px 1px 0px 0px #000000 !important;
+    border-radius: 0px !important;
+    font-size: 11px !important;
+    padding: 2px !important;
+}
+
+body.theme-retro-95 .wheel-fm__playlist-select option {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
