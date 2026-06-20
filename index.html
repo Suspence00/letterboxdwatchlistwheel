@@ -150,6 +150,19 @@
           aria-controls="import-body">Collapse Step</button>
       </div>
       <div class="card-body import-body" id="import-body">
+        <div id="import-sync-container" class="import-sync-container" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; width: 100%; max-width: 600px; margin: 0 auto 0.75rem; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);" hidden>
+          <div style="text-align: left;">
+            <span style="font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 0.15rem;">Tied Letterboxd List</span>
+            <a href="#" target="_blank" id="import-sync-url" class="link-subtle" style="font-weight: 600; color: var(--accent); text-decoration: underline; word-break: break-all;">https://letterboxd.com/...</a>
+          </div>
+          <button type="button" class="btn btn--primary" id="import-sync-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Sync List</span>
+          </button>
+        </div>
+
         <div class="import-section import-section--hero">
           <div class="import-hero-content">
             <div class="import-hero-text">
@@ -440,6 +453,20 @@
       </div>
       <div class="win-modal__actions">
         <button type="button" class="btn danger" id="clear-history-btn">Clear History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirm Modal -->
+  <div id="confirm-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" hidden>
+    <div class="win-modal__content settings-modal__content" style="padding: 2rem; max-width: 500px; width: 90%;">
+      <button type="button" class="win-modal__close" id="confirm-modal-close" aria-label="Close dialog">&times;</button>
+      <h3 id="confirm-modal-title" class="win-modal__title" style="padding-left: 0;">Board Conflict</h3>
+      <p id="confirm-modal-message" style="margin-top: 1rem; line-height: 1.5; color: var(--text);"></p>
+      <div class="win-modal__actions" style="justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn" id="confirm-modal-cancel">Cancel</button>
+        <button type="button" class="btn" id="confirm-modal-secondary">Import into Current Board</button>
+        <button type="button" class="btn btn--primary" id="confirm-modal-confirm">Switch and Update</button>
       </div>
     </div>
   </div>

@@ -359,7 +359,7 @@ function showVerificationResults(auditData) {
     elements.verifyModal.hidden = false;
 }
 
-function renderWorkspaceSwitcher() {
+export function renderWorkspaceSwitcher() {
     if (!elements.workspaceSelect) return;
 
     elements.workspaceSelect.innerHTML = '';
@@ -378,7 +378,7 @@ function renderWorkspaceSwitcher() {
     });
 }
 
-function renderBoardsList() {
+export function renderBoardsList() {
     if (!elements.boardsList) return;
     elements.boardsList.innerHTML = '';
 
@@ -399,7 +399,18 @@ function renderBoardsList() {
         const meta = document.createElement('span');
         meta.className = 'board-item__meta';
         const date = new Date(ws.lastModified || Date.now()).toLocaleDateString();
-        meta.textContent = `Last used: ${date}`;
+        let metaText = `Last used: ${date}`;
+        if (ws.letterboxdUrl) {
+            let urlDisplay = ws.letterboxdUrl;
+            try {
+                const parts = ws.letterboxdUrl.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '').split('/');
+                if (parts.length > 0 && parts[0]) {
+                    urlDisplay = parts.filter(Boolean).join('/');
+                }
+            } catch (e) {}
+            metaText += ` • 🔗 Tied to: ${urlDisplay}`;
+        }
+        meta.textContent = metaText;
 
         info.appendChild(name);
         info.appendChild(meta);
@@ -1004,6 +1015,19 @@ export function promptForInput(title, label, callback) {
 export function updateMovieList() {
     if (!elements.movieListEl) return;
 
+    const syncContainer = document.getElementById('import-sync-container');
+    const syncUrlLink = document.getElementById('import-sync-url');
+    if (syncContainer && syncUrlLink) {
+        const currentBoard = appState.workspaces.find(w => w.id === appState.activeWorkspaceId);
+        if (currentBoard && currentBoard.letterboxdUrl) {
+            syncContainer.hidden = false;
+            syncUrlLink.href = currentBoard.letterboxdUrl;
+            syncUrlLink.textContent = currentBoard.letterboxdUrl;
+        } else {
+            syncContainer.hidden = true;
+        }
+    }
+
     const spinMode = getSpinMode();
     const inverseMode = spinMode === 'knockout';
     setWeightMode(inverseMode ? 'inverse' : 'normal');
@@ -1343,7 +1367,7 @@ function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
     }
 }
 
-function resetSliceEditor() {
+export function resetSliceEditor() {
     activeSliceId = null;
     if (elements.sliceEditor) {
         elements.sliceEditor.hidden = true;
@@ -2788,6 +2812,82 @@ function modifyBooster(movie, name, delta) {
 
     debouncedSaveState();
     updateMovieList();
+}
+
+let confirmModalTimeoutId = null;
+
+/**
+ * Shows the custom confirmation modal for Board Conflict
+ * @param {Object} options
+ */
+export function showConfirmModal({ title, message, confirmText, secondaryText, cancelText, onConfirm, onSecondary, onCancel }) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-modal-title');
+    const messageEl = document.getElementById('confirm-modal-message');
+    const confirmBtn = document.getElementById('confirm-modal-confirm');
+    const secondaryBtn = document.getElementById('confirm-modal-secondary');
+    const cancelBtn = document.getElementById('confirm-modal-cancel');
+    const closeBtn = document.getElementById('confirm-modal-close');
+
+    if (!modal) return;
+
+    if (confirmModalTimeoutId) {
+        clearTimeout(confirmModalTimeoutId);
+        confirmModalTimeoutId = null;
+    }
+
+    titleEl.textContent = title || 'Confirm';
+    messageEl.innerHTML = message || '';
+    confirmBtn.textContent = confirmText || 'Confirm';
+
+    if (secondaryText && secondaryBtn) {
+        secondaryBtn.textContent = secondaryText;
+        secondaryBtn.hidden = false;
+    } else if (secondaryBtn) {
+        secondaryBtn.hidden = true;
+    }
+
+    cancelBtn.textContent = cancelText || 'Cancel';
+
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add('show'));
+
+    const close = () => {
+        modal.classList.remove('show');
+        if (confirmModalTimeoutId) clearTimeout(confirmModalTimeoutId);
+        confirmModalTimeoutId = setTimeout(() => {
+            modal.hidden = true;
+            confirmModalTimeoutId = null;
+        }, 200);
+        cleanup();
+    };
+
+    const confirmHandler = () => {
+        if (onConfirm) onConfirm();
+        close();
+    };
+
+    const secondaryHandler = () => {
+        if (onSecondary) onSecondary();
+        close();
+    };
+
+    const cancelHandler = () => {
+        if (onCancel) onCancel();
+        close();
+    };
+
+    const cleanup = () => {
+        confirmBtn.removeEventListener('click', confirmHandler);
+        if (secondaryBtn) secondaryBtn.removeEventListener('click', secondaryHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+        closeBtn.removeEventListener('click', cancelHandler);
+    };
+
+    confirmBtn.addEventListener('click', confirmHandler);
+    if (secondaryBtn) secondaryBtn.addEventListener('click', secondaryHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
+    closeBtn.addEventListener('click', cancelHandler);
 }
 
 

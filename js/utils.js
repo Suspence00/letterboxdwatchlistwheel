@@ -371,3 +371,19 @@ export function decodeHtmlEntities(text) {
     const doc = new DOMParser().parseFromString(text, 'text/html');
     return doc.documentElement.textContent;
 }
+
+/**
+ * Normalizes a Letterboxd URL for robust comparisons
+ * @param {string} url
+ * @returns {string}
+ */
+export function normalizeLetterboxdUrl(url) {
+    if (!url) return '';
+    let normalized = url.trim().toLowerCase();
+    // remove protocol
+    normalized = normalized.replace(/^https?:\/\/(www\.)?/, '');
+    // remove query params and trailing slash
+    normalized = normalized.split(/[?#]/)[0].replace(/\/+$/, '');
+    return normalized;
+}
+

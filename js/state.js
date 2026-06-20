@@ -61,7 +61,7 @@ export function saveState() {
     }
 }
 
-function saveWorkspacesIndex() {
+export function saveWorkspacesIndex() {
     localStorage.setItem(INDEX_KEY, JSON.stringify(appState.workspaces));
     if (appState.activeWorkspaceId) {
         localStorage.setItem(ACTIVE_KEY, appState.activeWorkspaceId);
@@ -105,7 +105,8 @@ export function loadState() {
             id: defaultId,
             name: 'Default Board',
             created: Date.now(),
-            lastModified: Date.now()
+            lastModified: Date.now(),
+            letterboxdUrl: ''
         }];
 
         // Move data
@@ -123,7 +124,8 @@ export function loadState() {
             id: newId,
             name: 'My Watchlist',
             created: Date.now(),
-            lastModified: Date.now()
+            lastModified: Date.now(),
+            letterboxdUrl: ''
         }];
         activeId = newId;
         saveWorkspacesIndex();
@@ -189,14 +191,16 @@ function loadWorkspaceData(id) {
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
                 themeColorOverrides: safeOverrides,
                 discordWebhookUrl: loaded.preferences.discordWebhookUrl || '',
-                radarr: loaded.preferences.radarr || null
+                radarr: loaded.preferences.radarr || null,
+                importAppendMode: Boolean(loaded.preferences.importAppendMode)
             };
         } else {
             appState.preferences = {
                 hideFinalistsBox: false,
                 showFinalistsFromStart: false,
                 theme: 'default',
-                themeColorOverrides: {}
+                themeColorOverrides: {},
+                importAppendMode: false
             };
         }
 
@@ -223,7 +227,8 @@ function resetInternalState() {
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
         theme: 'default',
-        themeColorOverrides: {}
+        themeColorOverrides: {},
+        importAppendMode: false
     };
 }
 
@@ -235,7 +240,8 @@ export function createWorkspace(name) {
         id: newId,
         name: name || 'New Board',
         created: Date.now(),
-        lastModified: Date.now()
+        lastModified: Date.now(),
+        letterboxdUrl: ''
     };
     appState.workspaces.push(newWorkspace);
     saveWorkspacesIndex();

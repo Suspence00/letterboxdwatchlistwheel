@@ -260,3 +260,41 @@
         justify-content: center;
     }
 }
+
+/* Tooltip for Synced/Added/Removed Movie Details */
+.sync-tooltip-trigger {
+    color: var(--accent);
+    cursor: help;
+    position: relative;
+    text-decoration: underline dotted;
+}
+
+.sync-tooltip-trigger::after {
+    background: rgba(20, 20, 25, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    bottom: 125%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    color: var(--text);
+    content: attr(data-tooltip);
+    font-size: 0.85rem;
+    left: 50%;
+    max-height: 200px;
+    max-width: 250px;
+    opacity: 0;
+    overflow-y: auto;
+    padding: 0.5rem 0.75rem;
+    pointer-events: none;
+    position: absolute;
+    text-align: left;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: pre-line;
+    width: max-content;
+    z-index: 1000;
+}
+
+.sync-tooltip-trigger:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+}
