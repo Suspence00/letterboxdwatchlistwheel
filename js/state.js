@@ -18,6 +18,8 @@ export const appState = {
     movies: [],
     selectedIds: new Set(),
     history: [],
+    winnerId: null,
+    winnerSpinMode: null,
     filter: {
         query: '',
         normalizedQuery: '',
@@ -47,7 +49,9 @@ export function saveState() {
         selectedIds: Array.from(appState.selectedIds),
         history: appState.history,
         filterState: appState.filter,
-        preferences: appState.preferences
+        preferences: appState.preferences,
+        winnerId: appState.winnerId,
+        winnerSpinMode: appState.winnerSpinMode
     };
 
     // Save data for active workspace
@@ -172,6 +176,9 @@ function loadWorkspaceData(id) {
             appState.history = [];
         }
 
+        appState.winnerId = loaded.winnerId || null;
+        appState.winnerSpinMode = loaded.winnerSpinMode || null;
+
         if (loaded.filterState) {
             Object.assign(appState.filter, loaded.filterState);
         } else {
@@ -222,6 +229,8 @@ function resetInternalState() {
     appState.selectedIds = new Set();
     appState.history = [];
     appState.knockoutResults = new Map();
+    appState.winnerId = null;
+    appState.winnerSpinMode = null;
     // Keep user preferences or reset? Resetting is safer for clean slate
     appState.preferences = {
         hideFinalistsBox: false,

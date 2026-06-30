@@ -1,6 +1,6 @@
 .wheel-fm {
-    background: rgba(15, 26, 39, 0.95);
     backdrop-filter: blur(16px);
+    background: rgba(15, 26, 39, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     bottom: 1.5rem;
@@ -11,30 +11,74 @@
     padding: 1.25rem;
     position: fixed;
     right: 1.5rem;
+    transition: border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease, width 0.3s ease;
     width: 360px;
     z-index: 1000;
-    transition: width 0.3s ease, padding 0.3s ease;
 }
 
 .wheel-fm.is-minimized {
-    width: 360px;
-    padding: 1rem;
     gap: 0.5rem;
+    padding: 1rem;
+    width: 360px;
+}
+
+.wheel-fm.is-ultra-minimized {
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    height: 56px;
+    justify-content: center;
+    padding: 0;
+    transition: border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease, width 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 56px;
+}
+
+.wheel-fm.is-ultra-minimized.is-playing {
+    animation: fab-pulse 2s infinite ease-in-out;
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(255, 153, 51, 0.4);
+}
+
+.wheel-fm.is-ultra-minimized .wheel-fm__heading,
+.wheel-fm.is-ultra-minimized .wheel-fm__content {
+    display: none;
+}
+
+.wheel-fm__fab-icon {
+    display: none;
+}
+
+.wheel-fm.is-ultra-minimized .wheel-fm__fab-icon {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1;
 }
 
 .wheel-fm__heading {
+    align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: grab;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     padding-bottom: 0.75rem;
+    user-select: none;
     width: 100%;
 }
 
 .wheel-fm.is-minimized .wheel-fm__heading {
     border-bottom: none;
-    padding-bottom: 0;
     margin-bottom: 0.5rem;
+    padding-bottom: 0;
+}
+
+@keyframes fab-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
 }
 
 .wheel-fm__eyebrow {

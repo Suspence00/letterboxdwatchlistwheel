@@ -21,7 +21,8 @@ import {
     highlightKnockoutCandidate,
     handleSliceSelection,
     updateDisplayedOdds,
-    promptForInput
+    promptForInput,
+    updateReshowWinnerButton
 } from './ui.js';
 import { initImport } from './import.js';
 import { initBackup } from './backup.js';
@@ -132,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         winModalRuntime: document.getElementById('win-modal-runtime'),
         winModalTrailer: document.getElementById('win-modal-trailer'),
         winModalLink: document.getElementById('win-modal-link'),
+        reshowWinnerBtn: document.getElementById('reshow-winner-btn'),
 
         // History Modal
         historyBtn: document.getElementById('history-btn'),
@@ -222,7 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
         highlightKnockoutCandidate,
         handleSliceClick: handleSliceSelection,
         updateOdds: updateDisplayedOdds,
-        refreshMovies: updateMovieList
+        refreshMovies: updateMovieList,
+        updateReshowWinnerButton
     });
 
     // Initialize UI

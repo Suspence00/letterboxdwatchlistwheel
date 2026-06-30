@@ -354,18 +354,187 @@ function handleWheelFmPrevious() {
     const prevIndex = (wheelFmState.currentIndex - 1 + wheelFmState.playlist.length) % wheelFmState.playlist.length;
     loadWheelFmTrack(prevIndex, { autoplay: true });
 }
+function savePlayerState(wheelFmContainer) {
+    let state = 'expanded';
+    if (wheelFmContainer.classList.contains('is-ultra-minimized')) {
+        state = 'ultra-minimized';
+    } else if (wheelFmContainer.classList.contains('is-minimized')) {
+        state = 'minimized';
+    }
+    localStorage.setItem('wheel-fm-state', state);
+}
 
 async function initWheelFm() {
-    // Minimize Toggle Logic
     const wheelFmContainer = document.querySelector('.wheel-fm');
     const minimizeBtn = document.getElementById('wheel-fm-minimize');
 
-    if (minimizeBtn && wheelFmContainer) {
-        minimizeBtn.addEventListener('click', () => {
-            const isMinimized = wheelFmContainer.classList.toggle('is-minimized');
-            minimizeBtn.textContent = isMinimized ? '+' : '_';
-            minimizeBtn.setAttribute('aria-expanded', !isMinimized);
-            minimizeBtn.setAttribute('aria-label', isMinimized ? 'Expand Wheel.FM' : 'Minimize Wheel.FM');
+    // Restore layout and position
+    if (wheelFmContainer) {
+        const savedState = localStorage.getItem('wheel-fm-state');
+        if (savedState === 'ultra-minimized') {
+            wheelFmContainer.classList.add('is-ultra-minimized');
+            if (minimizeBtn) {
+                minimizeBtn.textContent = '═';
+                minimizeBtn.setAttribute('aria-expanded', 'false');
+                minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
+            }
+        } else if (savedState === 'minimized') {
+            wheelFmContainer.classList.add('is-minimized');
+            if (minimizeBtn) {
+                minimizeBtn.textContent = '═';
+                minimizeBtn.setAttribute('aria-expanded', 'false');
+                minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
+            }
+        }
+
+        const savedX = localStorage.getItem('wheel-fm-pos-x');
+        const savedY = localStorage.getItem('wheel-fm-pos-y');
+        if (savedX !== null && savedY !== null) {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const targetX = Math.max(0, Math.min(Number(savedX), viewportWidth - 60));
+            const targetY = Math.max(0, Math.min(Number(savedY), viewportHeight - 60));
+
+            wheelFmContainer.style.bottom = 'auto';
+            wheelFmContainer.style.right = 'auto';
+            wheelFmContainer.style.left = `${targetX}px`;
+            wheelFmContainer.style.top = `${targetY}px`;
+        }
+
+        // Draggable Logic
+        let isDragging = false;
+        let hasMoved = false;
+        let startX = 0, startY = 0;
+        let initialX = 0, initialY = 0;
+        const heading = wheelFmContainer.querySelector('.wheel-fm__heading');
+
+        wheelFmContainer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 && e.pointerType === 'mouse') return;
+            if (e.target.closest('button, select, input, option')) return;
+
+            const isFab = wheelFmContainer.classList.contains('is-ultra-minimized');
+            if (!isFab && !e.target.closest('.wheel-fm__heading')) return;
+
+            isDragging = true;
+            hasMoved = false;
+
+            const rect = wheelFmContainer.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+
+            startX = e.clientX;
+            startY = e.clientY;
+
+            wheelFmContainer.setPointerCapture(e.pointerId);
+            if (isFab) {
+                wheelFmContainer.style.cursor = 'grabbing';
+            } else if (heading) {
+                heading.style.cursor = 'grabbing';
+            }
+        });
+
+        wheelFmContainer.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+                hasMoved = true;
+            }
+
+            let newX = initialX + dx;
+            let newY = initialY + dy;
+
+            const rect = wheelFmContainer.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            newX = Math.max(0, Math.min(newX, viewportWidth - rect.width));
+            newY = Math.max(0, Math.min(newY, viewportHeight - rect.height));
+
+            wheelFmContainer.style.bottom = 'auto';
+            wheelFmContainer.style.right = 'auto';
+            wheelFmContainer.style.left = `${newX}px`;
+            wheelFmContainer.style.top = `${newY}px`;
+        });
+
+        const stopDragging = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const isFab = wheelFmContainer.classList.contains('is-ultra-minimized');
+            wheelFmContainer.style.cursor = '';
+            if (heading) heading.style.cursor = 'grab';
+
+            try {
+                wheelFmContainer.releasePointerCapture(e.pointerId);
+            } catch (err) {}
+
+            const rect = wheelFmContainer.getBoundingClientRect();
+            localStorage.setItem('wheel-fm-pos-x', String(rect.left));
+            localStorage.setItem('wheel-fm-pos-y', String(rect.top));
+        };
+
+        wheelFmContainer.addEventListener('pointerup', stopDragging);
+        wheelFmContainer.addEventListener('pointercancel', stopDragging);
+
+        // Click to expand FAB
+        wheelFmContainer.addEventListener('click', () => {
+            if (wheelFmContainer.classList.contains('is-ultra-minimized') && !hasMoved) {
+                wheelFmContainer.classList.remove('is-ultra-minimized');
+                if (minimizeBtn) {
+                    minimizeBtn.textContent = '_';
+                    minimizeBtn.setAttribute('aria-expanded', 'true');
+                    minimizeBtn.setAttribute('aria-label', 'Minimize Wheel.FM');
+                }
+                savePlayerState(wheelFmContainer);
+            }
+        });
+
+        // Toggle Minimization
+        if (minimizeBtn) {
+            minimizeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (wheelFmContainer.classList.contains('is-minimized')) {
+                    wheelFmContainer.classList.remove('is-minimized');
+                    wheelFmContainer.classList.add('is-ultra-minimized');
+                    minimizeBtn.textContent = '═';
+                    minimizeBtn.setAttribute('aria-expanded', 'false');
+                    minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
+                } else if (wheelFmContainer.classList.contains('is-ultra-minimized')) {
+                    wheelFmContainer.classList.remove('is-ultra-minimized');
+                    minimizeBtn.textContent = '_';
+                    minimizeBtn.setAttribute('aria-expanded', 'true');
+                    minimizeBtn.setAttribute('aria-label', 'Minimize Wheel.FM');
+                } else {
+                    wheelFmContainer.classList.add('is-minimized');
+                    minimizeBtn.textContent = '═';
+                    minimizeBtn.setAttribute('aria-expanded', 'false');
+                    minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
+                }
+                savePlayerState(wheelFmContainer);
+            });
+        }
+
+        // Viewport resize handling
+        window.addEventListener('resize', () => {
+            const rect = wheelFmContainer.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let currentX = rect.left;
+            let currentY = rect.top;
+
+            if (wheelFmContainer.style.left) {
+                let adjustedX = Math.max(0, Math.min(currentX, viewportWidth - rect.width));
+                let adjustedY = Math.max(0, Math.min(currentY, viewportHeight - rect.height));
+
+                if (adjustedX !== currentX || adjustedY !== currentY) {
+                    wheelFmContainer.style.left = `${adjustedX}px`;
+                    wheelFmContainer.style.top = `${adjustedY}px`;
+                }
+            }
         });
     }
 
@@ -403,9 +572,11 @@ async function initWheelFm() {
     });
     elements.wheelFmAudio.addEventListener('play', () => {
         elements.wheelFmPlayBtn.classList.add('is-playing');
+        if (wheelFmContainer) wheelFmContainer.classList.add('is-playing');
     });
     elements.wheelFmAudio.addEventListener('pause', () => {
         elements.wheelFmPlayBtn.classList.remove('is-playing');
+        if (wheelFmContainer) wheelFmContainer.classList.remove('is-playing');
     });
 
     setWheelFmControlsDisabled(true);

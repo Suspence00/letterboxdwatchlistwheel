@@ -292,5 +292,60 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(page.locator('text=Mock Movie A')).not.toBeVisible();
   });
 
+  test('Reshow Winner Popup and Persistence', async ({ page }) => {
+    // 1. Load sample data
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text=Upload CSV File');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(SAMPLE_CSV_PATH);
+
+    // 2. Expect "Show Winner" button to be disabled initially
+    const reshowBtn = page.locator('#reshow-winner-btn');
+    await expect(reshowBtn).toBeDisabled();
+
+    // 3. Select 1 Spin Mode
+    const oneSpinCard = page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' });
+    await oneSpinCard.scrollIntoViewIfNeeded();
+    await oneSpinCard.click();
+
+    // 4. Spin!
+    await page.click('#spin-button');
+
+    // 5. Wait for the winner modal to show up
+    const winModal = page.locator('#win-modal');
+    await expect(winModal).toBeVisible({ timeout: 20000 });
+
+    // 6. Close the modal
+    await page.click('#win-modal-close');
+    await expect(winModal).not.toBeVisible();
+
+    // 7. "Show Winner" button should now be enabled
+    await expect(reshowBtn).toBeEnabled();
+
+    // 8. Click "Show Winner" button, and verify modal is visible again
+    await reshowBtn.click();
+    await expect(winModal).toBeVisible();
+
+    // 9. Close it again
+    await page.click('#win-modal-close');
+    await expect(winModal).not.toBeVisible();
+
+    // 10. Reload the page to test persistence
+    await page.reload();
+
+    // 11. "Show Winner" button should be enabled on reload
+    await expect(reshowBtn).toBeEnabled();
+
+    // 12. Click it, and modal should open
+    await reshowBtn.click();
+    await expect(winModal).toBeVisible();
+    await page.click('#win-modal-close');
+
+    // 13. Clear selection, and verify button is disabled
+    await page.click('#clear-selection');
+    await expect(reshowBtn).toBeDisabled();
+  });
+
 });
+
 

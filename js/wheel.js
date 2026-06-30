@@ -2,7 +2,7 @@
  * Wheel logic and animation
  */
 
-import { appState, addToHistory } from './state.js';
+import { appState, addToHistory, saveState } from './state.js';
 import { getDefaultColorForIndex, clampWeight } from './utils.js';
 import { playTickSound, playWinSound, playKnockoutSound } from './audio.js';
 
@@ -132,11 +132,20 @@ export function getIsLastStandingInProgress() {
 }
 
 export function getWinnerId() {
+    if (winnerId === null && appState.winnerId) {
+        winnerId = appState.winnerId;
+    }
     return winnerId;
 }
 
-export function setWinnerId(id) {
+export function setWinnerId(id, spinMode = null) {
     winnerId = id;
+    appState.winnerId = id;
+    appState.winnerSpinMode = spinMode;
+    saveState();
+    if (typeof ui.updateReshowWinnerButton === 'function') {
+        ui.updateReshowWinnerButton();
+    }
 }
 
 export function setWeightMode(mode) {
@@ -618,7 +627,7 @@ export async function spinWheel(spinMode = 'knockout', options = {}) {
     const isRandomBoost = spinMode === 'random-boost';
     const isSingleSpin = isRandomBoost || spinMode === 'one-spin';
 
-    winnerId = null;
+    setWinnerId(null);
     if (typeof ui.highlightKnockoutCandidate === 'function') {
         ui.highlightKnockoutCandidate(null);
     }
@@ -660,7 +669,7 @@ export async function spinWheel(spinMode = 'knockout', options = {}) {
         return;
     }
 
-    winnerId = winningMovie.id;
+    setWinnerId(winningMovie.id, spinMode);
     if (isRandomBoost) {
         const boostedWeight = clampWeight((Number(winningMovie.weight) || 1) + 1);
         if (boostedWeight !== winningMovie.weight) {
@@ -756,7 +765,7 @@ async function runLastStandingMode(selectedMovies) {
 
     const finalMovie = eliminationPool[0];
     if (finalMovie) {
-        winnerId = finalMovie.id;
+        setWinnerId(finalMovie.id, 'knockout');
         ui.markMovieChampion(finalMovie.id, eliminationOrder);
         const finalTiming = getLastStandingSpeedConfig(1);
         await delay(finalTiming.winnerRevealDelay);

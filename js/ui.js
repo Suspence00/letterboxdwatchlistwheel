@@ -124,6 +124,12 @@ export function initUI(domElements) {
         }
     });
 
+    if (elements.reshowWinnerBtn) {
+        elements.reshowWinnerBtn.addEventListener('click', () => {
+            handleReshowWinner();
+        });
+    }
+
     if (elements.historyBtn) {
         elements.historyBtn.addEventListener('click', () => {
             renderHistory();
@@ -1156,6 +1162,7 @@ export function updateMovieList() {
     syncSliceEditorWithSelection(selectedMovies);
     scheduleWheelUpdate(selectedMovies, { oddsMap, winOddsMap });
     updateSpinButtonLabel();
+    updateReshowWinnerButton();
 }
 
 export function updateDisplayedOdds(selectionOverride = null, oddsOverride = null) {
@@ -1256,6 +1263,23 @@ export function updateSpinButtonLabel() {
     }
 
     elements.spinButton.textContent = 'Spin the wheel';
+}
+
+export function updateReshowWinnerButton() {
+    if (!elements.reshowWinnerBtn) return;
+    const winnerId = getWinnerId();
+    const movie = winnerId ? appState.movies.find(m => m.id === winnerId) : null;
+    const isEnabled = movie && appState.selectedIds.has(movie.id);
+    elements.reshowWinnerBtn.disabled = !isEnabled;
+}
+
+export function handleReshowWinner() {
+    const winnerId = getWinnerId();
+    if (!winnerId) return;
+    const winningMovie = appState.movies.find(m => m.id === winnerId);
+    if (winningMovie) {
+        showWinnerPopup(winningMovie, { spinMode: appState.winnerSpinMode || getSpinMode(), isRestore: true });
+    }
 }
 
 export function isAdvancedOptionsEnabled() {
@@ -1732,12 +1756,14 @@ export function showWinnerPopup(movie, context = {}) {
         const movieWeight = getStoredWeight(movie);
         const odds = totalWeight > 0 ? ((movieWeight / totalWeight) * 100).toFixed(1) + '%' : 'N/A';
 
-        sendDiscordNotification(movie.name, posterUrl, {
-            odds: odds,
-            weight: movieWeight,
-            link: movie.uri || null,
-            spinMode: spinMode
-        });
+        if (!context.isRestore) {
+            sendDiscordNotification(movie.name, posterUrl, {
+                odds: odds,
+                weight: movieWeight,
+                link: movie.uri || null,
+                spinMode: spinMode
+            });
+        }
     });
 
     elements.winModal.setAttribute('aria-hidden', 'false');
@@ -1753,6 +1779,7 @@ export function showWinnerPopup(movie, context = {}) {
 
     // Radarr: show/hide the "Add to Radarr" button
     setupRadarrButton(movie);
+    updateReshowWinnerButton();
 }
 
 export function closeWinnerPopup({ restoreFocus = true } = {}) {
