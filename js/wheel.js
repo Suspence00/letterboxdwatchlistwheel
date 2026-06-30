@@ -84,6 +84,11 @@ const MOVIE_KNOCKOUT_SPEEDS = [
 let canvas;
 let ctx;
 let isSpinning = false;
+
+// Text layout caching to prevent expensive measureText calls during animation
+let lastCacheKeyString = '';
+const textLayoutCache = new Map();
+const LABEL_ANGLE_THRESHOLD = 0.05; // radians (approx 2.8 degrees)
 let isLastStandingInProgress = false;
 let rotationAngle = 0;
 let useInverseWeights = false;
@@ -206,7 +211,7 @@ export function getSelectionOdds(selectedMovies = getFilteredSelectedMovies(), o
     return new Map(segments.map((segment) => [segment.movie.id, segment.weight / totalWeight]));
 }
 
-export function drawWheel(selectedMovies = getFilteredSelectedMovies()) {
+export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments = null) {
     if (!ctx) return;
 
     const radius = canvas.width / 2.1;
@@ -217,8 +222,14 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies()) {
         return;
     }
 
-    const { segments } = computeWheelModel(selectedMovies);
-    if (!segments.length) {
+    const cacheKeyString = `${canvas.width}x${canvas.height}_` + selectedMovies.map(m => `${m.id}:${getEffectiveWeight(m)}:${m.name}`).join(',');
+    if (cacheKeyString !== lastCacheKeyString) {
+        textLayoutCache.clear();
+        lastCacheKeyString = cacheKeyString;
+    }
+
+    const wheelSegments = segments || computeWheelModel(selectedMovies).segments;
+    if (!wheelSegments.length) {
         drawEmptyWheel();
         return;
     }
@@ -228,7 +239,7 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies()) {
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate(rotationAngle);
 
-    segments.forEach((segment) => {
+    wheelSegments.forEach((segment) => {
         const { movie, startAngle, endAngle, index } = segment;
         const angleSpan = endAngle - startAngle;
         ctx.beginPath();
@@ -259,12 +270,14 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies()) {
             ctx.restore();
         }
 
-        ctx.save();
-        ctx.fillStyle = '#04121f';
-        ctx.rotate(startAngle + angleSpan / 2);
-        ctx.textAlign = 'right';
-        wrapText(ctx, movie.name, radius - 20, angleSpan * radius * 0.6);
-        ctx.restore();
+        if (angleSpan >= LABEL_ANGLE_THRESHOLD) {
+            ctx.save();
+            ctx.fillStyle = '#04121f';
+            ctx.rotate(startAngle + angleSpan / 2);
+            ctx.textAlign = 'right';
+            wrapText(ctx, movie.name, radius - 20, angleSpan * radius * 0.6, movie.id);
+            ctx.restore();
+        }
     });
 
     ctx.beginPath();
@@ -292,26 +305,42 @@ export function drawEmptyWheel() {
     ctx.restore();
 }
 
-function wrapText(context, text, maxWidth, maxArcLength) {
+function wrapText(context, text, maxWidth, maxArcLength, movieId) {
     if (!text) return;
 
-    const maxFontSize = 24;
-    const minFontSize = 13;
+    let layout = null;
+    if (movieId && textLayoutCache.has(movieId)) {
+        layout = textLayoutCache.get(movieId);
+    } else {
+        const maxFontSize = 24;
+        const minFontSize = 13;
 
-    let fontSize = maxFontSize;
-    let layout = layoutText(context, text, maxWidth, fontSize);
+        let fontSize = maxFontSize;
+        let tempLayout = layoutText(context, text, maxWidth, fontSize);
 
-    while (fontSize > minFontSize && !textLayoutFits(layout, maxArcLength)) {
-        fontSize -= 1;
-        layout = layoutText(context, text, maxWidth, fontSize);
+        while (fontSize > minFontSize && !textLayoutFits(tempLayout, maxArcLength)) {
+            fontSize -= 1;
+            tempLayout = layoutText(context, text, maxWidth, fontSize);
+        }
+
+        if (!textLayoutFits(tempLayout, maxArcLength)) {
+            fontSize = minFontSize;
+            tempLayout = layoutText(context, text, maxWidth, fontSize);
+        }
+
+        layout = {
+            lines: tempLayout.lines,
+            fontSize,
+            lineHeight: tempLayout.lineHeight,
+            blockHeight: tempLayout.blockHeight
+        };
+
+        if (movieId) {
+            textLayoutCache.set(movieId, layout);
+        }
     }
 
-    if (!textLayoutFits(layout, maxArcLength)) {
-        fontSize = minFontSize;
-        layout = layoutText(context, text, maxWidth, fontSize);
-    }
-
-    context.font = `600 ${fontSize}px Inter, sans-serif`;
+    context.font = `600 ${layout.fontSize}px Inter, sans-serif`;
     context.textBaseline = 'middle';
 
     context.fillStyle = '#ffffff';
@@ -554,7 +583,7 @@ function performSpin(selectedMovies, options = {}) {
             const eased = easeOutCubic(progress);
             rotationAngle = startRotation + (targetRotation - startRotation) * eased;
 
-            drawWheel(selectedMovies);
+            drawWheel(selectedMovies, segments);
             tick(segments);
 
             if (progress < 1) {
