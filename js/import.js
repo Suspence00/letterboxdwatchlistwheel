@@ -389,19 +389,55 @@ async function handleSyncBtnClick() {
 
 async function executeLetterboxdProxySync(listUrl) {
     const status = elements.letterboxdProxyStatus;
-    const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}&t=${Date.now()}`;
+    const cleanBaseUrl = listUrl.replace(/\/page\/\d+\/?$/i, '').replace(/\/+$/, '') + '/';
 
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
-    const csvText = await res.text();
+    let page = 1;
+    let combinedRows = [];
+    let headerRow = null;
 
-    const rows = parseCSV(csvText, ',').filter(
-        (row) => row.length && row.some((cell) => cell.trim() !== '')
-    );
+    while (true) {
+        const pageUrl = page === 1 ? cleanBaseUrl : `${cleanBaseUrl}page/${page}/`;
+        const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(pageUrl)}&t=${Date.now()}`;
 
-    if (rows.length <= 1) {
+        if (status && page > 1) {
+            status.textContent = `Syncing page ${page} from Letterboxd (${combinedRows.length} movies loaded)…`;
+        }
+
+        const res = await fetch(proxyUrl);
+        if (!res.ok) {
+            if (page > 1) break;
+            throw new Error(`Worker returned ${res.status}`);
+        }
+
+        const csvText = await res.text();
+        const rows = parseCSV(csvText, ',').filter(
+            (row) => row.length && row.some((cell) => cell.trim() !== '')
+        );
+
+        if (rows.length <= 1) {
+            break;
+        }
+
+        if (!headerRow) {
+            headerRow = rows[0];
+        }
+
+        const dataRows = rows.slice(1);
+        combinedRows.push(...dataRows);
+
+        if (dataRows.length < 100) {
+            break;
+        }
+
+        page++;
+        if (page > 50) break;
+    }
+
+    if (combinedRows.length === 0) {
         throw new Error('The imported CSV appears to be empty.');
     }
+
+    const rows = [headerRow, ...combinedRows];
 
     // Identify header indices
     const header = rows[0].map((h) => h.trim().toLowerCase());
@@ -453,11 +489,11 @@ async function executeLetterboxdProxySync(listUrl) {
         }
     });
 
-    const removedCount = appState.movies.length - updatedMovies.length;
+    const removedCount = removedMovieNames.length;
     let addedCount = 0;
     const addedMovieNames = [];
 
-    // 2. Add new movies from fetched list
+    // 2. Add new movies from Letterboxd that aren't in the board yet
     newMovies.forEach((newMovie) => {
         const key = buildMovieIdentityKey(newMovie);
         if (key && !existingKeys.has(key)) {
@@ -485,6 +521,7 @@ async function executeLetterboxdProxySync(listUrl) {
     });
 
     updateMovieList();
+    invalidateWheelCache();
     saveState();
 
     if (elements.resultEl) elements.resultEl.textContent = '';
