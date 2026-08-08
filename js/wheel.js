@@ -88,7 +88,12 @@ let isSpinning = false;
 // Text layout caching to prevent expensive measureText calls during animation
 let lastCacheKeyString = '';
 const textLayoutCache = new Map();
-const LABEL_ANGLE_THRESHOLD = 0.05; // radians (approx 2.8 degrees)
+const LABEL_ANGLE_THRESHOLD = 0.06; // radians (approx 3.4 degrees)
+
+export function invalidateWheelCache() {
+    textLayoutCache.clear();
+    lastCacheKeyString = '';
+}
 let isLastStandingInProgress = false;
 let rotationAngle = 0;
 let useInverseWeights = false;
@@ -231,10 +236,13 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
         return;
     }
 
-    const cacheKeyString = `${canvas.width}x${canvas.height}_` + selectedMovies.map(m => `${m.id}:${getEffectiveWeight(m)}:${m.name}`).join(',');
-    if (cacheKeyString !== lastCacheKeyString) {
-        textLayoutCache.clear();
-        lastCacheKeyString = cacheKeyString;
+    if (!isSpinning) {
+        const cacheKeyString = `${canvas.width}x${canvas.height}_${selectedMovies.length}_` + 
+            (selectedMovies[0]?.id || '') + '_' + (selectedMovies[selectedMovies.length - 1]?.id || '');
+        if (cacheKeyString !== lastCacheKeyString) {
+            textLayoutCache.clear();
+            lastCacheKeyString = cacheKeyString;
+        }
     }
 
     const wheelSegments = segments || computeWheelModel(selectedMovies).segments;
@@ -353,16 +361,23 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId) {
     context.textBaseline = 'middle';
 
     context.fillStyle = '#ffffff';
-    context.strokeStyle = '#000000';
-    context.lineWidth = 3;
-    context.lineJoin = 'round';
-
     const totalHeight = layout.lineHeight * (layout.lines.length - 1);
-    layout.lines.forEach((line, index) => {
-        const y = -totalHeight / 2 + index * layout.lineHeight;
-        context.strokeText(line, maxWidth, y);
-        context.fillText(line, maxWidth, y);
-    });
+
+    if (!isSpinning) {
+        context.strokeStyle = '#000000';
+        context.lineWidth = 3;
+        context.lineJoin = 'round';
+        layout.lines.forEach((line, index) => {
+            const y = -totalHeight / 2 + index * layout.lineHeight;
+            context.strokeText(line, maxWidth, y);
+            context.fillText(line, maxWidth, y);
+        });
+    } else {
+        layout.lines.forEach((line, index) => {
+            const y = -totalHeight / 2 + index * layout.lineHeight;
+            context.fillText(line, maxWidth, y);
+        });
+    }
 }
 
 function layoutText(context, text, maxWidth, fontSize) {

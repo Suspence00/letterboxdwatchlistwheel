@@ -5,6 +5,7 @@
 import { appState, saveState, switchWorkspace, saveWorkspacesIndex } from './state.js';
 import { buildMovieIdentityKey, clampWeight, decodeHtmlEntities, getDefaultColorForIndex, normalizeLetterboxdUrl } from './utils.js';
 import { updateMovieList, closeWinnerPopup, renderWorkspaceSwitcher, renderBoardsList, resetSliceEditor, renderHistory, showConfirmModal } from './ui.js';
+import { invalidateWheelCache } from './wheel.js';
 
 let elements = {};
 
@@ -185,27 +186,63 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
     const status = elements.letterboxdProxyStatus;
     if (!status) return;
 
-    const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(listUrl)}&t=${Date.now()}`;
-
     status.textContent = 'Fetching list from Letterboxd…';
     status.classList.remove('status--error', 'status--success');
 
+    const cleanBaseUrl = listUrl.replace(/\/page\/\d+\/?$/i, '').replace(/\/+$/, '') + '/';
+
+    let page = 1;
+    let combinedRows = [];
+    let headerRow = null;
+
     try {
-        const res = await fetch(proxyUrl);
-        if (!res.ok) throw new Error(`Worker returned ${res.status}`);
-        const csvText = await res.text();
-        console.log('Proxy content length:', csvText.length);
+        while (true) {
+            const pageUrl = page === 1 ? cleanBaseUrl : `${cleanBaseUrl}page/${page}/`;
+            const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(pageUrl)}&t=${Date.now()}`;
 
-        // Parse CSV text using your custom parser
-        const rows = parseCSV(csvText, ',').filter(
-            (row) => row.length && row.some((cell) => cell.trim() !== '')
-        );
+            if (page > 1) {
+                status.textContent = `Fetching page ${page} from Letterboxd (${combinedRows.length} movies loaded)…`;
+            }
 
-        if (rows.length <= 1) {
+            const res = await fetch(proxyUrl);
+            if (!res.ok) {
+                if (page > 1) break; // Reached end of pages
+                throw new Error(`Worker returned ${res.status}`);
+            }
+
+            const csvText = await res.text();
+            console.log(`Page ${page} proxy content length:`, csvText.length);
+
+            const rows = parseCSV(csvText, ',').filter(
+                (row) => row.length && row.some((cell) => cell.trim() !== '')
+            );
+
+            if (rows.length <= 1) {
+                break;
+            }
+
+            if (!headerRow) {
+                headerRow = rows[0];
+            }
+
+            const dataRows = rows.slice(1);
+            combinedRows.push(...dataRows);
+
+            if (dataRows.length < 100) {
+                break;
+            }
+
+            page++;
+            if (page > 50) break; // Safety limit
+        }
+
+        if (combinedRows.length === 0) {
             status.textContent = 'The imported CSV appears to be empty.';
             status.classList.add('status--error');
             return;
         }
+
+        const rows = [headerRow, ...combinedRows];
 
         // Identify header indices
         const header = rows[0].map((h) => h.trim().toLowerCase());
@@ -295,6 +332,7 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
         renderBoardsList();
 
         updateMovieList();
+        invalidateWheelCache();
         setImportCardCollapsed(true);
         saveState();
 

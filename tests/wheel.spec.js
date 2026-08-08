@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-const SAMPLE_CSV_PATH = path.join(__dirname, '../sample-watchlist.csv');
+const SAMPLE_CSV_PATH = path.resolve(import.meta.dirname || process.cwd(), '../sample-watchlist.csv');
 
 test.describe('Letterboxd Watchlist Wheel', () => {
 
