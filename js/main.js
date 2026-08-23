@@ -491,20 +491,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Bulk Entry Modal Logic
     const openBulkModal = () => {
-        if (!elements.bulkEntryModal) return;
-        elements.bulkEntryModal.hidden = false;
-        requestAnimationFrame(() => elements.bulkEntryModal.classList.add('show'));
-        if (elements.bulkEntryText) {
-            elements.bulkEntryText.focus();
+        const modal = elements.bulkEntryModal || document.getElementById('bulk-entry-modal');
+        const textEl = elements.bulkEntryText || document.getElementById('bulk-entry-text');
+        if (!modal) return;
+        modal.hidden = false;
+        requestAnimationFrame(() => modal.classList.add('show'));
+        if (textEl) {
+            textEl.focus();
         }
     };
 
     const closeBulkModal = () => {
-        if (!elements.bulkEntryModal) return;
-        elements.bulkEntryModal.classList.remove('show');
+        const modal = elements.bulkEntryModal || document.getElementById('bulk-entry-modal');
+        if (!modal) return;
+        modal.classList.remove('show');
         setTimeout(() => {
-            elements.bulkEntryModal.hidden = true;
+            modal.hidden = true;
         }, 200);
+    };
+
+    const handleBulkSubmit = (event) => {
+        if (event) event.preventDefault();
+        const textEl = elements.bulkEntryText || document.getElementById('bulk-entry-text');
+        if (!textEl) return;
+        const raw = textEl.value;
+        if (raw && raw.trim()) {
+            const count = addBulkEntries(raw);
+            if (count > 0) {
+                textEl.value = '';
+                closeBulkModal();
+                setImportCardCollapsed(true);
+            }
+        } else {
+            textEl.focus();
+        }
     };
 
     if (elements.openBulkModalBtn) {
@@ -537,27 +557,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (elements.bulkEntryForm) {
-        elements.bulkEntryForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            if (elements.bulkEntryText && elements.bulkEntryText.value.trim()) {
-                const raw = elements.bulkEntryText.value;
-                const count = addBulkEntries(raw);
-                if (count > 0) {
-                    elements.bulkEntryText.value = '';
-                    closeBulkModal();
-                    setImportCardCollapsed(true);
-                }
-            }
-        });
+        elements.bulkEntryForm.addEventListener('submit', handleBulkSubmit);
     }
 
     if (elements.bulkEntryText) {
         elements.bulkEntryText.addEventListener('keydown', (event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
                 event.preventDefault();
-                if (elements.bulkEntryForm) {
-                    elements.bulkEntryForm.dispatchEvent(new Event('submit', { cancelable: true }));
-                }
+                handleBulkSubmit(event);
             }
         });
     }

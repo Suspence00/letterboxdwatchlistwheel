@@ -1723,6 +1723,11 @@ export function addBulkEntries(rawText) {
 
     if (lines.length === 0) return 0;
 
+    appState.filter.showCustoms = true;
+    if (elements.showCustomsToggle) {
+        elements.showCustomsToggle.checked = true;
+    }
+
     const startIndex = appState.movies.length;
     const newEntries = lines.map((name, i) => {
         const index = startIndex + i;
@@ -1742,6 +1747,10 @@ export function addBulkEntries(rawText) {
 
     appState.movies = [...appState.movies, ...newEntries];
     newEntries.forEach((item) => appState.selectedIds.add(item.id));
+
+    if (elements.resultEl) {
+        elements.resultEl.textContent = '';
+    }
 
     if (elements.statusMessage) {
         elements.statusMessage.textContent = `Added ${newEntries.length} ${newEntries.length === 1 ? 'entry' : 'entries'} to the wheel.`;
