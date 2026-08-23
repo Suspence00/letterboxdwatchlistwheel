@@ -33,6 +33,11 @@ export function initImport(domElements) {
     if (syncBtn) {
         syncBtn.addEventListener('click', handleSyncBtnClick);
     }
+
+    const currentBoard = appState.workspaces.find((w) => w.id === appState.activeWorkspaceId);
+    if (currentBoard && currentBoard.letterboxdUrl) {
+        setImportCardCollapsed(true);
+    }
 }
 
 export function setImportCardCollapsed(collapsed) {
@@ -313,8 +318,12 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
             appState.movies = [...appState.movies, ...moviesToAppend];
             moviesToAppend.forEach((m) => appState.selectedIds.add(m.id));
         } else {
-            appState.movies = newMovies;
-            appState.selectedIds = new Set(newMovies.map((m) => m.id));
+            const existingCustomMovies = appState.movies.filter((m) => m.isCustom);
+            appState.movies = [...newMovies, ...existingCustomMovies];
+            appState.selectedIds = new Set([
+                ...newMovies.map((m) => m.id),
+                ...existingCustomMovies.map((m) => m.id)
+            ]);
             appState.knockoutResults.clear();
         }
 
@@ -522,6 +531,7 @@ async function executeLetterboxdProxySync(listUrl) {
 
     updateMovieList();
     invalidateWheelCache();
+    setImportCardCollapsed(true);
     saveState();
 
     if (elements.resultEl) elements.resultEl.textContent = '';

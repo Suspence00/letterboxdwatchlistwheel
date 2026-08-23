@@ -5,7 +5,7 @@
 import { loadState, appState, saveState, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace } from './state.js';
 
 import { initAudio } from './audio.js';
-import { initWheel, spinWheel } from './wheel.js';
+import { initWheel, spinWheel, invalidateWheelCache } from './wheel.js';
 import {
     initUI,
     updateMovieList,
@@ -22,9 +22,10 @@ import {
     handleSliceSelection,
     updateDisplayedOdds,
     promptForInput,
-    updateReshowWinnerButton
+    updateReshowWinnerButton,
+    addBulkEntries
 } from './ui.js';
-import { initImport } from './import.js';
+import { initImport, setImportCardCollapsed } from './import.js';
 import { initBackup } from './backup.js';
 import { initDiscord } from './discord.js';
 import { initRadarr } from './radarr.js';
@@ -112,6 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
         customEntryModal: document.getElementById('custom-entry-modal'),
         customModalCloseBtn: document.getElementById('custom-modal-close'),
 
+        // Bulk Entry Modal
+        openBulkModalBtn: document.getElementById('open-bulk-modal'),
+        openBulkImportBtn: document.getElementById('open-bulk-import-btn'),
+        bulkEntryModal: document.getElementById('bulk-entry-modal'),
+        bulkEntryForm: document.getElementById('bulk-entry-form'),
+        bulkEntryText: document.getElementById('bulk-entry-text'),
+        bulkModalCloseBtn: document.getElementById('bulk-modal-close'),
+        bulkModalCancelBtn: document.getElementById('bulk-modal-cancel'),
+
         // Boost Station
         boostModal: document.getElementById('boost-modal'),
         boostModalCloseBtn: document.getElementById('boost-modal-close'),
@@ -172,8 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
         backupTextInput: document.getElementById('backup-text'),
         backupFileInput: document.getElementById('backup-file'),
         backupApplyWeightsBtn: document.getElementById('backup-apply'),
-        backupRestoreBtn: document.getElementById('backup-restore'),
-        backupImportHistoryToggle: document.getElementById('backup-import-history'),
         backupRestoreBtn: document.getElementById('backup-restore'),
         backupImportHistoryToggle: document.getElementById('backup-import-history'),
 
@@ -350,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nextTheme = normalizeTheme(event.target.value);
                 applyTheme(nextTheme);
                 saveState();
+                invalidateWheelCache();
                 updateMovieList();
             });
         }
@@ -421,9 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
     syncFinalistsToggles();
     initThemeSelector();
 
-    syncFinalistsToggles();
-    initThemeSelector();
-
     if (elements.spinModeRadios) {
         elements.spinModeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
@@ -479,6 +485,79 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeCustomModal();
                 // Clear input is handled by UI likely, but safe to do here if needed
                 // elements.customEntryInput.value = ''; 
+            }
+        });
+    }
+
+    // Bulk Entry Modal Logic
+    const openBulkModal = () => {
+        if (!elements.bulkEntryModal) return;
+        elements.bulkEntryModal.hidden = false;
+        requestAnimationFrame(() => elements.bulkEntryModal.classList.add('show'));
+        if (elements.bulkEntryText) {
+            elements.bulkEntryText.focus();
+        }
+    };
+
+    const closeBulkModal = () => {
+        if (!elements.bulkEntryModal) return;
+        elements.bulkEntryModal.classList.remove('show');
+        setTimeout(() => {
+            elements.bulkEntryModal.hidden = true;
+        }, 200);
+    };
+
+    if (elements.openBulkModalBtn) {
+        elements.openBulkModalBtn.addEventListener('click', openBulkModal);
+    }
+
+    if (elements.openBulkImportBtn) {
+        elements.openBulkImportBtn.addEventListener('click', openBulkModal);
+    }
+
+    if (elements.bulkModalCloseBtn) {
+        elements.bulkModalCloseBtn.addEventListener('click', closeBulkModal);
+    }
+
+    if (elements.bulkModalCancelBtn) {
+        elements.bulkModalCancelBtn.addEventListener('click', closeBulkModal);
+    }
+
+    if (elements.bulkEntryModal) {
+        elements.bulkEntryModal.addEventListener('click', (event) => {
+            if (event.target === elements.bulkEntryModal) {
+                closeBulkModal();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !elements.bulkEntryModal.hidden) {
+                closeBulkModal();
+            }
+        });
+    }
+
+    if (elements.bulkEntryForm) {
+        elements.bulkEntryForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (elements.bulkEntryText && elements.bulkEntryText.value.trim()) {
+                const raw = elements.bulkEntryText.value;
+                const count = addBulkEntries(raw);
+                if (count > 0) {
+                    elements.bulkEntryText.value = '';
+                    closeBulkModal();
+                    setImportCardCollapsed(true);
+                }
+            }
+        });
+    }
+
+    if (elements.bulkEntryText) {
+        elements.bulkEntryText.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                if (elements.bulkEntryForm) {
+                    elements.bulkEntryForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
             }
         });
     }

@@ -56,22 +56,22 @@ export const hanukkahPalette = [
     '#fbbf24'
 ];
 
-export const cyberPalette = [
-    '#f70776', // Hot Pink
-    '#2de2e6', // Cyan
-    '#9d4edd', // Deep Purple
-    '#f7f707', // Neon Yellow
-    '#ff0055', // Red Pink
-    '#02fdfe', // Bright Blue
-    '#d60270', // Magenta
-    '#9b5de5', // Lavender
-    '#0038a8', // Deep Blue
-    '#f15bb5', // Bubblegum
-    '#00f5d4', // Teal Neon
-    '#7209b7', // Violet
-    '#4cc9f0', // Sky Neon
-    '#4361ee', // Royal Blue
-    '#3a0ca3'  // Indigo
+export const fantasyPalette = [
+    '#c8963e', // Runic Gold / Ancient Amber
+    '#8b263e', // Crimson Regal
+    '#2d5a3f', // Deep Mystic Forest
+    '#5c3c75', // Royal Wizard Violet
+    '#b85d19', // Hearth Fire
+    '#1c4966', // Arcane Deep Water
+    '#7c6a46', // Antiquated Bronze
+    '#9e2a2b', // Dragon Red
+    '#386641', // Elven Emerald
+    '#4a3f6b', // Shadow Rune Indigo
+    '#d4a373', // Illuminated Parchment Gold
+    '#283618', // Moss Guard Green
+    '#6b2d5c', // Sorcerer Magenta
+    '#bc6c25', // Runic Copper
+    '#1f364d'  // Obsidian Sky
 ];
 
 export const modernPalette = [
@@ -182,10 +182,10 @@ export const forestPalette = [
 
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
+    { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
+    { id: 'modern', name: 'Modern', palette: modernPalette },
     { id: 'holiday', name: 'Christmas', palette: holidayPalette },
     { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },
-    { id: 'cyber', name: 'Cyber', palette: cyberPalette },
-    { id: 'modern', name: 'Modern', palette: modernPalette },
     { id: 'alaska', name: 'Alaska', palette: alaskaPalette },
     { id: 'cny', name: 'Chinese New Year', palette: chineseNewYearPalette },
     { id: 'st-patricks', name: 'St. Patrick\'s Day', palette: stPatricksPalette },

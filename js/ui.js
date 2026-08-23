@@ -5,6 +5,7 @@
 import {
     appState,
     debouncedSaveState,
+    saveState,
     clearHistory,
     removeHistoryEntry,
     createWorkspace,
@@ -14,6 +15,7 @@ import {
 } from './state.js';
 import { runFairnessAudit } from './verify.js';
 import {
+    decodeHtmlEntities,
     getDefaultColorForIndex,
     getStoredColor,
     getStoredWeight,
@@ -33,7 +35,8 @@ import {
     getWinnerId,
     setWinnerId,
     setWeightMode,
-    getSelectionOdds
+    getSelectionOdds,
+    invalidateWheelCache
 } from './wheel.js';
 import { sendDiscordNotification } from './discord.js';
 import { isRadarrConfigured, addMovieToRadarr } from './radarr.js';
@@ -121,6 +124,29 @@ export function initUI(domElements) {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             closeWinnerPopup();
+        } else if (event.key === 'Tab') {
+            const activeModal = document.querySelector('.win-modal:not([hidden])');
+            if (!activeModal) return;
+
+            const focusables = Array.from(
+                activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+            ).filter((el) => !el.disabled && el.offsetParent !== null);
+
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            if (event.shiftKey) {
+                if (document.activeElement === first || !activeModal.contains(document.activeElement)) {
+                    last.focus();
+                    event.preventDefault();
+                }
+            } else {
+                if (document.activeElement === last || !activeModal.contains(document.activeElement)) {
+                    first.focus();
+                    event.preventDefault();
+                }
+            }
         }
     });
 
@@ -202,12 +228,6 @@ export function initUI(domElements) {
         elements.sliceEditorClearBtn.addEventListener('click', () => resetSliceEditor());
     }
 
-    updateWheelAsideLayout = createWheelAsideUpdater(elements);
-    if (elements.sliceEditorClearBtn) {
-        elements.sliceEditorClearBtn.addEventListener('click', () => resetSliceEditor());
-    }
-
-    // Workspaces
     // Workspaces
     if (elements.workspaceSelect) {
         elements.workspaceSelect.addEventListener('change', (event) => {
@@ -219,6 +239,10 @@ export function initUI(domElements) {
                 resetSliceEditor();
                 renderWorkspaceSwitcher(); // Update select state
                 renderBoardsList();
+                const activeBoard = appState.workspaces.find((w) => w.id === val);
+                if (activeBoard && activeBoard.letterboxdUrl) {
+                    setImportCardCollapsedUI(true);
+                }
             }
         });
     }
@@ -1688,6 +1712,46 @@ function removeCustomEntry(id) {
     appState.selectedIds.delete(id);
     if (elements.statusMessage) elements.statusMessage.textContent = `Removed “${movie.name}” from the wheel.`;
     updateMovieList();
+}
+
+export function addBulkEntries(rawText) {
+    if (!rawText || !rawText.trim()) return 0;
+    const lines = rawText
+        .split(/\r?\n/)
+        .map((line) => decodeHtmlEntities(line.trim()))
+        .filter(Boolean);
+
+    if (lines.length === 0) return 0;
+
+    const startIndex = appState.movies.length;
+    const newEntries = lines.map((name, i) => {
+        const index = startIndex + i;
+        const id = `custom-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 6)}`;
+        return {
+            id,
+            initialIndex: index,
+            name,
+            year: '',
+            date: '',
+            uri: '',
+            isCustom: true,
+            weight: 1,
+            color: getDefaultColorForIndex(index)
+        };
+    });
+
+    appState.movies = [...appState.movies, ...newEntries];
+    newEntries.forEach((item) => appState.selectedIds.add(item.id));
+
+    if (elements.statusMessage) {
+        elements.statusMessage.textContent = `Added ${newEntries.length} ${newEntries.length === 1 ? 'entry' : 'entries'} to the wheel.`;
+    }
+
+    updateMovieList();
+    invalidateWheelCache();
+    saveState();
+
+    return newEntries.length;
 }
 
 // Modal Logic

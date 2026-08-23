@@ -1,0 +1,170 @@
+/* Fantasy & Runic Theme Styles */
+
+body.theme-fantasy {
+  --accent: #d4a373;
+  --accent-hover: #faedcd;
+  --bg: #120e0b;
+  --card-bg: rgba(26, 20, 16, 0.85);
+  --danger: #9e2a2b;
+  --danger-hover: #ba3c3d;
+  --focus-ring: #d4a373;
+  --font-family-fantasy: 'Cinzel', serif;
+  --muted: #a89f91;
+  --primary: #c8963e;
+  --primary-hover: #dfad52;
+  --success: #386641;
+  --text: #f5ebe0;
+  background-attachment: fixed;
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(200, 150, 62, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(139, 38, 62, 0.08) 0%, transparent 45%),
+    linear-gradient(180deg, #18120d 0%, #0d0a08 100%);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body.theme-fantasy h1,
+body.theme-fantasy h2,
+body.theme-fantasy h3,
+body.theme-fantasy h4,
+body.theme-fantasy .app-header h1,
+body.theme-fantasy .card-header h2,
+body.theme-fantasy .win-modal__title,
+body.theme-fantasy .spin-mode-title,
+body.theme-fantasy .wheel-fm__eyebrow {
+  color: #faedcd;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 8px rgba(200, 150, 62, 0.25);
+}
+
+body.theme-fantasy .card {
+  background: rgba(26, 20, 16, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 163, 115, 0.22);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(250, 237, 205, 0.1);
+}
+
+body.theme-fantasy .card-header {
+  border-bottom: 1px solid rgba(212, 163, 115, 0.18);
+}
+
+body.theme-fantasy .btn,
+body.theme-fantasy button.btn {
+  background: rgba(45, 35, 28, 0.85);
+  border: 1px solid rgba(212, 163, 115, 0.35);
+  border-radius: 8px;
+  color: #f5ebe0;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+body.theme-fantasy .btn:hover:not(:disabled),
+body.theme-fantasy button.btn:hover:not(:disabled) {
+  background: rgba(65, 50, 38, 0.95);
+  border-color: #d4a373;
+  box-shadow: 0 0 12px rgba(200, 150, 62, 0.3);
+  color: #ffffff;
+}
+
+body.theme-fantasy .btn--primary,
+body.theme-fantasy .btn.primary {
+  background: linear-gradient(135deg, #c8963e 0%, #a06e23 100%);
+  border: 1px solid #faedcd;
+  color: #120e0b;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: none;
+}
+
+body.theme-fantasy .btn--primary:hover:not(:disabled),
+body.theme-fantasy .btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dfad52 0%, #b8802d 100%);
+  box-shadow: 0 0 18px rgba(200, 150, 62, 0.5);
+  color: #0d0a08;
+}
+
+body.theme-fantasy .btn.danger,
+body.theme-fantasy .btn--danger {
+  background: rgba(158, 42, 43, 0.25);
+  border-color: rgba(158, 42, 43, 0.5);
+  color: #ff9999;
+}
+
+body.theme-fantasy .btn.danger:hover:not(:disabled),
+body.theme-fantasy .btn--danger:hover:not(:disabled) {
+  background: rgba(158, 42, 43, 0.5);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 12px rgba(158, 42, 43, 0.4);
+  color: #ffffff;
+}
+
+body.theme-fantasy .text-input,
+body.theme-fantasy .import-input {
+  background: rgba(18, 14, 11, 0.9);
+  border: 1px solid rgba(212, 163, 115, 0.25);
+  border-radius: 8px;
+  color: #f5ebe0;
+}
+
+body.theme-fantasy .text-input:focus,
+body.theme-fantasy .import-input:focus {
+  border-color: #d4a373;
+  box-shadow: 0 0 0 2px rgba(200, 150, 62, 0.25);
+  outline: none;
+}
+
+body.theme-fantasy .spin-mode-card {
+  background: rgba(22, 17, 13, 0.85);
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  border-radius: 10px;
+}
+
+body.theme-fantasy .spin-mode-option input[type="radio"]:checked + .spin-mode-card {
+  background: rgba(45, 34, 25, 0.9);
+  border-color: #c8963e;
+  box-shadow: 0 0 16px rgba(200, 150, 62, 0.25);
+}
+
+body.theme-fantasy .movie-list li {
+  background: rgba(28, 22, 17, 0.7);
+  border: 1px solid rgba(212, 163, 115, 0.12);
+  border-radius: 8px;
+}
+
+body.theme-fantasy .movie-list li:hover {
+  background: rgba(38, 30, 23, 0.85);
+  border-color: rgba(212, 163, 115, 0.3);
+}
+
+body.theme-fantasy .win-modal__content {
+  background: #18120d;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(200, 150, 62, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, #1c1510 0%, #120e0b 100%);
+  border: 1px solid rgba(212, 163, 115, 0.35);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+}
+
+body.theme-fantasy .wheel-stage .pointer::after {
+  border-right-color: #c8963e;
+  filter: drop-shadow(-2px 0 6px rgba(200, 150, 62, 0.4));
+}
+
+body.theme-fantasy .booster-tag {
+  background: rgba(200, 150, 62, 0.15);
+  border: 1px solid rgba(200, 150, 62, 0.35);
+  color: #faedcd;
+}
+
+body.theme-fantasy .wheel-fm {
+  background: rgba(22, 17, 13, 0.92);
+  border: 1px solid rgba(212, 163, 115, 0.25);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}

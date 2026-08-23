@@ -3,7 +3,7 @@
  */
 
 import { appState, addToHistory, saveState } from './state.js';
-import { getDefaultColorForIndex, clampWeight } from './utils.js';
+import { getDefaultColorForIndex, clampWeight, isThemePaletteLocked, getMovieOriginalIndex, sanitizeColor } from './utils.js';
 import { playTickSound, playWinSound, playKnockoutSound } from './audio.js';
 
 const TAU = 2 * Math.PI;
@@ -81,9 +81,21 @@ const MOVIE_KNOCKOUT_SPEEDS = [
     }
 ];
 
+const BASE_CANVAS_SIZE = 1080;
+
 let canvas;
 let ctx;
 let isSpinning = false;
+
+function setupCanvasResolution() {
+    if (!canvas || !ctx) return;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const targetPx = Math.round(BASE_CANVAS_SIZE * dpr);
+    if (canvas.width !== targetPx || canvas.height !== targetPx) {
+        canvas.width = targetPx;
+        canvas.height = targetPx;
+    }
+}
 
 // Text layout caching to prevent expensive measureText calls during animation
 let lastCacheKeyString = '';
@@ -124,7 +136,12 @@ export function initWheel(canvasElement, callbacks = {}) {
     ctx = canvas.getContext('2d');
     ui = { ...ui, ...callbacks };
     if (canvas) {
+        setupCanvasResolution();
         canvas.addEventListener('click', handleCanvasClick);
+        window.addEventListener('resize', () => {
+            setupCanvasResolution();
+            drawWheel();
+        });
     }
 }
 
@@ -184,8 +201,14 @@ function getEffectiveWeight(movie, inverseOverride = null) {
     return weight;
 }
 
-function getStoredColor(movie, fallback) {
-    return movie.color || fallback;
+function getEffectiveSliceColor(movie, fallbackIndex) {
+    const originalIndex = getMovieOriginalIndex(movie, appState.movies);
+    const paletteIndex = Number.isFinite(originalIndex) && originalIndex >= 0 ? originalIndex : fallbackIndex;
+    const defaultColor = getDefaultColorForIndex(paletteIndex);
+    if (isThemePaletteLocked()) {
+        return defaultColor;
+    }
+    return (movie && movie.color) ? sanitizeColor(movie.color, defaultColor) : defaultColor;
 }
 
 export function computeWheelModel(selectedMovies, options = {}) {
@@ -228,8 +251,12 @@ export function getSelectionOdds(selectedMovies = getFilteredSelectedMovies(), o
 export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments = null) {
     if (!ctx) return;
 
-    const radius = canvas.width / 2.1;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setupCanvasResolution();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const radius = BASE_CANVAS_SIZE / 2.1;
+    ctx.clearRect(0, 0, BASE_CANVAS_SIZE, BASE_CANVAS_SIZE);
 
     if (!selectedMovies.length) {
         drawEmptyWheel();
@@ -237,7 +264,7 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
     }
 
     if (!isSpinning) {
-        const cacheKeyString = `${canvas.width}x${canvas.height}_${selectedMovies.length}_` + 
+        const cacheKeyString = `${BASE_CANVAS_SIZE}x${BASE_CANVAS_SIZE}_${selectedMovies.length}_` + 
             (selectedMovies[0]?.id || '') + '_' + (selectedMovies[selectedMovies.length - 1]?.id || '');
         if (cacheKeyString !== lastCacheKeyString) {
             textLayoutCache.clear();
@@ -253,7 +280,7 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
 
     const highlightId = !isSpinning && winnerId ? winnerId : null;
     ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.translate(BASE_CANVAS_SIZE / 2, BASE_CANVAS_SIZE / 2);
     ctx.rotate(rotationAngle);
 
     wheelSegments.forEach((segment) => {
@@ -261,7 +288,7 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
         const angleSpan = endAngle - startAngle;
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        const fillColor = getStoredColor(movie, getDefaultColorForIndex(index));
+        const fillColor = getEffectiveSliceColor(movie, index);
         ctx.fillStyle = fillColor;
         ctx.arc(0, 0, radius, startAngle, endAngle);
         ctx.closePath();
@@ -307,12 +334,15 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
 
 export function drawEmptyWheel() {
     if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setupCanvasResolution();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, BASE_CANVAS_SIZE, BASE_CANVAS_SIZE);
     ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.translate(BASE_CANVAS_SIZE / 2, BASE_CANVAS_SIZE / 2);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
     ctx.beginPath();
-    ctx.arc(0, 0, canvas.width / 2.5, 0, Math.PI * 2);
+    ctx.arc(0, 0, BASE_CANVAS_SIZE / 2.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.font = '700 22px Inter, sans-serif';
@@ -491,12 +521,12 @@ function handleCanvasClick(event) {
     }
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const scaleX = BASE_CANVAS_SIZE / rect.width;
+    const scaleY = BASE_CANVAS_SIZE / rect.height;
 
-    const offsetX = (event.clientX - rect.left) * scaleX - canvas.width / 2;
-    const offsetY = (event.clientY - rect.top) * scaleY - canvas.height / 2;
-    const radius = canvas.width / 2.1;
+    const offsetX = (event.clientX - rect.left) * scaleX - BASE_CANVAS_SIZE / 2;
+    const offsetY = (event.clientY - rect.top) * scaleY - BASE_CANVAS_SIZE / 2;
+    const radius = BASE_CANVAS_SIZE / 2.1;
     const distance = Math.hypot(offsetX, offsetY);
     if (distance > radius) {
         return;

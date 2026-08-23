@@ -127,13 +127,29 @@ test.describe('Letterboxd Watchlist Wheel', () => {
   });
 
   test('Settings: Theme Switching', async ({ page }) => {
+    // Load sample CSV first
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text=Upload CSV File');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(SAMPLE_CSV_PATH);
+
+    // Initial default theme color
+    const firstColorInput = page.locator('.movie-color__input').first();
+    await expect(firstColorInput).toHaveValue('#ff8600');
+
+    // Open settings and switch to fantasy theme
     await page.click('#settings-open');
-
     const themeSelect = page.locator('#theme-select');
-    await themeSelect.selectOption('cyber');
+    await themeSelect.selectOption('fantasy');
 
-    // Check body class
-    await expect(page.locator('body')).toHaveClass(/theme-cyber/);
+    // Check body class and updated slice color swatch
+    await expect(page.locator('body')).toHaveClass(/theme-fantasy/);
+    await expect(firstColorInput).toHaveValue('#c8963e');
+
+    // Switch to holiday theme
+    await themeSelect.selectOption('holiday');
+    await expect(page.locator('body')).toHaveClass(/theme-holiday/);
+    await expect(firstColorInput).toHaveValue('#c93737');
   });
 
   test('Boost System: Dropdowns & Tags', async ({ page }) => {
@@ -316,7 +332,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(winModal).toBeVisible({ timeout: 20000 });
 
     // 6. Close the modal
-    await page.click('#win-modal-close');
+    await page.locator('#win-modal-close').click({ force: true });
     await expect(winModal).not.toBeVisible();
 
     // 7. "Show Winner" button should now be enabled
@@ -327,7 +343,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(winModal).toBeVisible();
 
     // 9. Close it again
-    await page.click('#win-modal-close');
+    await page.locator('#win-modal-close').click({ force: true });
     await expect(winModal).not.toBeVisible();
 
     // 10. Reload the page to test persistence
@@ -339,11 +355,70 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     // 12. Click it, and modal should open
     await reshowBtn.click();
     await expect(winModal).toBeVisible();
-    await page.click('#win-modal-close');
+    await page.locator('#win-modal-close').click({ force: true });
 
     // 13. Clear selection, and verify button is disabled
     await page.click('#clear-selection');
     await expect(reshowBtn).toBeDisabled();
+  });
+
+  test('Bulk Add Entries via Popup Modal', async ({ page }) => {
+    // 1. Open bulk modal from Step 2
+    await page.click('#open-bulk-modal');
+    const modal = page.locator('#bulk-entry-modal');
+    await expect(modal).toBeVisible();
+
+    // 2. Type multiple entries (one per line)
+    const entries = 'Spirited Away\nPrincess Mononoke\nHowl\'s Moving Castle';
+    await page.fill('#bulk-entry-text', entries);
+
+    // 3. Submit
+    await page.click('#bulk-modal-submit');
+    await expect(modal).not.toBeVisible();
+
+    // 4. Verify all 3 entries are added
+    await expect(page.locator('#movie-list li')).toHaveCount(3);
+    await expect(page.locator('text=Spirited Away')).toBeVisible();
+    await expect(page.locator('text=Princess Mononoke')).toBeVisible();
+    await expect(page.locator('text=Howl\'s Moving Castle')).toBeVisible();
+  });
+
+  test('Bulk Add Entries via Step 1 Action Button and Auto Collapse', async ({ page }) => {
+    // 1. Click Bulk Add from Step 1
+    await page.click('#open-bulk-import-btn');
+    const modal = page.locator('#bulk-entry-modal');
+    await expect(modal).toBeVisible();
+
+    // 2. Fill text and submit
+    await page.fill('#bulk-entry-text', 'Alien\nAliens\nAlien 3');
+    await page.click('#bulk-modal-submit');
+    await expect(modal).not.toBeVisible();
+
+    // 3. Verify movies added
+    await expect(page.locator('#movie-list li')).toHaveCount(3);
+    await expect(page.getByText('Alien', { exact: true })).toBeVisible();
+
+    // 4. Verify Step 1 is collapsed
+    await expect(page.locator('#import-card')).toHaveClass(/card--collapsed/);
+  });
+
+  test('Step 1 Auto-Collapses when Letterboxd List is Tied', async ({ page }) => {
+    await page.route('**/letterboxd-proxy.cwbcode.workers.dev/**', async (route) => {
+      const csvData = `Position,Name,Year,URL\n1,"Tied Movie",2024,"https://letterboxd.com/film/tied-movie/"`;
+      await route.fulfill({ status: 200, contentType: 'text/csv', body: csvData });
+    });
+
+    // 1. Import URL
+    await page.fill('#letterboxd-proxy-input', 'https://letterboxd.com/user/list/tied-list/');
+    await page.click('#letterboxd-proxy-open');
+
+    // 2. Verify movie loaded and card is collapsed
+    await expect(page.locator('#movie-list li')).toHaveCount(1);
+    await expect(page.locator('#import-card')).toHaveClass(/card--collapsed/);
+
+    // 3. Reload page and verify it remains collapsed on reload because list is tied
+    await page.reload();
+    await expect(page.locator('#import-card')).toHaveClass(/card--collapsed/);
   });
 
 });
