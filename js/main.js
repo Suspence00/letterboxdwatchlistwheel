@@ -27,8 +27,8 @@ import {
 } from './ui.js';
 import { initImport, setImportCardCollapsed } from './import.js';
 import { initBackup } from './backup.js';
-import { initDiscord } from './discord.js';
-import { initRadarr } from './radarr.js';
+import { initDiscord, refreshDiscordSettings } from './discord.js';
+import { initRadarr, refreshRadarrSettings } from './radarr.js';
 import {
     basePalette,
     clampWeight,
@@ -429,6 +429,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncFinalistsToggles();
     initThemeSelector();
+
+    window.addEventListener('letterboxd:workspacechange', () => {
+        if (elements.searchInput) {
+            elements.searchInput.value = appState.filter.query || '';
+        }
+        if (elements.showCustomsToggle) {
+            elements.showCustomsToggle.checked = appState.filter.showCustoms;
+        }
+        if (elements.sortSelect) {
+            elements.sortSelect.value = appState.filter.sortMode || 'original';
+        }
+
+        syncFinalistsToggles();
+        applyTheme(appState.preferences?.theme, { force: true });
+        refreshDiscordSettings();
+        refreshRadarrSettings();
+        invalidateWheelCache();
+        updateMovieList();
+        renderHistory();
+        refreshKnockoutBoxVisibility();
+        updateReshowWinnerButton();
+    });
 
     if (elements.spinModeRadios) {
         elements.spinModeRadios.forEach(radio => {

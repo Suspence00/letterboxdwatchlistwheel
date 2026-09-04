@@ -9,6 +9,14 @@ import { invalidateWheelCache } from './wheel.js';
 
 let elements = {};
 
+function assertWorkspaceUnchanged(workspaceId) {
+    if (appState.activeWorkspaceId !== workspaceId) {
+        const error = new Error('Import cancelled because the active board changed.');
+        error.code = 'WORKSPACE_CHANGED';
+        throw error;
+    }
+}
+
 export function initImport(domElements) {
     elements = domElements;
 
@@ -190,6 +198,7 @@ function promptForImportModeOrExecute(listUrl, normalizedInput) {
 async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode) {
     const status = elements.letterboxdProxyStatus;
     if (!status) return;
+    const workspaceId = appState.activeWorkspaceId;
 
     status.textContent = 'Fetching list from Letterboxd…';
     status.classList.remove('status--error', 'status--success');
@@ -210,12 +219,13 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
             }
 
             const res = await fetch(proxyUrl);
+            assertWorkspaceUnchanged(workspaceId);
             if (!res.ok) {
-                if (page > 1) break; // Reached end of pages
                 throw new Error(`Worker returned ${res.status}`);
             }
 
             const csvText = await res.text();
+            assertWorkspaceUnchanged(workspaceId);
             console.log(`Page ${page} proxy content length:`, csvText.length);
 
             const rows = parseCSV(csvText, ',').filter(
@@ -261,6 +271,7 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
 
         const titleIndex = findColumn(['title', 'name']);
         const uriIndex = findColumn(['letterboxduri', 'url', 'uri']);
+        const yearIndex = findColumn(['year', 'release year', 'film year']);
 
         if (titleIndex === -1) {
             status.textContent = 'Could not find a title column in the CSV.';
@@ -276,12 +287,13 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
             if (!rawTitle) return null;
             const title = decodeHtmlEntities(rawTitle);
             const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
-            const weight = restoreWeight({ uri, name: title }, existingWeights);
+            const year = yearIndex >= 0 ? row[yearIndex]?.trim() || '' : '';
+            const weight = restoreWeight({ uri, name: title, year }, existingWeights);
             return {
                 id: `${i}-${title}`,
                 name: title,
                 uri,
-                year: '',
+                year,
                 date: '',
                 weight,
                 color: getDefaultColorForIndex(i),
@@ -356,7 +368,9 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
         status.classList.add('status--success');
     } catch (err) {
         console.error(err);
-        status.textContent = 'Failed to import list.';
+        status.textContent = err.code === 'WORKSPACE_CHANGED'
+            ? err.message
+            : 'Failed to import list. No changes were made.';
         status.classList.add('status--error');
     }
 }
@@ -384,7 +398,9 @@ async function handleSyncBtnClick() {
     } catch (err) {
         console.error(err);
         if (status) {
-            status.textContent = 'Failed to sync with Letterboxd.';
+            status.textContent = err.code === 'WORKSPACE_CHANGED'
+                ? err.message.replace('Import', 'Sync')
+                : 'Failed to sync with Letterboxd. No changes were made.';
             status.classList.add('status--error');
         }
     } finally {
@@ -398,6 +414,7 @@ async function handleSyncBtnClick() {
 
 async function executeLetterboxdProxySync(listUrl) {
     const status = elements.letterboxdProxyStatus;
+    const workspaceId = appState.activeWorkspaceId;
     const cleanBaseUrl = listUrl.replace(/\/page\/\d+\/?$/i, '').replace(/\/+$/, '') + '/';
 
     let page = 1;
@@ -413,12 +430,13 @@ async function executeLetterboxdProxySync(listUrl) {
         }
 
         const res = await fetch(proxyUrl);
+        assertWorkspaceUnchanged(workspaceId);
         if (!res.ok) {
-            if (page > 1) break;
             throw new Error(`Worker returned ${res.status}`);
         }
 
         const csvText = await res.text();
+        assertWorkspaceUnchanged(workspaceId);
         const rows = parseCSV(csvText, ',').filter(
             (row) => row.length && row.some((cell) => cell.trim() !== '')
         );
@@ -460,6 +478,7 @@ async function executeLetterboxdProxySync(listUrl) {
 
     const titleIndex = findColumn(['title', 'name']);
     const uriIndex = findColumn(['letterboxduri', 'url', 'uri']);
+    const yearIndex = findColumn(['year', 'release year', 'film year']);
 
     if (titleIndex === -1) {
         throw new Error('Could not find a title column in the CSV.');
@@ -471,10 +490,11 @@ async function executeLetterboxdProxySync(listUrl) {
         if (!rawTitle) return null;
         const title = decodeHtmlEntities(rawTitle);
         const uri = uriIndex >= 0 ? row[uriIndex]?.trim() : '';
+        const year = yearIndex >= 0 ? row[yearIndex]?.trim() || '' : '';
         return {
             name: title,
             uri,
-            year: '',
+            year,
             date: '',
         };
     }).filter(Boolean);

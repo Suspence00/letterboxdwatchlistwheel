@@ -322,7 +322,9 @@ function restoreBackupState(backup, options = {}) {
     }
 
     const restoredPreferences = normalizePreferences(backup.preferences);
-    const existingPreferences = normalizePreferences(appState.preferences);
+    const existingPreferences = appState.preferences && typeof appState.preferences === 'object'
+        ? { ...appState.preferences }
+        : {};
     appState.preferences = { ...existingPreferences, ...restoredPreferences };
     saveState();
 

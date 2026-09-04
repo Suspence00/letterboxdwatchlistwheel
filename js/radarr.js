@@ -93,6 +93,21 @@ export function initRadarr(domElements) {
     }
 }
 
+export function refreshRadarrSettings() {
+    ensurePreferencesObject();
+    restoreSettings();
+
+    if (elements.radarrQualitySelect) {
+        elements.radarrQualitySelect.innerHTML = '<option value="">Connect to populate…</option>';
+        elements.radarrQualitySelect.disabled = true;
+    }
+    if (elements.radarrRootSelect) {
+        elements.radarrRootSelect.innerHTML = '<option value="">Connect to populate…</option>';
+        elements.radarrRootSelect.disabled = true;
+    }
+    setStatus('');
+}
+
 function ensurePreferencesObject() {
     if (!appState.preferences.radarr || typeof appState.preferences.radarr !== 'object') {
         appState.preferences.radarr = {

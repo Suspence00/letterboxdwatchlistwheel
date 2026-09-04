@@ -10,11 +10,7 @@ export function initDiscord(domElements) {
     elements = domElements;
 
     if (elements.discordWebhookInput) {
-        // Restore value if exists
-        const savedUrl = appState.preferences.discordWebhookUrl;
-        if (savedUrl) {
-            elements.discordWebhookInput.value = savedUrl;
-        }
+        refreshDiscordSettings();
 
         elements.discordWebhookInput.addEventListener('change', (event) => {
             appState.preferences.discordWebhookUrl = event.target.value.trim();
@@ -24,6 +20,12 @@ export function initDiscord(domElements) {
 
     if (elements.discordTestBtn) {
         elements.discordTestBtn.addEventListener('click', handleTestNotification);
+    }
+}
+
+export function refreshDiscordSettings() {
+    if (elements.discordWebhookInput) {
+        elements.discordWebhookInput.value = appState.preferences.discordWebhookUrl || '';
     }
 }
 

@@ -72,6 +72,25 @@ function isThemePaletteLocked() {
     return Boolean(appState.preferences?.theme && appState.preferences.theme !== 'default');
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getSafeHttpUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) return '';
+    try {
+        const url = new URL(value, window.location.href);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+    } catch (error) {
+        return '';
+    }
+}
+
 export function initUI(domElements) {
     Object.assign(elements, domElements);
 
@@ -835,9 +854,10 @@ function buildMovieListItem(movie, index, context) {
     oddsGroup.appendChild(winOddsEl);
     label.appendChild(oddsGroup);
 
-    if (movie.uri) {
+    const safeMovieUrl = getSafeHttpUrl(movie.uri);
+    if (safeMovieUrl) {
         const link = document.createElement('a');
-        link.href = movie.uri;
+        link.href = safeMovieUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.className = 'movie-link';
@@ -1051,7 +1071,8 @@ export function updateMovieList() {
         const currentBoard = appState.workspaces.find(w => w.id === appState.activeWorkspaceId);
         if (currentBoard && currentBoard.letterboxdUrl) {
             syncContainer.hidden = false;
-            syncUrlLink.href = currentBoard.letterboxdUrl;
+            const safeUrl = getSafeHttpUrl(currentBoard.letterboxdUrl);
+            syncUrlLink.href = safeUrl || '#';
             syncUrlLink.textContent = currentBoard.letterboxdUrl;
         } else {
             syncContainer.hidden = true;
@@ -1805,8 +1826,9 @@ export function showWinnerPopup(movie, context = {}) {
     }
 
     if (elements.winModalLink) {
-        if (movie.uri) {
-            elements.winModalLink.href = movie.uri;
+        const safeMovieUrl = getSafeHttpUrl(movie.uri);
+        if (safeMovieUrl) {
+            elements.winModalLink.href = safeMovieUrl;
             elements.winModalLink.classList.remove('hidden');
             elements.winModalLink.textContent = 'View on Letterboxd';
         } else {
@@ -2223,27 +2245,54 @@ export function renderHistory() {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
 
-        li.innerHTML = `
-      <div class="history-item__info">
-        <span class="history-item__name">${entry.name} ${entry.year ? `(${entry.year})` : ''}</span>
-        ${modeLabel ? `<span class="history-item__mode">${modeLabel}</span>` : ''}
-        <span class="history-item__date">${date}</span>
-      </div>
-      <div class="history-item__actions">
-        ${entry.uri ? `<a href="${entry.uri}" target="_blank" class="btn btn--small" rel="noopener noreferrer">View</a>` : ''}
-        <button type="button" class="btn btn--small btn--danger remove-history-btn" aria-label="Remove from history">×</button>
-      </div>
-    `;
+        const info = document.createElement('div');
+        info.className = 'history-item__info';
 
-        const removeBtn = li.querySelector('.remove-history-btn');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
-                if (confirm(`Remove “${entry.name}” from history?`)) {
-                    removeHistoryEntry(entry.id);
-                    renderHistory();
-                }
-            });
+        const name = document.createElement('span');
+        name.className = 'history-item__name';
+        name.textContent = `${entry.name || 'Untitled entry'} ${entry.year ? `(${entry.year})` : ''}`.trim();
+        info.appendChild(name);
+
+        if (modeLabel) {
+            const mode = document.createElement('span');
+            mode.className = 'history-item__mode';
+            mode.textContent = modeLabel;
+            info.appendChild(mode);
         }
+
+        const dateEl = document.createElement('span');
+        dateEl.className = 'history-item__date';
+        dateEl.textContent = date;
+        info.appendChild(dateEl);
+
+        const actions = document.createElement('div');
+        actions.className = 'history-item__actions';
+        const safeUri = getSafeHttpUrl(entry.uri);
+        if (safeUri) {
+            const viewLink = document.createElement('a');
+            viewLink.href = safeUri;
+            viewLink.target = '_blank';
+            viewLink.className = 'btn btn--small';
+            viewLink.rel = 'noopener noreferrer';
+            viewLink.textContent = 'View';
+            actions.appendChild(viewLink);
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn--small btn--danger remove-history-btn';
+        removeBtn.setAttribute('aria-label', 'Remove from history');
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => {
+            if (confirm(`Remove “${entry.name}” from history?`)) {
+                removeHistoryEntry(entry.id);
+                renderHistory();
+            }
+        });
+        actions.appendChild(removeBtn);
+
+        li.appendChild(info);
+        li.appendChild(actions);
 
         elements.historyListEl.appendChild(li);
     });
@@ -2361,23 +2410,39 @@ export function highlightKnockoutCandidate(movieId) {
     });
 }
 
+function setKnockoutResultContent(prefix, emphasizedText, suffix) {
+    elements.resultEl.replaceChildren(document.createTextNode(prefix));
+    const strong = document.createElement('strong');
+    strong.textContent = emphasizedText;
+    elements.resultEl.appendChild(strong);
+    elements.resultEl.appendChild(document.createTextNode(suffix));
+}
+
 export function updateKnockoutResultText(type, countOrMovie, extra) {
     if (!elements.resultEl) return;
 
     if (type === 'start') {
         elements.resultEl.classList.add('result--knockout');
         elements.resultEl.classList.remove('result--champion');
-        elements.resultEl.innerHTML = `🔥 Movie Knockout begins! <strong>${countOrMovie}</strong> movie${countOrMovie === 1 ? '' : 's'} enter the arena.`;
+        setKnockoutResultContent(
+            '🔥 Movie Knockout begins! ',
+            String(countOrMovie),
+            ` movie${countOrMovie === 1 ? '' : 's'} enter the arena.`
+        );
     } else if (type === 'eliminated') {
         const remainingCount = countOrMovie;
         const eliminatedMovie = extra;
         const remainText = remainingCount === 1 ? 'Final showdown! One movie remains.' : `${remainingCount} movies remain.`;
         const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
-        elements.resultEl.innerHTML = `💥 Knocked out: <strong>${eliminatedLabel}</strong> ${remainText}`;
+        setKnockoutResultContent('💥 Knocked out: ', eliminatedLabel, ` ${remainText}`);
     } else if (type === 'winner') {
         const finalMovie = extra;
         elements.resultEl.classList.add('result--champion');
-        elements.resultEl.innerHTML = `🏆 Movie Knockout winner: <strong>${finalMovie.name}</strong>${finalMovie.year ? ` (${finalMovie.year})` : ''}`;
+        setKnockoutResultContent(
+            '🏆 Movie Knockout winner: ',
+            finalMovie.name,
+            finalMovie.year ? ` (${finalMovie.year})` : ''
+        );
     }
 }
 
@@ -2684,7 +2749,7 @@ function populateSliceEditor(m) {
 // Helper to get booster color
 function getBoosterColor(name) {
     if (appState.preferences.boosterColors && appState.preferences.boosterColors[name]) {
-        return appState.preferences.boosterColors[name];
+        return sanitizeColor(appState.preferences.boosterColors[name], stringToColor(name));
     }
     return stringToColor(name);
 }
@@ -2713,7 +2778,20 @@ function renderBoosterTags(container, movie) {
         tag.style.borderColor = color;
         tag.style.color = 'var(--text)';
 
-        tag.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${color};margin-right:4px;"></span>${name} <span class="booster-tag__count">x${count}</span>`;
+        const dot = document.createElement('span');
+        dot.style.backgroundColor = color;
+        dot.style.borderRadius = '50%';
+        dot.style.display = 'inline-block';
+        dot.style.height = '10px';
+        dot.style.marginRight = '4px';
+        dot.style.width = '10px';
+        tag.appendChild(dot);
+        tag.appendChild(document.createTextNode(`${name} `));
+
+        const countEl = document.createElement('span');
+        countEl.className = 'booster-tag__count';
+        countEl.textContent = `x${count}`;
+        tag.appendChild(countEl);
 
         tag.addEventListener('click', (e) => {
             e.preventDefault();
@@ -2747,6 +2825,8 @@ function handleBoosterTagClick(movie, name, count) {
     overlay.style.zIndex = '3000';
 
     const currentColor = getBoosterColor(name);
+    const safeName = escapeHtml(name);
+    const safeMovieName = escapeHtml(movie.name);
 
     // Build history list HTML
     const historyListHtml = history.length > 0
@@ -2773,12 +2853,12 @@ function handleBoosterTagClick(movie, name, count) {
         <div class="win-modal__content" style="max-width: 320px; text-align: left; padding: 1.5rem;">
             <button type="button" class="win-modal__close" style="top: 0.5rem; right: 0.5rem;">&times;</button>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.25rem;">
-                 <h3 class="win-modal__title" style="font-size: 1.2rem; margin:0;">${name}</h3>
-                 <input type="color" id="booster-color-picker" value="${currentColor}" title="Change color for ${name}" style="background:none; border:none; width:30px; height:30px; cursor:pointer;">
+                 <h3 class="win-modal__title" style="font-size: 1.2rem; margin:0;">${safeName}</h3>
+                 <input type="color" id="booster-color-picker" value="${currentColor}" title="Change color for ${safeName}" style="background:none; border:none; width:30px; height:30px; cursor:pointer;">
             </div>
             
             <p style="color: var(--muted); margin-bottom: 0.75rem; font-size: 0.9rem;">
-                Contributions to <strong>${movie.name}</strong>: <strong>${count}</strong>
+                Contributions to <strong>${safeMovieName}</strong>: <strong>${count}</strong>
             </p>
             
             ${historyListHtml}

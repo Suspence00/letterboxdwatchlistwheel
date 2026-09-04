@@ -231,6 +231,12 @@ function resetInternalState() {
     appState.knockoutResults = new Map();
     appState.winnerId = null;
     appState.winnerSpinMode = null;
+    appState.filter = {
+        query: '',
+        normalizedQuery: '',
+        showCustoms: true,
+        sortMode: 'original'
+    };
     // Keep user preferences or reset? Resetting is safer for clean slate
     appState.preferences = {
         hideFinalistsBox: false,
@@ -272,6 +278,7 @@ export function switchWorkspace(id) {
 
     // 3. Load new
     loadWorkspaceData(id);
+    window.dispatchEvent(new CustomEvent('letterboxd:workspacechange', { detail: { workspaceId: id } }));
 
     return true;
 }

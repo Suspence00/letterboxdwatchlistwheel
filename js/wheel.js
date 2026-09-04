@@ -114,7 +114,6 @@ let spinStartTimestamp = null;
 let spinDuration = 0;
 let targetRotation = 0;
 let lastTickIndex = null;
-let winnerId = null;
 
 // UI Callbacks
 let ui = {
@@ -154,14 +153,10 @@ export function getIsLastStandingInProgress() {
 }
 
 export function getWinnerId() {
-    if (winnerId === null && appState.winnerId) {
-        winnerId = appState.winnerId;
-    }
-    return winnerId;
+    return appState.winnerId || null;
 }
 
 export function setWinnerId(id, spinMode = null) {
-    winnerId = id;
     appState.winnerId = id;
     appState.winnerSpinMode = spinMode;
     saveState();
@@ -278,6 +273,7 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
         return;
     }
 
+    const winnerId = getWinnerId();
     const highlightId = !isSpinning && winnerId ? winnerId : null;
     ctx.save();
     ctx.translate(BASE_CANVAS_SIZE / 2, BASE_CANVAS_SIZE / 2);
