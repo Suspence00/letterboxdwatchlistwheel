@@ -416,3 +416,10 @@
     font-weight: bold;
     text-transform: uppercase;
 }
+
+/* Keep the close button reachable when a poster or long title fills the dialog. */
+#win-modal .win-modal__content {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}

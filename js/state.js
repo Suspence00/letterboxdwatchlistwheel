@@ -28,6 +28,9 @@ export const appState = {
     },
     knockoutResults: new Map(),
     preferences: {
+        wheelStyle: 'vhs',
+        vhsCapacity: 10,
+        vhsShowLabels: true,
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
         theme: 'default',
@@ -151,7 +154,7 @@ function loadWorkspaceData(id) {
     const stored = localStorage.getItem(STORAGE_PREFIX + id);
     if (!stored) {
         // Initialize empty state for this workspace
-        resetInternalState();
+        resetState();
         return false;
     }
 
@@ -193,13 +196,16 @@ function loadWorkspaceData(id) {
             const overrides = loaded.preferences.themeColorOverrides;
             const safeOverrides = overrides && typeof overrides === 'object' && !Array.isArray(overrides) ? overrides : {};
             appState.preferences = {
+                wheelStyle: loaded.preferences.wheelStyle === 'classic' ? 'classic' : 'vhs',
+                vhsCapacity: Math.max(4, Math.min(100, Number(loaded.preferences.vhsCapacity) || 10)),
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
                 themeColorOverrides: safeOverrides,
                 discordWebhookUrl: loaded.preferences.discordWebhookUrl || '',
                 radarr: loaded.preferences.radarr || null,
-                importAppendMode: Boolean(loaded.preferences.importAppendMode)
+                importAppendMode: Boolean(loaded.preferences.importAppendMode),
+                vhsShowLabels: loaded.preferences.vhsShowLabels !== false
             };
         } else {
             appState.preferences = {
@@ -207,30 +213,28 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: false,
                 theme: 'default',
                 themeColorOverrides: {},
-                importAppendMode: false
+                importAppendMode: false,
+                vhsShowLabels: true
             };
         }
 
         // Just to ensure
         if (typeof appState.filter.showCustoms !== 'boolean') {
             appState.filter.showCustoms = true;
+            appState.filter.sortMode = 'original';
         }
 
         return appState.movies.length > 0;
     } catch (e) {
         console.error('Failed to load state for workspace ' + id, e);
-        resetInternalState();
+        resetState();
         return false;
     }
 }
 
-function resetInternalState() {
+export function resetState() {
     appState.movies = [];
-    appState.selectedIds = new Set();
-    appState.history = [];
-    appState.knockoutResults = new Map();
-    appState.winnerId = null;
-    appState.winnerSpinMode = null;
+    appState.selectedIds.clear();
     appState.filter = {
         query: '',
         normalizedQuery: '',
@@ -243,7 +247,8 @@ function resetInternalState() {
         showFinalistsFromStart: false,
         theme: 'default',
         themeColorOverrides: {},
-        importAppendMode: false
+        importAppendMode: false,
+        vhsShowLabels: true
     };
 }
 

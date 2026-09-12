@@ -7,8 +7,23 @@ console.log('🔍 Starting Codebase Health Check...');
 let hasErrors = false;
 
 // 1. Check for Syntax Errors
-console.log('\n1. Checking JS Syntax (node -c)...');
-const jsFiles = ['js/ui.js', 'js/main.js', 'js/wheel.js', 'js/utils.js', 'js/state.js', 'js/discord.js', 'js/import.js', 'js/backup.js', 'js/audio.js'];
+const jsFiles = [
+    'js/ui.js',
+    'js/main.js',
+    'js/wheel.js',
+    'js/utils.js',
+    'js/state.js',
+    'js/discord.js',
+    'js/import.js',
+    'js/backup.js',
+    'js/audio.js',
+    'js/radarr.js',
+    'js/movie-metadata.js',
+    'js/spin-theater.js',
+    'js/vhs-wheel.js',
+    'js/tape-viewer.js',
+    'js/verify.js'
+];
 
 jsFiles.forEach(file => {
     try {
@@ -51,6 +66,6 @@ if (hasErrors) {
     console.log('\n❌ Health Check FAILED. Fix errors before committing.');
     process.exit(1);
 } else {
-    console.log('\n✅ Health Check PASSED. Codebase is stable.');
+    console.log('\n✅ Syntax checks PASSED. Run the browser tests to verify behavior.');
     process.exit(0);
 }

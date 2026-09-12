@@ -22,8 +22,8 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     // 2. Verify Movies Loaded
     // The sample CSV has 10 entries (based on the previous failure saying expected 4 received 10)
     await expect(page.locator('#movie-list li')).toHaveCount(10);
-    await expect(page.locator('text=The Witch')).toBeVisible();
-    await expect(page.locator('text=Parasite')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('The Witch', { exact: true })).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Parasite', { exact: true })).toBeVisible();
   });
 
   test('Letterboxd URL Import (Mocked)', async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     // Verify
     await expect(page.locator('#movie-list li')).toHaveCount(1);
-    await expect(page.locator('text=Mock Movie')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Mock Movie')).toBeVisible();
     await expect(page.locator('.movie-meta')).toContainText('2023');
   });
 
@@ -55,7 +55,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     // Verify auto-fetch triggered
     await expect(page.locator('#movie-list li')).toHaveCount(1);
-    await expect(page.locator('text=Deep Link Movie')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Deep Link Movie')).toBeVisible();
   });
 
   test('Spin Modes: Knockout', async ({ page }) => {
@@ -275,7 +275,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     // Verify modal closes and active board switches back to Default Board (which has 1 movie "Mock Movie 1")
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#movie-list li')).toHaveCount(1);
-    await expect(page.locator('text=Mock Movie 1')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Mock Movie 1')).toBeVisible();
   });
 
   test('Sync/Refresh Tied List', async ({ page }) => {
@@ -290,7 +290,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await page.fill('#letterboxd-proxy-input', 'https://letterboxd.com/user/list/sync-list/');
     await page.click('#letterboxd-proxy-open');
     await expect(page.locator('#movie-list li')).toHaveCount(1);
-    await expect(page.locator('text=Mock Movie A')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Mock Movie A')).toBeVisible();
 
     // 2. Expand import card and verify Sync panel is visible
     await page.click('#import-toggle');
@@ -305,8 +305,8 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     // Verify list is updated: Mock Movie A removed, Mock Movie B added
     await expect(page.locator('#movie-list li')).toHaveCount(1);
-    await expect(page.locator('text=Mock Movie B')).toBeVisible();
-    await expect(page.locator('text=Mock Movie A')).not.toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Mock Movie B')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Mock Movie A')).not.toBeVisible();
   });
 
   test('Reshow Winner Popup and Persistence', async ({ page }) => {
@@ -379,9 +379,9 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     // 4. Verify all 3 entries are added
     await expect(page.locator('#movie-list li')).toHaveCount(3);
-    await expect(page.locator('text=Spirited Away')).toBeVisible();
-    await expect(page.locator('text=Princess Mononoke')).toBeVisible();
-    await expect(page.locator('text=Howl\'s Moving Castle')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Spirited Away')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Princess Mononoke')).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Howl\'s Moving Castle')).toBeVisible();
   });
 
   test('Bulk Add Entries via Step 1 Action Button and Auto Collapse', async ({ page }) => {
@@ -397,7 +397,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     // 3. Verify movies added
     await expect(page.locator('#movie-list li')).toHaveCount(3);
-    await expect(page.getByText('Alien', { exact: true })).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Alien', { exact: true })).toBeVisible();
 
     // 4. Verify Step 1 is collapsed
     await expect(page.locator('#import-card')).toHaveClass(/card--collapsed/);
@@ -453,7 +453,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     await expect(page.locator('#letterboxd-proxy-status')).toContainText('No changes were made');
     await expect(page.locator('#movie-list li')).toHaveCount(10);
-    await expect(page.getByText('The Witch', { exact: true })).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('The Witch', { exact: true })).toBeVisible();
   });
 
   test('Board switch restores board-specific winner, controls, and integrations', async ({ page }) => {

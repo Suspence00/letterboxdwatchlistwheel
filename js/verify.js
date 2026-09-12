@@ -4,13 +4,14 @@
 
 import { computeWheelModel } from './wheel.js';
 import { appState } from './state.js';
+import { getVhsLineup } from './vhs-wheel.js';
 
 export function runFairnessAudit(iterations = 10000) {
     // 1. Get current candidates (filtered & selected)
     // We replicate the exact logic from wheel.js/spinWheel
     // Filters and selection state must be respected.
     const { movies, selectedIds, filter } = appState;
-    const candidates = movies.filter(movie => {
+    const candidates = getVhsLineup(movies.filter(movie => {
         if (!selectedIds.has(movie.id)) return false;
         if (!filter.showCustoms && movie.isCustom) return false;
         if (filter.normalizedQuery) {
@@ -21,7 +22,7 @@ export function runFairnessAudit(iterations = 10000) {
             if (!haystack.includes(filter.normalizedQuery)) return false;
         }
         return true;
-    });
+    }));
 
     if (!candidates.length) {
         return { error: "No movies selected to audit." };

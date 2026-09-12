@@ -5,6 +5,12 @@
 import { appState, addToHistory, saveState } from './state.js';
 import { getDefaultColorForIndex, clampWeight, isThemePaletteLocked, getMovieOriginalIndex, sanitizeColor } from './utils.js';
 import { playTickSound, playWinSound, playKnockoutSound } from './audio.js';
+import {
+    DEFAULT_VHS_CAPACITY, getVhsCapacity, initVhsWheel, isVhsEnabled, getVhsLineup, useVhsForMovies,
+    renderVhsWheel, updateVhsControls, setVhsSpinMode, tickVhsPointer,
+    revealVhsWinner, clearVhsReveal, getCurrentSpinMode, animateVhsKnockout
+} from './vhs-wheel.js';
+import { openSpinTheater, closeSpinTheater, setTheaterStatus, lockSpinControls, clearEliminationStack } from './spin-theater.js';
 
 const TAU = 2 * Math.PI;
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -58,75 +64,59 @@ const MOVIE_KNOCKOUT_SPEEDS = [
         }
     },
     {
-        minCount: 2,
+        minCount: 3,
         config: {
-            eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-            finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
-            interRoundDelay: 900,
+            eliminationSpin: { minSpins: 3, maxSpins: 4, minDuration: 2200, maxDuration: 3000 },
+            finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13000, maxDuration: 19000 },
+            interRoundDelay: 850,
             knockoutRevealDelay: 1100,
-            finalRevealDelay: 1700,
-            winnerRevealDelay: 800
+            finalRevealDelay: 1400,
+            winnerRevealDelay: 750
         }
     },
     {
-        minCount: 1,
+        minCount: 2,
         config: {
-            eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2500, maxDuration: 3400 },
-            finalSpin: { minSpins: 20, maxSpins: 26, minDuration: 13500, maxDuration: 19500 },
-            interRoundDelay: 900,
-            knockoutRevealDelay: 1100,
-            finalRevealDelay: 1700,
-            winnerRevealDelay: 900
+            eliminationSpin: { minSpins: 4, maxSpins: 5, minDuration: 2600, maxDuration: 3400 },
+            finalSpin: { minSpins: 22, maxSpins: 28, minDuration: 14000, maxDuration: 20000 },
+            interRoundDelay: 1000,
+            knockoutRevealDelay: 1300,
+            finalRevealDelay: 1600,
+            winnerRevealDelay: 800
         }
     }
 ];
 
 const BASE_CANVAS_SIZE = 1080;
-
-let canvas;
-let ctx;
-let isSpinning = false;
-
-function setupCanvasResolution() {
-    if (!canvas || !ctx) return;
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const targetPx = Math.round(BASE_CANVAS_SIZE * dpr);
-    if (canvas.width !== targetPx || canvas.height !== targetPx) {
-        canvas.width = targetPx;
-        canvas.height = targetPx;
-    }
-}
-
-// Text layout caching to prevent expensive measureText calls during animation
-let lastCacheKeyString = '';
-const textLayoutCache = new Map();
 const LABEL_ANGLE_THRESHOLD = 0.06; // radians (approx 3.4 degrees)
 
-export function invalidateWheelCache() {
-    textLayoutCache.clear();
-    lastCacheKeyString = '';
-}
-let isLastStandingInProgress = false;
+let canvas = null;
+let ctx = null;
 let rotationAngle = 0;
+let isSpinning = false;
+let isLastStandingInProgress = false;
 let useInverseWeights = false;
 let animationFrameId = null;
-let spinStartTimestamp = null;
-let spinDuration = 0;
 let targetRotation = 0;
+let spinDuration = 0;
+let spinStartTimestamp = null;
 let lastTickIndex = null;
+let spinSessionActive = false;
+let spinPool = null;
 
-// UI Callbacks
+const textLayoutCache = new Map();
+let lastCacheKeyString = '';
+
 let ui = {
-    showWinnerPopup: () => { },
-    triggerConfetti: () => { },
-    updateSpinButtonLabel: () => { },
-    handleSliceClick: () => { },
-    markMovieKnockedOut: () => { },
-    markMovieChampion: () => { },
-    updateKnockoutResultText: () => { },
-    updateKnockoutRemainingBox: () => { },
     highlightKnockoutCandidate: () => { },
+    updateKnockoutRemainingBox: () => { },
+    updateKnockoutResultText: () => { },
     updateOdds: () => { },
+    updateSpinButtonLabel: () => { },
+    showWinnerPopup: () => { },
+    handleSliceClick: () => { },
+    triggerConfetti: () => { },
+    updateReshowWinnerButton: () => { },
     refreshMovies: () => { }
 };
 
@@ -134,6 +124,13 @@ export function initWheel(canvasElement, callbacks = {}) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
     ui = { ...ui, ...callbacks };
+    initVhsWheel({
+        isBusy: getIsSpinning,
+        getEligible: getFilteredSelectedMovies,
+        refresh: () => { drawWheel(); ui.refreshMovies(); },
+        inspect: movie => ui.handleSliceClick(movie),
+        clearWinner: () => { setWinnerId(null); clearVhsReveal(); }
+    });
     if (canvas) {
         setupCanvasResolution();
         canvas.addEventListener('click', handleCanvasClick);
@@ -145,7 +142,7 @@ export function initWheel(canvasElement, callbacks = {}) {
 }
 
 export function getIsSpinning() {
-    return isSpinning;
+    return isSpinning || spinSessionActive;
 }
 
 export function getIsLastStandingInProgress() {
@@ -171,12 +168,12 @@ export function setWeightMode(mode) {
 
 function getFilteredSelectedMovies() {
     const { movies, selectedIds, filter } = appState;
-    return movies.filter(movie => {
+    return movies.filter((movie) => {
         if (!selectedIds.has(movie.id)) return false;
         if (!filter.showCustoms && movie.isCustom) return false;
         if (filter.normalizedQuery) {
-            const haystack = [movie.name, movie.year, movie.date]
-                .filter(part => typeof part === 'string' && part.trim())
+            const haystack = [movie.name, movie.year]
+                .filter(Boolean)
                 .join(' ')
                 .toLowerCase();
             if (!haystack.includes(filter.normalizedQuery)) return false;
@@ -234,16 +231,28 @@ export function computeWheelModel(selectedMovies, options = {}) {
     return { segments, totalWeight };
 }
 
-export function getSelectionOdds(selectedMovies = getFilteredSelectedMovies(), options = {}) {
+export function getSelectionOdds(selectedMovies = null, options = {}) {
+    const movies = selectedMovies || (isVhsEnabled() ? getVhsLineup(getFilteredSelectedMovies()) : getFilteredSelectedMovies());
     const { inverseModeOverride = null } = options;
-    const { segments, totalWeight } = computeWheelModel(selectedMovies, { inverseModeOverride });
+    const { segments, totalWeight } = computeWheelModel(movies, { inverseModeOverride });
     if (!segments.length || totalWeight <= 0) {
         return new Map();
     }
     return new Map(segments.map((segment) => [segment.movie.id, segment.weight / totalWeight]));
 }
 
-export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments = null) {
+export function drawWheel(movies = null, segments = null) {
+    const eligible = getFilteredSelectedMovies();
+    let selectedMovies;
+    if (spinPool) {
+        selectedMovies = spinPool;
+    } else if (isVhsEnabled() && getCurrentSpinMode() === 'one-spin') {
+        selectedMovies = getVhsLineup(eligible, 'one-spin');
+    } else {
+        selectedMovies = movies || eligible;
+    }
+    updateVhsControls(eligible);
+    if (renderVhsWheel(selectedMovies, rotationAngle, { spinning: isSpinning, winnerId: appState.winnerId })) return;
     if (!ctx) return;
 
     setupCanvasResolution();
@@ -312,10 +321,10 @@ export function drawWheel(selectedMovies = getFilteredSelectedMovies(), segments
 
         if (angleSpan >= LABEL_ANGLE_THRESHOLD) {
             ctx.save();
-            ctx.fillStyle = '#04121f';
             ctx.rotate(startAngle + angleSpan / 2);
             ctx.textAlign = 'right';
-            wrapText(ctx, movie.name, radius - 20, angleSpan * radius * 0.6, movie.id);
+            const maxArcLength = Math.max(radius * 0.7 * angleSpan, 18);
+            wrapText(ctx, movie.name, radius - 40, maxArcLength, movie.id);
             ctx.restore();
         }
     });
@@ -346,6 +355,41 @@ export function drawEmptyWheel() {
     ctx.textBaseline = 'middle';
     ctx.fillText('Upload a CSV to spin', 0, 0);
     ctx.restore();
+}
+
+function setupCanvasResolution() {
+    if (!canvas || !ctx) return;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const targetPx = Math.round(BASE_CANVAS_SIZE * dpr);
+    if (canvas.width !== targetPx || canvas.height !== targetPx) {
+        canvas.width = targetPx;
+        canvas.height = targetPx;
+    }
+}
+
+function getPointerAngle() {
+    const rawAngle = (POINTER_DIRECTION - rotationAngle) % TAU;
+    return (rawAngle + TAU) % TAU;
+}
+
+function findSegmentIndexForAngle(segments, angle) {
+    if (!segments.length) return -1;
+    const target = ((angle % TAU) + TAU) % TAU;
+    for (let i = 0; i < segments.length; i++) {
+        const { startAngle, endAngle } = segments[i];
+        if (target >= startAngle && target < endAngle) {
+            return i;
+        }
+    }
+    return segments.length - 1;
+}
+
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function wrapText(context, text, maxWidth, maxArcLength, movieId) {
@@ -481,30 +525,6 @@ function textLayoutFits(layout, maxArcLength) {
     return layout.blockHeight <= availableHeight + layout.lineHeight * 0.2;
 }
 
-function getPointerAngle() {
-    const normalized = ((rotationAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    return (POINTER_DIRECTION - normalized + 2 * Math.PI) % (2 * Math.PI);
-}
-
-function findSegmentIndexForAngle(segments, angle) {
-    if (!segments.length) {
-        return -1;
-    }
-
-    const normalized = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    for (let index = 0; index < segments.length; index += 1) {
-        const segment = segments[index];
-        if (normalized >= segment.startAngle && normalized < segment.endAngle) {
-            return index;
-        }
-    }
-    return segments.length - 1;
-}
-
-function easeOutCubic(x) {
-    return 1 - Math.pow(1 - x, 3);
-}
-
 function handleCanvasClick(event) {
     if (!canvas || isSpinning || isLastStandingInProgress) {
         return;
@@ -536,7 +556,7 @@ function handleCanvasClick(event) {
     }
 
     const segment = segments[segmentIndex];
-    if (segment?.movie && typeof ui.handleSliceClick === 'function') {
+    if (segment && segment.movie) {
         ui.handleSliceClick(segment.movie);
     }
 }
@@ -548,6 +568,7 @@ function tick(segments) {
     const index = findSegmentIndexForAngle(segments, pointerAngle);
     if (index !== lastTickIndex) {
         playTickSound();
+        tickVhsPointer();
         lastTickIndex = index;
         if (isLastStandingInProgress && typeof ui.highlightKnockoutCandidate === 'function') {
             const focusedSegment = segments[index];
@@ -582,7 +603,14 @@ function performSpin(selectedMovies, options = {}) {
     );
 
     return new Promise((resolve) => {
-        const { segments, totalWeight } = computeWheelModel(selectedMovies);
+        const model = computeWheelModel(selectedMovies);
+        const totalWeight = model.totalWeight;
+        const vhs = useVhsForMovies(selectedMovies);
+        const segments = vhs ? model.segments.map((segment, index) => ({
+            ...segment,
+            startAngle: index * TAU / selectedMovies.length,
+            endAngle: (index + 1) * TAU / selectedMovies.length
+        })) : model.segments;
         if (!segments.length || totalWeight <= 0) {
             isSpinning = false;
             resolve({ winningMovie: null, segments: [] });
@@ -610,17 +638,20 @@ function performSpin(selectedMovies, options = {}) {
         }
 
         const segmentSpan = chosenSegment.endAngle - chosenSegment.startAngle;
-        const randomOffset = Math.random() * segmentSpan;
+        const randomOffset = vhs ? segmentSpan / 2 : (0.15 + Math.random() * 0.7) * segmentSpan;
         const finalAngle = chosenSegment.startAngle + randomOffset;
         const turns = normalizedMinSpins + Math.random() * (normalizedMaxSpins - normalizedMinSpins);
         const currentPointerAngle = getPointerAngle();
         const minimumRotation = normalizedMinSpins * TAU;
-        let neededRotation = turns * TAU + finalAngle - currentPointerAngle;
+        // The pointer moves backwards through local wheel angles as rotation increases.
+        let neededRotation = Math.ceil(turns) * TAU + currentPointerAngle - finalAngle;
         while (neededRotation < minimumRotation) {
             neededRotation += TAU;
         }
         targetRotation = rotationAngle + neededRotation;
         spinDuration = safeMinDuration + Math.random() * (safeMaxDuration - safeMinDuration);
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reducedMotion) spinDuration = 200;
         spinStartTimestamp = null;
         const startRotation = rotationAngle;
 
@@ -631,7 +662,8 @@ function performSpin(selectedMovies, options = {}) {
             const elapsed = timestamp - spinStartTimestamp;
             const progress = Math.min(elapsed / spinDuration, 1);
             const eased = easeOutCubic(progress);
-            rotationAngle = startRotation + (targetRotation - startRotation) * eased;
+            rotationAngle = reducedMotion && progress < 1 ? startRotation
+                : startRotation + (targetRotation - startRotation) * eased;
 
             drawWheel(selectedMovies, segments);
             tick(segments);
@@ -656,173 +688,220 @@ function performSpin(selectedMovies, options = {}) {
     });
 }
 
-export async function spinWheel(spinMode = 'knockout', options = {}) {
-    if (isSpinning || isLastStandingInProgress) return;
+export async function spinWheel(spinMode = 'knockout', booster = null) {
+    if (isSpinning || isLastStandingInProgress || spinSessionActive) return;
+    const eligible = getFilteredSelectedMovies();
+    if (!eligible.length) return;
 
-    const { booster } = options;
-    const selectedMovies = getFilteredSelectedMovies();
-    if (!selectedMovies.length) {
-        return;
-    }
-
+    spinSessionActive = true;
+    const isSingleSpin = spinMode === 'one-spin';
     const isRandomBoost = spinMode === 'random-boost';
-    const isSingleSpin = isRandomBoost || spinMode === 'one-spin';
-
-    setWinnerId(null);
-    if (typeof ui.highlightKnockoutCandidate === 'function') {
-        ui.highlightKnockoutCandidate(null);
-    }
-    if (typeof ui.updateKnockoutRemainingBox === 'function') {
-        ui.updateKnockoutRemainingBox([]);
-    }
-    ui.updateSpinButtonLabel();
-
-    if (!isSingleSpin && selectedMovies.length > 1) {
-        await runLastStandingMode(selectedMovies);
-        return;
-    }
-
+    const selectedMovies = isSingleSpin ? getVhsLineup(eligible, spinMode) : [...eligible];
+    let completed = false;
     const weightBackup = new Map();
-    if (isRandomBoost) {
-        selectedMovies.forEach((movie) => {
-            weightBackup.set(movie.id, movie.weight);
-            movie.weight = clampWeight(1);
-        });
-        if (typeof ui.refreshMovies === 'function') {
-            ui.refreshMovies();
-        }
+
+    spinPool = selectedMovies;
+    setVhsSpinMode(spinMode);
+    setWeightMode(spinMode === 'knockout' ? 'inverse' : 'normal');
+    clearVhsReveal();
+    setWinnerId(null);
+    appState.knockoutResults.clear();
+    lockSpinControls(true);
+    openSpinTheater(spinMode);
+    if (spinMode === 'knockout') {
+        clearEliminationStack();
     }
+    setTheaterStatus(isSingleSpin || isRandomBoost
+        ? `${selectedMovies.length} ${useVhsForMovies(selectedMovies) ? 'tapes' : 'movies'} in this spin${eligible.length > selectedMovies.length ? ` · drawn from ${eligible.length.toLocaleString()} movies` : ''}`
+        : `${eligible.length.toLocaleString()} movies enter. One remains.`);
+    const result = document.getElementById('result');
+    if (result) { result.textContent = ''; result.className = 'result'; }
 
-    const spinSettings = isSingleSpin ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS;
-
-    const { winningMovie } = await performSpin(selectedMovies, spinSettings);
-
-    if (isRandomBoost) {
-        selectedMovies.forEach((movie) => {
-            if (weightBackup.has(movie.id)) {
-                movie.weight = weightBackup.get(movie.id);
-            }
-        });
-    }
-
-    if (!winningMovie) {
+    try {
+        ui.highlightKnockoutCandidate(null);
+        ui.updateKnockoutRemainingBox([]);
         ui.updateSpinButtonLabel();
-        return;
-    }
-
-    setWinnerId(winningMovie.id, spinMode);
-    if (isRandomBoost) {
-        const boostedWeight = clampWeight((Number(winningMovie.weight) || 1) + 1);
-        if (boostedWeight !== winningMovie.weight) {
-            winningMovie.weight = boostedWeight;
-        }
-        if (booster) {
-            if (!winningMovie.boosters) winningMovie.boosters = [];
-            winningMovie.boosters.push({
-                name: booster,
-                timestamp: Date.now(),
-                source: 'random'
+        // The mode callback follows the selected radio; a Random Boost always uses equal weights.
+        if (isRandomBoost) {
+            selectedMovies.forEach(movie => {
+                weightBackup.set(movie.id, movie.weight);
+                movie.weight = 1;
             });
         }
-    }
-    playWinSound();
-    drawWheel(selectedMovies);
-    ui.triggerConfetti();
-    ui.showWinnerPopup(winningMovie, { spinMode });
-    addToHistory(winningMovie, spinMode);
-    if (isRandomBoost && typeof ui.refreshMovies === 'function') {
-        ui.refreshMovies();
-    } else {
-        ui.updateSpinButtonLabel();
-    }
-}
+        drawWheel(selectedMovies);
+        await delay(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450);
+        if (spinMode === 'knockout' && selectedMovies.length > 1) {
+            await runLastStandingMode(selectedMovies);
+            completed = true;
+            return;
+        }
 
-function delay(ms) {
-    return new Promise((resolve) => {
-        window.setTimeout(resolve, Math.max(0, ms));
-    });
+        const selectionOdds = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+        const { winningMovie } = await performSpin(selectedMovies,
+            isSingleSpin ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS);
+        for (const movie of selectedMovies) {
+            if (weightBackup.has(movie.id)) movie.weight = weightBackup.get(movie.id);
+        }
+        weightBackup.clear();
+        if (!winningMovie) return;
+        setWinnerId(winningMovie.id, spinMode);
+        if (isRandomBoost) {
+            const boostedWeight = clampWeight((Number(winningMovie.weight) || 1) + 1);
+            winningMovie.weight = boostedWeight;
+            const boosterName = typeof booster === 'object' && booster !== null ? booster.booster : booster;
+            if (boosterName) {
+                if (!winningMovie.boosters) winningMovie.boosters = [];
+                winningMovie.boosters.push({ name: boosterName, timestamp: Date.now(), source: 'random' });
+            }
+        }
+        playWinSound();
+        drawWheel(selectedMovies);
+        if (result) result.textContent = winningMovie.name;
+        await revealVhsWinner(winningMovie);
+        ui.triggerConfetti();
+        // Record while the session is locked, so double clicks cannot create extra winners.
+        addToHistory(winningMovie, spinMode);
+        ui.showWinnerPopup(winningMovie, { spinMode, selectionOdds: selectionOdds.get(winningMovie.id) });
+        completed = true;
+    } finally {
+        for (const movie of selectedMovies) {
+            if (weightBackup.has(movie.id)) movie.weight = weightBackup.get(movie.id);
+        }
+        isSpinning = false;
+        isLastStandingInProgress = false;
+        spinSessionActive = false;
+        spinPool = null;
+        lockSpinControls(false);
+        setVhsSpinMode(null);
+        ui.refreshMovies();
+        ui.updateSpinButtonLabel();
+        if (!completed) {
+            closeSpinTheater();
+            clearVhsReveal();
+        }
+    }
 }
 
 function getLastStandingSpeedConfig(remainingCount) {
-    for (const stage of MOVIE_KNOCKOUT_SPEEDS) {
-        if (remainingCount >= stage.minCount) {
-            return stage.config;
-        }
-    }
-    return MOVIE_KNOCKOUT_SPEEDS[MOVIE_KNOCKOUT_SPEEDS.length - 1].config;
+    const matched = MOVIE_KNOCKOUT_SPEEDS.find(tier => remainingCount >= tier.minCount);
+    return matched ? matched.config : MOVIE_KNOCKOUT_SPEEDS[MOVIE_KNOCKOUT_SPEEDS.length - 1].config;
 }
 
 async function runLastStandingMode(selectedMovies) {
     const eliminationPool = [...selectedMovies];
+    spinPool = eliminationPool;
     let eliminationOrder = 1;
     isLastStandingInProgress = true;
     ui.updateSpinButtonLabel();
     ui.updateOdds?.(eliminationPool);
-
     ui.updateKnockoutRemainingBox(eliminationPool);
     ui.updateKnockoutResultText('start', eliminationPool.length);
+
+    const vhsCap = getVhsCapacity();
+    if (isVhsEnabled() && eliminationPool.length > vhsCap) {
+        const batchSize = Math.max(1, Math.ceil((eliminationPool.length - vhsCap) / 45));
+        while (eliminationPool.length > vhsCap) {
+            for (let index = 0; index < batchSize && eliminationPool.length > vhsCap; index += 1) {
+                const total = eliminationPool.reduce((sum, movie) => sum + getEffectiveWeight(movie, true), 0);
+                let pick = Math.random() * total;
+                let removalIndex = eliminationPool.length - 1;
+                for (let candidate = 0; candidate < eliminationPool.length; candidate += 1) {
+                    pick -= getEffectiveWeight(eliminationPool[candidate], true);
+                    if (pick <= 0) { removalIndex = candidate; break; }
+                }
+                const [removed] = eliminationPool.splice(removalIndex, 1);
+                appState.knockoutResults.set(removed.id, { order: eliminationOrder++, status: 'knocked-out' });
+            }
+            setTheaterStatus(`${eliminationPool.length.toLocaleString()} remaining · drawing the final ${vhsCap}`);
+            ui.updateKnockoutResultText('start', eliminationPool.length);
+            drawWheel(eliminationPool);
+            await delay(65);
+        }
+        ui.refreshMovies();
+        ui.updateKnockoutRemainingBox(eliminationPool);
+        setTheaterStatus(`The final ${vhsCap}. Last tape standing wins.`);
+        await delay(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900);
+    }
 
     while (eliminationPool.length > 1) {
         const remainingBeforeSpin = eliminationPool.length;
         const speedConfig = getLastStandingSpeedConfig(remainingBeforeSpin);
-        const isFinalElimination = remainingBeforeSpin === 2;
-        const spinSettings = isFinalElimination
+        const isFinalShowdown = remainingBeforeSpin === 2;
+        const currentSpinSettings = isFinalShowdown
             ? speedConfig.finalSpin
             : speedConfig.eliminationSpin;
-        const spinResult = await performSpin(eliminationPool, spinSettings);
 
-        const eliminatedMovie = spinResult.winningMovie;
+        setWeightMode('inverse');
+
+        const { winningMovie: eliminatedMovie } = await performSpin(
+            eliminationPool,
+            currentSpinSettings
+        );
+
         if (!eliminatedMovie) {
             break;
         }
 
-        const removalIndex = eliminationPool.findIndex((movie) => movie.id === eliminatedMovie.id);
-        if (removalIndex === -1) {
-            break;
-        }
+        const remainingCount = eliminationPool.length - 1;
+        appState.knockoutResults.set(eliminatedMovie.id, {
+            order: eliminationOrder,
+            status: 'knocked-out'
+        });
 
-        ui.markMovieKnockedOut(eliminatedMovie.id, eliminationOrder);
-        eliminationOrder += 1;
         playKnockoutSound();
+        if (isVhsEnabled()) {
+            await animateVhsKnockout(eliminatedMovie, eliminationOrder);
+        }
+        eliminationOrder++;
 
-        eliminationPool.splice(removalIndex, 1);
-        const remainingCount = eliminationPool.length;
+        const eliminatedIndex = eliminationPool.findIndex(m => m.id === eliminatedMovie.id);
+        if (eliminatedIndex !== -1) {
+            eliminationPool.splice(eliminatedIndex, 1);
+        }
 
         ui.updateKnockoutRemainingBox(eliminationPool);
         ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
+        setTheaterStatus(`${remainingCount} ${remainingCount === 1 ? 'tape' : 'tapes'} remaining`);
         ui.updateOdds?.(eliminationPool);
 
         drawWheel(eliminationPool);
+        ui.refreshMovies();
 
-        if (remainingCount <= 1) {
-            const revealDelay = isFinalElimination ? speedConfig.finalRevealDelay : speedConfig.knockoutRevealDelay;
-            await delay(revealDelay);
-            break;
+        const baseRevealDelay = isFinalShowdown
+            ? speedConfig.finalRevealDelay
+            : speedConfig.knockoutRevealDelay;
+        const revealDelay = isVhsEnabled()
+            ? Math.max(150, baseRevealDelay - 600)
+            : baseRevealDelay;
+        await delay(revealDelay);
+
+        if (eliminationPool.length > 1) {
+            await delay(speedConfig.interRoundDelay);
         }
-
-        ui.updateSpinButtonLabel();
-        await delay(speedConfig.interRoundDelay);
     }
 
-    const finalMovie = eliminationPool[0];
-    if (finalMovie) {
+    if (eliminationPool.length === 1) {
+        const finalMovie = eliminationPool[0];
         setWinnerId(finalMovie.id, 'knockout');
-        ui.markMovieChampion(finalMovie.id, eliminationOrder);
-        const finalTiming = getLastStandingSpeedConfig(1);
-        await delay(finalTiming.winnerRevealDelay);
-
+        appState.knockoutResults.set(finalMovie.id, {
+            order: eliminationOrder,
+            status: 'champion'
+        });
+        ui.updateKnockoutRemainingBox(eliminationPool);
         ui.updateKnockoutResultText('winner', 0, finalMovie);
+        setWeightMode('normal');
 
         playWinSound();
         drawWheel(eliminationPool);
+        await revealVhsWinner(finalMovie);
         ui.triggerConfetti();
         ui.showWinnerPopup(finalMovie, { spinMode: 'knockout' });
         addToHistory(finalMovie, 'knockout');
+        ui.refreshMovies();
     }
+}
 
-    ui.highlightKnockoutCandidate(null);
-    ui.updateKnockoutRemainingBox([]);
-    isLastStandingInProgress = false;
-    ui.updateOdds?.();
-    ui.updateSpinButtonLabel();
+export function invalidateWheelCache() {
+    textLayoutCache.clear();
+    lastCacheKeyString = '';
 }

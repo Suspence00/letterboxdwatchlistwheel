@@ -325,3 +325,12 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 0.75rem;
 }
+
+/* On phones the player follows the page instead of covering the spin controls. */
+@media (max-width: 600px) {
+    .wheel-fm {
+        margin-top: 1.5rem;
+        max-width: 100%;
+        position: static;
+    }
+}

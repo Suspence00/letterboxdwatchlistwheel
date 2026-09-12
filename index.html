@@ -351,9 +351,32 @@
             </div>
           </label>
         </div>
+        <div class="vhs-controls">
+          <label for="wheel-style">Wheel style
+            <select id="wheel-style" name="wheel-style">
+              <option value="vhs">3D VHS Tapes</option>
+              <option value="classic">Classic Wheel</option>
+            </select>
+          </label>
+          <label for="vhs-capacity-select" id="vhs-capacity-label">Lineup size
+            <select id="vhs-capacity-select" name="vhs-capacity-select">
+              <option value="10">10 tapes</option>
+              <option value="24">24 tapes</option>
+              <option value="50">50 tapes</option>
+              <option value="100">100 tapes</option>
+            </select>
+          </label>
+          <label for="vhs-labels-select" id="vhs-labels-label">Bottom label
+            <select id="vhs-labels-select" name="vhs-labels-select">
+              <option value="show" selected>Show labels</option>
+              <option value="hide">Hide labels (clean)</option>
+            </select>
+          </label>
+          <button type="button" class="btn" id="vhs-shuffle">Draw another 10</button>
+          <p class="helper-text" id="vhs-lineup-note"></p>
+        </div>
         <div class="wheel-section">
           <div class="wheel-wrapper">
-            <p class="result" id="result" aria-live="polite"></p>
             <div class="wheel-layout" id="wheel-layout">
               <div class="wheel-aside" id="wheel-aside">
                 <section class="knockout-remaining" id="knockout-remaining" aria-live="polite" hidden>
@@ -407,6 +430,8 @@
                 </section>
               </div>
               <div class="wheel-stage">
+                <p class="result" id="result" aria-live="polite"></p>
+                <button type="button" class="btn wheel-stage__theater-btn" id="wheel-theater-btn" aria-label="Enter Theater Mode">Theater Mode <span aria-hidden="true">⛶</span></button>
                 <canvas id="wheel" width="1080" height="1080" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
               </div>
@@ -493,6 +518,7 @@
         <figure class="win-modal__poster" id="win-modal-poster-wrapper" hidden>
           <img id="win-modal-poster" src="" alt="" />
         </figure>
+        <div id="win-modal-tape-viewer" class="win-modal__tape-viewer" hidden></div>
         <div class="win-modal__meta">
           <p id="win-modal-runtime" class="win-modal__runtime" aria-live="polite">Looking up runtime…</p>
           <p id="win-modal-synopsis" class="win-modal__synopsis">Fetching synopsis…</p>
@@ -584,6 +610,23 @@
                 <option value="forest">Forest Camp</option>
               </select>
             </div>
+          </fieldset>
+
+          <fieldset class="settings-group" id="settings-vhs-group">
+            <legend>VHS Wheel</legend>
+            <div class="settings-row">
+              <label for="settings-vhs-capacity">Lineup Capacity</label>
+              <select id="settings-vhs-capacity" class="text-input text-input--select">
+                <option value="10">10 tapes</option>
+                <option value="24">24 tapes</option>
+                <option value="50">50 tapes</option>
+                <option value="100">100 tapes</option>
+              </select>
+            </div>
+            <label class="filter-toggle" for="settings-vhs-labels">
+              <input type="checkbox" id="settings-vhs-labels" checked />
+              <span>Show bottom rental labels on tapes</span>
+            </label>
           </fieldset>
 
           <fieldset class="settings-group">

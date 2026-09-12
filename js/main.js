@@ -5,7 +5,7 @@
 import { loadState, appState, saveState, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace } from './state.js';
 
 import { initAudio } from './audio.js';
-import { initWheel, spinWheel, invalidateWheelCache } from './wheel.js';
+import { initWheel, spinWheel, invalidateWheelCache, drawWheel } from './wheel.js';
 import {
     initUI,
     updateMovieList,
@@ -38,6 +38,8 @@ import {
     getStoredWeight,
     THEMES
 } from './utils.js';
+import { openSpinTheater } from './spin-theater.js';
+import { getCurrentSpinMode, applyLabelsPreference } from './vhs-wheel.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -139,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         winModalDetails: document.getElementById('win-modal-details'),
         winModalPosterWrapper: document.getElementById('win-modal-poster-wrapper'),
         winModalPoster: document.getElementById('win-modal-poster'),
+        winModalTapeViewer: document.getElementById('win-modal-tape-viewer'),
         winModalSynopsis: document.getElementById('win-modal-synopsis'),
         winModalRuntime: document.getElementById('win-modal-runtime'),
         winModalTrailer: document.getElementById('win-modal-trailer'),
@@ -429,6 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncFinalistsToggles();
     initThemeSelector();
+    applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
 
     window.addEventListener('letterboxd:workspacechange', () => {
         if (elements.searchInput) {
@@ -443,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         syncFinalistsToggles();
         applyTheme(appState.preferences?.theme, { force: true });
+        applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
         refreshDiscordSettings();
         refreshRadarrSettings();
         invalidateWheelCache();
@@ -455,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.spinModeRadios) {
         elements.spinModeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
+                drawWheel();
                 updateMovieList();
                 updateSpinButtonLabel();
             });
@@ -633,6 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    document.getElementById('wheel-theater-btn')?.addEventListener('click', () => {
+        openSpinTheater(getCurrentSpinMode());
+    });
 
     // Initial Render
     updateMovieList();

@@ -1,0 +1,169 @@
+/* A static, opaque cover with a drawn spine. No rotating faces. */
+.tape-viewer {
+    flex-shrink: 0;
+    height: 232px;
+    isolation: isolate;
+    margin: 8px auto;
+    position: relative;
+    width: 160px;
+}
+
+.tape-viewer::before {
+    background: linear-gradient(90deg, #142624, #3b514b);
+    bottom: 0;
+    clip-path: polygon(0 0, 100% 8px, 100% 100%, 0 calc(100% - 8px));
+    content: '';
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 12px;
+}
+
+.tape-viewer::after {
+    background: linear-gradient(180deg, #62736e, #3b514b);
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 12px 100%);
+    content: '';
+    height: 8px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.tape-viewer__cover {
+    background: #263b3b;
+    bottom: 0;
+    box-shadow: 5px 7px 12px #0005;
+    left: 12px;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 8px;
+}
+
+.tape-viewer__cover::after {
+    box-shadow: inset 2px 0 #ffffff25, inset -1px 0 #0006;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+.tape-viewer__fallback {
+    align-items: center;
+    background: #e7dec5;
+    color: #253c36;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    inset: 14px 10px 32px;
+    justify-content: center;
+    padding: 8px;
+    position: absolute;
+    text-align: center;
+}
+
+.tape-viewer__fallback small {
+    font: 8px / 1.4 monospace;
+    letter-spacing: 1px;
+}
+
+.tape-viewer__fallback strong {
+    display: -webkit-box;
+    font: 700 18px / 1.15 Georgia, serif;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+}
+
+.tape-viewer__fallback em {
+    font: 11px monospace;
+}
+
+.tape-viewer__poster {
+    background: #142624;
+    display: block;
+    height: calc(100% - 18px);
+    left: 0;
+    object-fit: contain;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    width: 100%;
+}
+
+.tape-viewer.has-poster .tape-viewer__poster {
+    visibility: visible;
+}
+
+.tape-viewer.has-poster .tape-viewer__fallback {
+    display: none;
+}
+
+.tape-viewer__rental {
+    align-items: center;
+    background: #e7dec4;
+    bottom: 0;
+    color: #263b3b;
+    display: flex;
+    font: 7px monospace;
+    height: 18px;
+    justify-content: space-between;
+    padding: 0 6px;
+    position: absolute;
+    width: 100%;
+}
+
+.tape-viewer__rental b {
+    font-size: 11px;
+}
+
+.hide-tape-labels .tape-viewer__rental {
+    display: none;
+}
+
+.hide-tape-labels .tape-viewer__poster {
+    height: 100%;
+}
+
+.hide-tape-labels .tape-viewer__fallback {
+    bottom: 14px;
+}
+
+.tape-viewer--champion .tape-viewer__rental {
+    background: #f1d59b;
+}
+
+.win-modal__tape-viewer {
+    flex-shrink: 0;
+    width: 100%;
+}
+
+#win-modal .win-modal__content {
+    padding: 2rem 1.5rem 1.5rem;
+}
+
+#win-modal .win-modal__title {
+    font-size: 1.8rem;
+    padding: 0 1rem;
+}
+
+#win-modal .win-modal__details {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+#win-modal .win-modal__body {
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+#win-modal .win-modal__actions {
+    gap: 0.65rem;
+}
+
+#win-modal .win-modal__action {
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
+}

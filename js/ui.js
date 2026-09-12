@@ -13,6 +13,10 @@ import {
     renameWorkspace,
     deleteWorkspace
 } from './state.js';
+import { buildMetadataKey, fetchMovieMetadata } from './movie-metadata.js';
+import { closeSpinTheater } from './spin-theater.js';
+import { clearVhsReveal, isVhsEnabled } from './vhs-wheel.js';
+import { createTapeViewer } from './tape-viewer.js';
 import { runFairnessAudit } from './verify.js';
 import {
     decodeHtmlEntities,
@@ -50,6 +54,7 @@ let updateWheelAsideLayout = () => { };
 let currentWeightCopy = getModeCopy(true);
 let knockoutLaunchPrimed = false;
 let knockoutLaunchEngaged = false;
+let tapeViewerController = null;
 let lastKnockoutRemaining = [];
 const VIRTUALIZATION_THRESHOLD = 250;
 const VIRTUAL_OVERSCAN = 6;
@@ -1276,6 +1281,7 @@ export function updateSpinButtonLabel() {
     const inverseMode = spinMode === 'knockout';
     const lastStandingActive = getIsLastStandingInProgress();
     const spinning = getIsSpinning();
+    elements.spinButton.disabled = spinning || lastStandingActive || getFilteredSelectedMovies().length === 0;
 
     if (knockoutLaunchPrimed && lastStandingActive) {
         knockoutLaunchEngaged = true;
@@ -1686,9 +1692,7 @@ function resetKnockoutLaunchEffects() {
 }
 
 function handleSpinPrep() {
-    collapseAllSteps();
     resetSliceEditor();
-    triggerKnockoutLaunchEffects();
 }
 
 function addCustomEntry() {
@@ -1788,9 +1792,6 @@ export function addBulkEntries(rawText) {
 let modalHideTimeoutId = null;
 let lastFocusedBeforeModal = null;
 let currentModalMetadataKey = null;
-const metadataCache = new Map();
-const METADATA_API_URL = 'https://www.omdbapi.com/';
-const METADATA_API_KEY = 'trilogy';
 
 export function showWinnerPopup(movie, context = {}) {
     const { spinMode } = context;
@@ -1839,7 +1840,7 @@ export function showWinnerPopup(movie, context = {}) {
 
     const metadataKey = buildMetadataKey(movie);
     currentModalMetadataKey = metadataKey;
-    setWinnerModalLoadingState(movie);
+    setWinnerModalLoadingState(movie, spinMode);
     populateWinnerModalMetadata(movie, metadataKey).then((metadata) => {
         if (!metadata) return;
         const posterUrl = metadata.poster && metadata.poster !== 'N/A' ? metadata.poster : '';
@@ -1849,7 +1850,9 @@ export function showWinnerPopup(movie, context = {}) {
             return appState.selectedIds.has(m.id) ? sum + getStoredWeight(m) : sum;
         }, 0);
         const movieWeight = getStoredWeight(movie);
-        const odds = totalWeight > 0 ? ((movieWeight / totalWeight) * 100).toFixed(1) + '%' : 'N/A';
+        const odds = Number.isFinite(context.selectionOdds)
+            ? `${(context.selectionOdds * 100).toFixed(1)}%`
+            : totalWeight > 0 ? ((movieWeight / totalWeight) * 100).toFixed(1) + '%' : 'N/A';
 
         if (!context.isRestore) {
             sendDiscordNotification(movie.name, posterUrl, {
@@ -1862,6 +1865,8 @@ export function showWinnerPopup(movie, context = {}) {
     });
 
     elements.winModal.setAttribute('aria-hidden', 'false');
+    const theater = document.querySelector('.spin-theater');
+    if (theater) theater.inert = true;
     elements.winModal.removeAttribute('hidden');
     requestAnimationFrame(() => {
         elements.winModal.classList.add('show');
@@ -1892,12 +1897,22 @@ export function closeWinnerPopup({ restoreFocus = true } = {}) {
 
     modalHideTimeoutId = window.setTimeout(() => {
         elements.winModal.setAttribute('hidden', '');
-        if (restoreFocus && lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+        const closedTheater = closeSpinTheater({ restoreFocus });
+        clearVhsReveal();
+        currentModalMetadataKey = null;
+        if (!closedTheater && restoreFocus && lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
             lastFocusedBeforeModal.focus();
         }
         lastFocusedBeforeModal = null;
         modalHideTimeoutId = null;
         resetRadarrButton();
+        if (tapeViewerController) {
+            tapeViewerController.destroy();
+            tapeViewerController = null;
+        }
+        if (elements.winModalTapeViewer) {
+            elements.winModalTapeViewer.hidden = true;
+        }
     }, 220);
 }
 
@@ -1987,23 +2002,44 @@ function resetRadarrButton() {
     }
 }
 
-function buildMetadataKey(movie) {
-    if (!movie) {
-        return 'unknown';
+function setWinnerModalLoadingState(movie, spinMode) {
+    // Clean up any previous tape viewer
+    if (tapeViewerController) {
+        tapeViewerController.destroy();
+        tapeViewerController = null;
     }
-    const name = (movie.name || '').toLowerCase();
-    const year = movie.year || '';
-    return `${name}__${year}`;
-}
 
-function setWinnerModalLoadingState(movie) {
-    if (elements.winModalPosterWrapper) {
-        elements.winModalPosterWrapper.hidden = true;
+    // Decide whether to use the 3D tape viewer or the flat poster
+    const useTapeViewer = isVhsEnabled() && elements.winModalTapeViewer && movie;
+
+    if (useTapeViewer) {
+        // Hide flat poster, show tape viewer
+        if (elements.winModalPosterWrapper) {
+            elements.winModalPosterWrapper.hidden = true;
+        }
+        if (elements.winModalPoster) {
+            elements.winModalPoster.removeAttribute('src');
+            elements.winModalPoster.alt = '';
+        }
+        elements.winModalTapeViewer.hidden = false;
+        tapeViewerController = createTapeViewer(elements.winModalTapeViewer, movie);
+        if (spinMode === 'knockout') {
+            tapeViewerController.root.classList.add('tape-viewer--champion');
+        }
+    } else {
+        // Classic flat poster path
+        if (elements.winModalTapeViewer) {
+            elements.winModalTapeViewer.hidden = true;
+        }
+        if (elements.winModalPosterWrapper) {
+            elements.winModalPosterWrapper.hidden = true;
+        }
+        if (elements.winModalPoster) {
+            elements.winModalPoster.removeAttribute('src');
+            elements.winModalPoster.alt = '';
+        }
     }
-    if (elements.winModalPoster) {
-        elements.winModalPoster.removeAttribute('src');
-        elements.winModalPoster.alt = '';
-    }
+
     if (elements.winModalRuntime) {
         elements.winModalRuntime.textContent = 'Looking up runtime…';
         elements.winModalRuntime.classList.add('is-loading');
@@ -2051,7 +2087,10 @@ async function populateWinnerModalMetadata(movie, metadataKey) {
         elements.winModalSynopsis.classList.toggle('is-loading', false);
     }
 
-    if (elements.winModalPosterWrapper && elements.winModalPoster) {
+    if (tapeViewerController && poster) {
+        // Update the 3D tape's poster
+        tapeViewerController.update(movie, poster);
+    } else if (elements.winModalPosterWrapper && elements.winModalPoster) {
         if (poster) {
             elements.winModalPoster.src = poster;
             elements.winModalPoster.alt = title ? `Poster for ${title}` : 'Movie poster';
@@ -2112,57 +2151,6 @@ function applyWinnerModalFallback(movie) {
         title: movie.name,
         year: movie.year || '',
         poster: ''
-    };
-}
-
-async function fetchMovieMetadata(movie) {
-    const key = buildMetadataKey(movie);
-    if (metadataCache.has(key)) {
-        return metadataCache.get(key);
-    }
-
-    if (!movie || !movie.name) {
-        const value = { status: 'invalid', data: null };
-        metadataCache.set(key, value);
-        return value;
-    }
-
-    try {
-        const params = new URLSearchParams({
-            apikey: METADATA_API_KEY,
-            t: movie.name
-        });
-        if (movie.year) {
-            params.set('y', movie.year);
-        }
-        const response = await fetch(`${METADATA_API_URL}?${params.toString()}`);
-        if (!response.ok) {
-            throw new Error('Metadata request failed');
-        }
-        const data = await response.json();
-        if (data && data.Response === 'True') {
-            const normalized = normalizeMetadataResponse(data, movie);
-            const value = { status: 'success', data: normalized };
-            metadataCache.set(key, value);
-            return value;
-        }
-        const notFound = { status: 'not-found', data: null };
-        metadataCache.set(key, notFound);
-        return notFound;
-    } catch (error) {
-        const failure = { status: 'error', data: null };
-        metadataCache.set(key, failure);
-        return failure;
-    }
-}
-
-function normalizeMetadataResponse(raw, movie) {
-    return {
-        title: raw.Title || movie.name,
-        year: raw.Year && raw.Year !== 'N/A' ? raw.Year : movie.year || '',
-        runtime: raw.Runtime && raw.Runtime !== 'N/A' ? raw.Runtime : '',
-        plot: raw.Plot && raw.Plot !== 'N/A' ? raw.Plot : '',
-        poster: raw.Poster && raw.Poster !== 'N/A' ? raw.Poster : ''
     };
 }
 
