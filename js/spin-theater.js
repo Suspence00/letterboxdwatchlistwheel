@@ -82,9 +82,9 @@ export function openSpinTheater(mode) {
         const stackAside = document.createElement('aside');
         stackAside.className = 'spin-theater__stack';
         stackAside.id = 'spin-theater-stack';
-        stackAside.setAttribute('aria-label', 'Eliminated tapes rental wall');
+        stackAside.setAttribute('aria-label', 'Eliminated tapes');
         stackAside.innerHTML = `<div class="spin-theater__stack-header">
-            <span class="spin-theater__stack-title">Returns</span>
+            <span class="spin-theater__stack-title">Eliminated:</span>
             <span class="spin-theater__stack-count" id="spin-theater-stack-count">0</span>
         </div>
         <div class="spin-theater__stack-list" id="spin-theater-stack-list" role="list"></div>`;
