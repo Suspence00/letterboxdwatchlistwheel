@@ -887,6 +887,11 @@ async function runLastStandingMode(selectedMovies) {
             status: 'knocked-out'
         });
 
+        ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
+        ui.updateKnockoutRemainingBox(eliminationPool);
+        setTheaterStatus(`${remainingCount} ${remainingCount === 1 ? 'tape' : 'tapes'} remaining`);
+        ui.updateOdds?.(eliminationPool);
+
         playKnockoutSound();
         if (isVhsEnabled()) {
             await animateVhsKnockout(eliminatedMovie, eliminationOrder);
@@ -899,19 +904,16 @@ async function runLastStandingMode(selectedMovies) {
         }
 
         ui.updateKnockoutRemainingBox(eliminationPool);
-        ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
-        setTheaterStatus(`${remainingCount} ${remainingCount === 1 ? 'tape' : 'tapes'} remaining`);
-        ui.updateOdds?.(eliminationPool);
-
         drawWheel(eliminationPool);
         ui.refreshMovies();
 
         const baseRevealDelay = isFinalShowdown
             ? speedConfig.finalRevealDelay
             : speedConfig.knockoutRevealDelay;
-        const revealDelay = isVhsEnabled()
-            ? Math.max(150, baseRevealDelay - 600)
-            : baseRevealDelay;
+        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const revealDelay = isReducedMotion
+            ? 200
+            : (isVhsEnabled() ? Math.max(1100, baseRevealDelay) : baseRevealDelay);
         await delay(revealDelay);
 
         if (eliminationPool.length > 1) {

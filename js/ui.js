@@ -2414,38 +2414,44 @@ export function highlightKnockoutCandidate(movieId) {
 }
 
 function setKnockoutResultContent(prefix, emphasizedText, suffix) {
-    elements.resultEl.replaceChildren(document.createTextNode(prefix));
+    elements.resultEl.replaceChildren();
+    const label = document.createElement('span');
+    label.className = 'result__label';
+    label.textContent = prefix;
     const strong = document.createElement('strong');
+    strong.className = 'result__name';
     strong.textContent = emphasizedText;
-    elements.resultEl.appendChild(strong);
-    elements.resultEl.appendChild(document.createTextNode(suffix));
+    elements.resultEl.append(label, strong);
+    if (suffix) {
+        const meta = document.createElement('span');
+        meta.className = 'result__meta';
+        meta.textContent = suffix;
+        elements.resultEl.append(meta);
+    }
 }
 
 export function updateKnockoutResultText(type, countOrMovie, extra) {
     if (!elements.resultEl) return;
 
     if (type === 'start') {
-        elements.resultEl.classList.add('result--knockout');
-        elements.resultEl.classList.remove('result--champion', 'result--spinning');
+        elements.resultEl.className = 'result result--knockout';
         setKnockoutResultContent(
-            'Movie Knockout begins! ',
-            String(countOrMovie),
-            ` movie${countOrMovie === 1 ? '' : 's'} enter the arena.`
+            'Movie Knockout:',
+            `${countOrMovie} movies`,
+            ' · enter the arena'
         );
     } else if (type === 'eliminated') {
         const remainingCount = countOrMovie;
         const eliminatedMovie = extra;
-        const remainText = remainingCount === 1 ? 'Final showdown! One movie remains.' : `${remainingCount} movies remain.`;
+        const remainText = remainingCount === 1 ? 'Final showdown!' : `${remainingCount} remain`;
         const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
-        elements.resultEl.classList.add('result--knockout');
-        elements.resultEl.classList.remove('result--spinning');
-        setKnockoutResultContent('Knocked out: ', eliminatedLabel, ` · ${remainText}`);
+        elements.resultEl.className = 'result result--knockout';
+        setKnockoutResultContent('Knocked out:', eliminatedLabel, ` · ${remainText}`);
     } else if (type === 'winner') {
         const finalMovie = extra;
-        elements.resultEl.classList.add('result--champion');
-        elements.resultEl.classList.remove('result--spinning');
+        elements.resultEl.className = 'result result--champion';
         setKnockoutResultContent(
-            'Movie Knockout winner: ',
+            'Movie Knockout winner:',
             finalMovie.name,
             finalMovie.year ? ` (${finalMovie.year})` : ''
         );
