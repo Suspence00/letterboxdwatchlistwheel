@@ -1,5 +1,6 @@
 import { appState, saveState } from './state.js';
 import { fetchMovieMetadata } from './movie-metadata.js';
+import { getMovieOriginalIndex } from './utils.js';
 import {
     setTheaterStatus, prepareEliminationStackSlot, commitEliminationStackSlot, addTapeToEliminationStack, setSpinTheaterCallbacks
 } from './spin-theater.js';
@@ -344,6 +345,8 @@ export async function animateVhsKnockout(movie, order) {
     const tape = scene.querySelector(`.vhs-tapes .vhs-tape[data-movie-id="${CSS.escape(String(movie.id))}"]`);
     if (!tape) return;
 
+    tape.style.setProperty('--knockout-stamp', `"ELIMINATED #${order}"`);
+
     const stack = theater?.querySelector('#spin-theater-stack');
     const stackAvailable = Boolean(theater && stack && window.getComputedStyle(stack).display !== 'none');
 
@@ -352,67 +355,74 @@ export async function animateVhsKnockout(movie, order) {
         const tapeRect = tape.getBoundingClientRect();
         const targetRect = prepareEliminationStackSlot(movie, order);
 
-        const proxy = tape.cloneNode(true);
-        proxy.className = `${tape.className} vhs-flight-proxy is-knocked-out`;
+        const proxy = document.createElement('div');
+        proxy.className = 'vhs-flight-proxy vhs-stack-tape';
         if (tape.classList.contains('has-poster')) {
             proxy.classList.add('has-poster');
         }
-
-        const sourcePoster = tape.querySelector('.vhs-poster');
-        if (sourcePoster) {
-            const proxyPoster = proxy.querySelector('.vhs-poster');
-            if (proxyPoster) {
-                proxyPoster.src = sourcePoster.src;
-                proxyPoster.style.visibility = 'visible';
-            } else {
-                const frontFace = proxy.querySelector('.vhs-face--front');
-                if (frontFace) {
-                    const img = new Image();
-                    img.className = 'vhs-poster';
-                    img.alt = '';
-                    img.src = sourcePoster.src;
-                    img.style.visibility = 'visible';
-                    frontFace.prepend(img);
-                }
-            }
-            proxy.classList.add('has-poster');
-        }
-
-        proxy.removeAttribute('id');
         proxy.setAttribute('aria-hidden', 'true');
         proxy.setAttribute('tabindex', '-1');
-        if ('disabled' in proxy) proxy.disabled = true;
-        proxy.style.animation = 'none';
+
+        const sourcePoster = tape.querySelector('.vhs-poster');
+        const posterSrc = sourcePoster?.src || movie.poster || '';
+        const sleeveHue = tape.style.getPropertyValue('--sleeve-hue')
+            || String((getMovieOriginalIndex(movie, appState.movies) * 43 + 15) % 360);
+        proxy.style.setProperty('--sleeve-hue', sleeveHue);
+
+        proxy.innerHTML = `<div class="vhs-stack-tape__cover">
+            ${posterSrc ? `<img class="vhs-stack-tape__poster" src="${posterSrc}" alt="" style="display:block;" />` : ''}
+            <div class="vhs-stack-tape__fallback">
+                <small>VIDEO CASSETTE</small>
+                <strong></strong>
+                <em></em>
+            </div>
+            <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED #${order}</span>
+        </div>
+        <div class="vhs-stack-tape__rental">
+            <b>VHS</b>
+            <span>#${order}</span>
+        </div>`;
+
+        proxy.querySelector('.vhs-stack-tape__fallback strong').textContent = movie.name;
+        proxy.querySelector('.vhs-stack-tape__fallback em').textContent = movie.year || 'HOME VIDEO';
+
+        const startCenterX = tapeRect.left + tapeRect.width / 2;
+        const startCenterY = tapeRect.top + tapeRect.height / 2;
+        const targetCenterX = targetRect.left + targetRect.width / 2;
+        const targetCenterY = targetRect.top + targetRect.height / 2;
+
         proxy.style.position = 'fixed';
-        proxy.style.left = tapeRect.left + 'px';
-        proxy.style.top = tapeRect.top + 'px';
-        proxy.style.width = tapeRect.width + 'px';
-        proxy.style.height = tapeRect.height + 'px';
+        proxy.style.width = `${targetRect.width}px`;
+        proxy.style.height = `${targetRect.height}px`;
+        proxy.style.left = `${startCenterX - targetRect.width / 2}px`;
+        proxy.style.top = `${startCenterY - targetRect.height / 2}px`;
         proxy.style.margin = '0';
         proxy.style.pointerEvents = 'none';
-
-        const stamp = document.createElement('span');
-        stamp.className = 'vhs-stamp';
-        stamp.setAttribute('aria-hidden', 'true');
-        stamp.textContent = 'ELIMINATED';
-        proxy.append(stamp);
+        proxy.style.zIndex = '2000';
 
         tape.style.visibility = 'hidden';
+        tape.classList.add('is-knocked-out');
         theater.append(proxy);
 
-        const dx = targetRect.left - tapeRect.left;
-        const dy = targetRect.top - tapeRect.top;
-        const scaleX = tapeRect.width ? targetRect.width / tapeRect.width : 1;
-        const scaleY = tapeRect.height ? targetRect.height / tapeRect.height : 1;
-        const targetScale = tapeRect.width ? targetRect.width / tapeRect.width : 1;
+        const dx = targetCenterX - startCenterX;
+        const dy = targetCenterY - startCenterY;
 
         const animation = proxy.animate([
-            { transform: 'translate3d(0, 0, 80px) scale(1)' },
-            { transform: `translate3d(${dx * 0.4}px, ${dy * 0.4 - 35}px, 120px) rotateY(-6deg) scale(1.04)` },
-            { transform: `translate3d(${dx}px, ${dy}px, 0px) rotateY(0deg) scale(${targetScale})` }
+            {
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                transform: 'translate3d(0, 0, 0) scale(1.04) rotateZ(-3deg)'
+            },
+            {
+                boxShadow: '0 14px 32px rgba(0, 0, 0, 0.65)',
+                transform: `translate3d(${dx * 0.45}px, ${dy * 0.45 - 20}px, 0) scale(1.02) rotateZ(2deg)`
+            },
+            {
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)',
+                transform: `translate3d(${dx}px, ${dy}px, 0) scale(1) rotateZ(0deg)`
+            }
         ], {
-            duration: 750,
-            easing: 'cubic-bezier(0.2, 0.85, 0.32, 1)'
+            duration: 650,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
         });
 
         if (animation?.finished) {
@@ -422,7 +432,7 @@ export async function animateVhsKnockout(movie, order) {
                 // Ignore if animation is cancelled
             }
         } else {
-            await new Promise(resolve => setTimeout(resolve, 750));
+            await new Promise(resolve => setTimeout(resolve, 650));
         }
 
         commitEliminationStackSlot(movie, order);

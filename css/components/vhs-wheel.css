@@ -331,7 +331,7 @@ body.hide-tape-labels .vhs-stack-tape__cover {
     border-radius: 4px;
     box-shadow: 0 4px 12px #000b;
     color: #fff;
-    content: "ELIMINATED";
+    content: var(--knockout-stamp, "ELIMINATED");
     font: 900 11px/1 system-ui, sans-serif;
     left: 50%;
     letter-spacing: 0.1em;
@@ -505,17 +505,17 @@ body.is-spin-focused {
 
 .spin-theater.has-stack .wheel-stage {
     flex: 0 1 auto;
-    width: min(calc(100dvh - 120px), calc(100dvw - 370px - 2.5rem), 960px);
+    width: min(calc(100dvh - 120px), calc(100dvw - 444px - 2.5rem), 960px);
 }
 
 .spin-theater__stack {
     display: flex;
-    flex: 0 0 310px;
+    flex: 0 0 384px;
     flex-direction: column;
     gap: 0.5rem;
     max-height: min(650px, calc(100% - 2rem));
     position: relative;
-    width: 310px;
+    width: 384px;
     z-index: 10;
 }
 
@@ -546,8 +546,8 @@ body.is-spin-focused {
     -ms-overflow-style: none;
     align-content: flex-start;
     display: grid;
-    gap: 10px 7px;
-    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 6px;
+    grid-template-columns: repeat(4, 1fr);
     margin: 0;
     max-height: 100%;
     overflow-x: hidden;
@@ -568,7 +568,7 @@ body.is-spin-focused {
     box-shadow: 0 4px 10px #000a, inset 0 1px 0 rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
-    height: 142px;
+    height: 136px;
     overflow: hidden;
     position: relative;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -643,12 +643,13 @@ body.is-spin-focused {
     border-radius: 3px;
     box-shadow: 0 2px 8px #000a;
     color: #fff;
-    font: 900 8px/1 system-ui, sans-serif;
+    font: 900 8.5px/1 system-ui, sans-serif;
     left: 50%;
     letter-spacing: 0.06em;
-    padding: 2px 4px;
+    padding: 2.5px 5px;
     pointer-events: none;
     position: absolute;
+    text-align: center;
     top: 46%;
     transform: translate(-50%, -50%) rotate(-12deg);
     white-space: nowrap;
@@ -668,7 +669,7 @@ body.is-spin-focused {
     pointer-events: none;
     position: fixed;
     transform-origin: center center;
-    transform-style: preserve-3d;
+    transition: none !important;
     will-change: transform, opacity;
     z-index: 2000;
 }
@@ -677,6 +678,7 @@ body.is-spin-focused {
     animation: none !important;
 }
 
+.vhs-flight-proxy .vhs-stack-tape__poster,
 .vhs-flight-proxy .vhs-poster {
     display: block !important;
 }
@@ -759,7 +761,7 @@ body.is-spin-focused {
     to { opacity: 1; }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 768px) {
     .spin-theater__stack {
         display: none;
     }

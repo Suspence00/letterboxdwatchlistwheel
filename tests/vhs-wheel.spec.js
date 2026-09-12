@@ -297,7 +297,7 @@ test('knockout elimination animation marks tape and reduces pool', async ({ page
     await expect(page.locator('#spin-theater-stack-count')).toHaveText('1');
     const wallTape = page.locator('#spin-theater-stack-list .vhs-stack-tape');
     await expect(wallTape).toHaveCount(1);
-    await expect(wallTape.locator('.vhs-stack-tape__stamp')).toHaveText('ELIMINATED');
+    await expect(wallTape.locator('.vhs-stack-tape__stamp')).toHaveText('ELIMINATED #1');
     await expect(wallTape.locator('.vhs-stack-tape__rental')).toContainText('VHS');
 });
 

@@ -184,7 +184,7 @@ export function prepareEliminationStackSlot(movie, order) {
                 <strong></strong>
                 <em></em>
             </div>
-            <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED</span>
+            <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED #${order ?? ''}</span>
         </div>
         <div class="vhs-stack-tape__rental">
             <b>VHS</b>
@@ -228,7 +228,7 @@ export function commitEliminationStackSlot(movie, order) {
             <strong></strong>
             <em></em>
         </div>
-        <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED</span>
+        <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED #${order ?? ''}</span>
     </div>
     <div class="vhs-stack-tape__rental">
         <b>VHS</b>
