@@ -159,7 +159,14 @@
     text-align: left;
     transform: translate(-50%, -50%) rotateZ(var(--tape-angle, 0rad)) translateZ(27px) scale(var(--tape-scale, 1));
     transform-style: preserve-3d;
+    transition: left 0.35s cubic-bezier(0.2, 0.8, 0.25, 1),
+                top 0.35s cubic-bezier(0.2, 0.8, 0.25, 1),
+                transform 0.35s cubic-bezier(0.2, 0.8, 0.25, 1);
     width: 82px;
+}
+
+.vhs-scene.is-spinning .vhs-tape {
+    transition: none;
 }
 
 .vhs-tape:disabled {

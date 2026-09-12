@@ -271,19 +271,30 @@ function makeTape(movie, index, interactive = true) {
     tape.querySelector('.vhs-rental span').textContent = String(index + 1).padStart(2, '0');
     // Deterministic sleeve colors also distinguish tapes without artwork.
     tape.style.setProperty('--sleeve-hue', String((index * 43 + 15) % 360));
-    fetchMovieMetadata(movie).then(result => {
-        if (!result.data?.poster) return;
+
+    const applyPoster = (posterUrl) => {
+        if (!posterUrl) return;
         const poster = new Image();
         poster.alt = '';
         poster.decoding = 'async';
         poster.referrerPolicy = 'no-referrer';
         poster.className = 'vhs-poster';
         poster.addEventListener('load', () => {
-            tape.querySelector('.vhs-face--front').prepend(poster);
-            tape.classList.add('has-poster');
+            if (!tape.querySelector('.vhs-poster')) {
+                tape.querySelector('.vhs-face--front').prepend(poster);
+                tape.classList.add('has-poster');
+            }
         }, { once: true });
-        poster.src = result.data.poster;
-    });
+        poster.src = posterUrl;
+    };
+
+    if (movie.poster) {
+        applyPoster(movie.poster);
+    } else {
+        fetchMovieMetadata(movie).then(result => {
+            if (result.data?.poster) applyPoster(result.data.poster);
+        });
+    }
     return tape;
 }
 
@@ -300,17 +311,43 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
     if (key !== renderedKey) {
         renderedKey = key;
         const tapes = scene.querySelector('.vhs-tapes');
-        tapes.replaceChildren();
         const tapeScale = movies.length > 10 ? Math.min(1, (12 / movies.length) * 1.05) : 1;
         const tapeRadius = 271 - 66 * tapeScale;
         scene.style.setProperty('--tape-scale', tapeScale.toFixed(3));
+
+        const existingTapes = new Map();
+        for (const tape of tapes.querySelectorAll('.vhs-tape')) {
+            if (tape.dataset.movieId) {
+                existingTapes.set(tape.dataset.movieId, tape);
+            }
+        }
+
+        const movieIds = new Set(movies.map(m => String(m.id)));
+
+        // Remove any tapes no longer in the active lineup
+        for (const [id, tape] of existingTapes.entries()) {
+            if (!movieIds.has(id)) {
+                tape.remove();
+            }
+        }
+
         movies.forEach((movie, index) => {
             const midpoint = (index + 0.5) * 2 * Math.PI / movies.length;
-            const tape = makeTape(movie, index);
+            let tape = existingTapes.get(String(movie.id));
+            if (!tape) {
+                tape = makeTape(movie, index);
+                tapes.append(tape);
+            } else {
+                tape.style.visibility = 'visible';
+                tape.classList.remove('is-knocked-out');
+                const rentalSpan = tape.querySelector('.vhs-rental span');
+                if (rentalSpan) rentalSpan.textContent = String(index + 1).padStart(2, '0');
+                tape.style.setProperty('--sleeve-hue', String((index * 43 + 15) % 360));
+                tapes.append(tape);
+            }
             tape.style.left = `${300 + Math.cos(midpoint) * tapeRadius}px`;
             tape.style.top = `${300 + Math.sin(midpoint) * tapeRadius}px`;
             tape.style.setProperty('--tape-angle', `${midpoint + Math.PI / 2}rad`);
-            tapes.append(tape);
         });
     }
     displayedMovies = movies;

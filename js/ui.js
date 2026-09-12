@@ -2303,13 +2303,13 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     if (!elements.knockoutBox || !elements.knockoutList) return;
 
     lastKnockoutRemaining = Array.isArray(remainingMovies) ? [...remainingMovies] : [];
-    elements.knockoutList.innerHTML = '';
 
     const preferences = appState.preferences || {};
     const hideFinalistsBox = Boolean(preferences.hideFinalistsBox);
     const showFromStart = Boolean(preferences.showFinalistsFromStart);
 
     if (hideFinalistsBox || !Array.isArray(remainingMovies) || !remainingMovies.length) {
+        elements.knockoutList.replaceChildren();
         elements.knockoutBox.hidden = true;
         const theaterContenders = document.getElementById('spin-theater-contenders');
         if (theaterContenders) {
@@ -2321,6 +2321,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     }
 
     if (!showFromStart && remainingMovies.length > 10) {
+        elements.knockoutList.replaceChildren();
         elements.knockoutBox.hidden = true;
         const theaterContenders = document.getElementById('spin-theater-contenders');
         if (theaterContenders) {
@@ -2341,6 +2342,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
     const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
     const themeLocked = isThemePaletteLocked();
 
+    const items = [];
     lastKnockoutRemaining.forEach((movie) => {
         const originalIndex = getMovieOriginalIndex(movie, appState.movies);
         let colorIndex = originalIndex;
@@ -2389,9 +2391,10 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
         odds.textContent = `Odds: ${formatOddsPercent(winOddsValue)}`;
         item.appendChild(odds);
 
-        elements.knockoutList.appendChild(item);
+        items.push(item);
     });
 
+    elements.knockoutList.replaceChildren(...items);
     updateWheelAsideLayout();
 }
 
