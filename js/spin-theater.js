@@ -11,9 +11,15 @@ let previousScroll = 0;
 let inertStates = [];
 let lockedControls = [];
 let callbacks = null;
+let totalEliminationPool = 0;
 
 export function setSpinTheaterCallbacks(userCallbacks) {
     callbacks = userCallbacks;
+}
+
+export function setEliminationTotal(total) {
+    totalEliminationPool = total;
+    updateEliminationCount();
 }
 
 export function lockSpinControls(locked) {
@@ -36,7 +42,7 @@ export function lockSpinControls(locked) {
     }
 }
 
-export function openSpinTheater(mode) {
+export function openSpinTheater(mode, total = 0) {
     if (theater) return;
     const stage = document.querySelector('.wheel-stage');
     if (!stage) return;
@@ -47,6 +53,7 @@ export function openSpinTheater(mode) {
     theater = document.createElement('section');
     theater.className = 'spin-theater';
     if (mode === 'knockout') {
+        totalEliminationPool = total || appState.selectedIds?.size || appState.movies?.length || 0;
         theater.classList.add('has-stack');
     }
     theater.setAttribute('role', 'dialog');
@@ -54,7 +61,7 @@ export function openSpinTheater(mode) {
     theater.setAttribute('aria-labelledby', 'spin-theater-title');
     theater.innerHTML = `<header class="spin-theater__header">
         <h2 id="spin-theater-title" class="visually-hidden">Wheel spin</h2>
-        <div class="spin-theater__status-group">
+        <div class="spin-theater__status-group visually-hidden">
             <p class="spin-theater__hint" aria-live="polite"></p>
         </div>
         <button type="button" class="btn spin-theater__exit">Exit focus <span aria-hidden="true">↗</span></button>
@@ -85,7 +92,7 @@ export function openSpinTheater(mode) {
         stackAside.setAttribute('aria-label', 'Eliminated tapes');
         stackAside.innerHTML = `<div class="spin-theater__stack-header">
             <span class="spin-theater__stack-title">Eliminated:</span>
-            <span class="spin-theater__stack-count" id="spin-theater-stack-count">0</span>
+            <span class="spin-theater__stack-count" id="spin-theater-stack-count">${totalEliminationPool > 0 ? `0/${totalEliminationPool}` : '0'}</span>
         </div>
         <div class="spin-theater__stack-list" id="spin-theater-stack-list" role="list"></div>`;
         theaterStage.append(stackAside);
@@ -279,12 +286,17 @@ export function commitEliminationStackSlot(movie, order) {
         });
     }
 
-    const countEl = theater?.querySelector('#spin-theater-stack-count') || document.getElementById('spin-theater-stack-count');
-    if (countEl) {
-        const count = list.querySelectorAll('.vhs-stack-tape:not(.is-placeholder)').length;
-        countEl.textContent = String(count);
-    }
+    updateEliminationCount();
     return slot;
+}
+
+function updateEliminationCount() {
+    const countEl = theater?.querySelector('#spin-theater-stack-count') || document.getElementById('spin-theater-stack-count');
+    if (!countEl) return;
+    const list = theater?.querySelector('#spin-theater-stack-list') || document.getElementById('spin-theater-stack-list');
+    const count = list ? list.querySelectorAll('.vhs-stack-tape:not(.is-placeholder)').length : 0;
+    const total = totalEliminationPool || appState.selectedIds?.size || appState.movies?.length || 0;
+    countEl.textContent = total > 0 ? `${count}/${total}` : String(count);
 }
 
 function setStackMovieLabels(slot, movie) {
@@ -302,8 +314,5 @@ export function clearEliminationStack() {
     if (list) {
         list.replaceChildren();
     }
-    const countEl = theater?.querySelector('#spin-theater-stack-count') || document.getElementById('spin-theater-stack-count');
-    if (countEl) {
-        countEl.textContent = '0';
-    }
+    updateEliminationCount();
 }

@@ -445,8 +445,8 @@ body.is-spin-focused {
     align-items: center;
     display: flex;
     flex: 0 0 auto;
-    justify-content: center;
-    min-height: 2.75rem;
+    justify-content: flex-end;
+    min-height: 2.25rem;
     padding: 0.25rem 0.5rem;
     position: relative;
     width: 100%;
@@ -469,7 +469,7 @@ body.is-spin-focused {
     flex-shrink: 0;
     font-size: 0.875rem;
     position: absolute;
-    right: 0;
+    right: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -862,6 +862,8 @@ body.is-spin-focused {
 .spin-theater .result--spinning {
     font-size: clamp(0.95rem, 1.6vw, 1.1rem);
     margin: 0 auto 0.5rem;
+    max-width: min(520px, 92vw);
+    min-width: min(340px, 88vw);
     padding: 0.4rem 1rem;
 }
 

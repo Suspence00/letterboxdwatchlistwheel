@@ -294,7 +294,7 @@ test('knockout elimination animation marks tape and reduces pool', async ({ page
     await expect(page.locator('#spin-theater-stack')).toBeVisible();
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(9, { timeout: 10000 });
     await expect(page.locator('.spin-theater__hint')).toContainText('9 tapes remaining');
-    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1');
+    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10');
     const wallTape = page.locator('#spin-theater-stack-list .vhs-stack-tape');
     await expect(wallTape).toHaveCount(1);
     await expect(wallTape.locator('.vhs-stack-tape__stamp')).toHaveText('ELIMINATED #1');
@@ -334,7 +334,7 @@ test('knockout elimination works smoothly with reduced motion', async ({ page })
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
     await page.locator('#spin-button').click();
     await expect(page.locator('.spin-theater')).toBeVisible();
-    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1', { timeout: 5000 });
+    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10', { timeout: 5000 });
     await expect(page.locator('#spin-theater-stack-list .vhs-stack-tape')).toHaveCount(1);
     await expect(page.locator('.spin-theater .vhs-flight-proxy')).toHaveCount(0);
 });
@@ -411,5 +411,6 @@ test('theater mode centers knockout status over the wheel and shows final conten
     expect(resultText).not.toContain('💥');
     expect(resultText).not.toContain('🔥');
     expect(resultText).not.toContain('🏆');
+    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10');
 });
 

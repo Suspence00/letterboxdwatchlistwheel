@@ -586,14 +586,23 @@ function tick(segments) {
             }
             const result = document.getElementById('result');
             if (result) {
-                result.className = 'result result--spinning';
-                const label = document.createElement('span');
-                label.className = 'result__label';
-                label.textContent = isLastStandingInProgress ? 'Knocking Out' : 'Selecting';
-                const name = document.createElement('strong');
-                name.className = 'result__name';
-                name.textContent = focusedMovie.name;
-                result.replaceChildren(label, name);
+                let label = result.querySelector('.result__label');
+                let name = result.querySelector('.result__name');
+                const targetLabel = isLastStandingInProgress ? 'Knocking out:' : 'Selecting:';
+                if (!label || !name || !result.classList.contains('result--spinning')) {
+                    result.className = 'result result--spinning';
+                    label = document.createElement('span');
+                    label.className = 'result__label';
+                    label.textContent = targetLabel;
+                    name = document.createElement('strong');
+                    name.className = 'result__name';
+                    result.replaceChildren(label, name);
+                } else if (label.textContent !== targetLabel) {
+                    label.textContent = targetLabel;
+                }
+                if (name.textContent !== focusedMovie.name) {
+                    name.textContent = focusedMovie.name;
+                }
             }
             setTheaterStatus(`${isLastStandingInProgress ? 'Knocking Out' : 'Selecting'}: ${focusedMovie.name}`);
         }
@@ -728,7 +737,7 @@ export async function spinWheel(spinMode = 'knockout', booster = null) {
     setWinnerId(null);
     appState.knockoutResults.clear();
     lockSpinControls(true);
-    openSpinTheater(spinMode);
+    openSpinTheater(spinMode, selectedMovies.length);
     if (spinMode === 'knockout') {
         clearEliminationStack();
     }
