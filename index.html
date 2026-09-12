@@ -352,26 +352,6 @@
           </label>
         </div>
         <div class="vhs-controls">
-          <label for="wheel-style">Wheel style
-            <select id="wheel-style" name="wheel-style">
-              <option value="vhs">3D VHS Tapes</option>
-              <option value="classic">Classic Wheel</option>
-            </select>
-          </label>
-          <label for="vhs-capacity-select" id="vhs-capacity-label">Lineup size
-            <select id="vhs-capacity-select" name="vhs-capacity-select">
-              <option value="10">10 tapes</option>
-              <option value="24">24 tapes</option>
-              <option value="50">50 tapes</option>
-              <option value="100">100 tapes</option>
-            </select>
-          </label>
-          <label for="vhs-labels-select" id="vhs-labels-label">Bottom label
-            <select id="vhs-labels-select" name="vhs-labels-select">
-              <option value="show" selected>Show labels</option>
-              <option value="hide">Hide labels (clean)</option>
-            </select>
-          </label>
           <button type="button" class="btn" id="vhs-shuffle">Draw another 10</button>
           <p class="helper-text" id="vhs-lineup-note"></p>
         </div>
@@ -613,7 +593,14 @@
           </fieldset>
 
           <fieldset class="settings-group" id="settings-vhs-group">
-            <legend>VHS Wheel</legend>
+            <legend>Wheel &amp; VHS</legend>
+            <div class="settings-row">
+              <label for="wheel-style">Wheel Style</label>
+              <select id="wheel-style" class="text-input text-input--select" name="wheel-style">
+                <option value="vhs">3D VHS Tapes</option>
+                <option value="classic">Classic Wheel</option>
+              </select>
+            </div>
             <div class="settings-row">
               <label for="settings-vhs-capacity">Lineup Capacity</label>
               <select id="settings-vhs-capacity" class="text-input text-input--select">

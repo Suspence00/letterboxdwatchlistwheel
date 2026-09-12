@@ -1303,7 +1303,7 @@ export function updateSpinButtonLabel() {
     }
 
     if (spinMode === 'one-spin') {
-        elements.spinButton.textContent = 'Spin the One Spin to Rule them all';
+        elements.spinButton.textContent = 'Spin One Spin Mode';
         return;
     }
 
@@ -1812,7 +1812,7 @@ export function showWinnerPopup(movie, context = {}) {
     if (spinMode === 'random-boost' && Number.isFinite(Number(movie.weight))) {
         details.push(`Random Boost winner · boosted to ${movie.weight}x`);
     } else if (spinMode === 'one-spin') {
-        details.push('One Spin to Rule them all winner');
+        details.push('One Spin Mode winner');
     } else if (spinMode === 'knockout') {
         details.push('Movie Knockout champion');
     }

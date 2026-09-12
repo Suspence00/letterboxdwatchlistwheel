@@ -85,6 +85,15 @@ function syncLabelsInputs(show) {
     }
 }
 
+export function syncSettingsControls() {
+    const style = document.getElementById('wheel-style');
+    if (style) {
+        style.value = isVhsEnabled() ? 'vhs' : 'classic';
+    }
+    syncCapacityInputs(getVhsCapacity());
+    applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
+}
+
 export function applyLabelsPreference(show = appState.preferences?.vhsShowLabels !== false) {
     if (show) {
         document.body.classList.remove('hide-tape-labels');
@@ -121,7 +130,7 @@ export function initVhsWheel(handlers) {
         const width = entries[0].contentRect.width;
         if (width) scene.style.setProperty('--rig-scale', width / 610);
     }).observe(scene);
-    document.getElementById('wheel-style').addEventListener('change', event => {
+    document.getElementById('wheel-style')?.addEventListener('change', event => {
         if (callbacks.isBusy()) return;
         appState.preferences.wheelStyle = event.target.value;
         saveState();
@@ -151,7 +160,7 @@ export function initVhsWheel(handlers) {
     };
     document.getElementById('vhs-labels-select')?.addEventListener('change', handleLabelsChange);
     document.getElementById('settings-vhs-labels')?.addEventListener('change', handleLabelsChange);
-    applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
+    syncSettingsControls();
 
     document.getElementById('vhs-shuffle').addEventListener('click', () => {
         if (callbacks.isBusy()) return;
@@ -177,24 +186,33 @@ export function updateVhsControls(eligible) {
     if (!scene) return;
     const busy = callbacks.isBusy();
     const capacity = getVhsCapacity();
-    syncCapacityInputs(capacity);
+    syncSettingsControls();
     const style = document.getElementById('wheel-style');
     const shuffle = document.getElementById('vhs-shuffle');
     const note = document.getElementById('vhs-lineup-note');
     const capacityLabel = document.getElementById('vhs-capacity-label');
-    const capacitySelect = document.getElementById('vhs-capacity-select');
+    const capacitySelect = document.getElementById('vhs-capacity-select') || document.getElementById('settings-vhs-capacity');
     const labelsLabel = document.getElementById('vhs-labels-label');
-    const labelsSelect = document.getElementById('vhs-labels-select');
+    const labelsSelect = document.getElementById('vhs-labels-select') || document.getElementById('settings-vhs-labels');
     const settingsGroup = document.getElementById('settings-vhs-group');
+    const settingsCapacity = document.getElementById('settings-vhs-capacity');
+    const settingsLabels = document.getElementById('settings-vhs-labels');
     const mode = activeMode || getCurrentSpinMode();
-    style.value = isVhsEnabled() ? 'vhs' : 'classic';
-    style.disabled = busy;
+    if (style) {
+        style.value = isVhsEnabled() ? 'vhs' : 'classic';
+        style.disabled = busy;
+    }
     if (capacityLabel) capacityLabel.hidden = !isVhsEnabled();
     if (capacitySelect) capacitySelect.disabled = busy;
+    if (settingsCapacity) settingsCapacity.disabled = busy;
     if (labelsLabel) labelsLabel.hidden = !isVhsEnabled();
     if (labelsSelect) labelsSelect.disabled = busy;
-    syncLabelsInputs(appState.preferences?.vhsShowLabels !== false);
-    if (settingsGroup) settingsGroup.hidden = !isVhsEnabled();
+    if (settingsLabels) settingsLabels.disabled = busy;
+    if (settingsGroup) settingsGroup.hidden = false;
+    const capacityRow = settingsCapacity?.closest('.settings-row');
+    const labelsRow = settingsLabels?.closest('.filter-toggle');
+    if (capacityRow) capacityRow.hidden = !isVhsEnabled();
+    if (labelsRow) labelsRow.hidden = !isVhsEnabled();
     shuffle.hidden = !isVhsEnabled() || mode !== 'one-spin' || eligible.length <= capacity;
     shuffle.disabled = busy || pinnedIds.size >= capacity;
     shuffle.textContent = `Draw another ${capacity}`;

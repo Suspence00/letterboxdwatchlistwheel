@@ -5,7 +5,7 @@
 ## How it Works
 
 1.  **Selection:** Ensure you have multiple movies selected (at least 2).
-2.  **Mode Check:** Make sure "One Spin to Rule them all" is **unchecked** in Advanced Options.
+2.  **Mode Check:** Make sure "One Spin Mode" is not selected (select **Knockout Mode**).
 3.  **Start:** Click **Start Movie Knockout mode**.
 4.  **The Process:**
     *   The wheel spins.

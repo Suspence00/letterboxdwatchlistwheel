@@ -41,8 +41,8 @@ Check the **Advanced options** box to reveal more controls:
 Scroll down to **"3. Spin the wheel"**.
 
 *   **Standard Spin:** Click **Spin the wheel** to start. The wheel will spin and land on a winner!
-*   **Knockout Mode:** If you have multiple movies selected and haven't enabled "One Spin to Rule them all", the button will say **Start Movie Knockout mode**. This runs a "battle royale" where spins eliminate movies until only one remains.
-*   **One Spin Mode:** Enable "One Spin to Rule them all" in Advanced Options for a classic single-winner spin.
+*   **Knockout Mode:** If you have multiple movies selected and haven't enabled "One Spin Mode", the button will say **Start Movie Knockout mode**. This runs a "battle royale" where spins eliminate movies until only one remains.
+*   **One Spin Mode:** Select "One Spin Mode" for a classic single-winner spin.
 
 ## History
 Click the **History** button to see a log of your past winners. This is saved in your browser so you can come back to it later.

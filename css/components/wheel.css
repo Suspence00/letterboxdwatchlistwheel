@@ -400,13 +400,51 @@
 }
 
 .result {
-    color: var(--accent);
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    min-height: 2rem;
+    align-items: center;
+    box-sizing: border-box;
+    color: var(--text, #ffffff);
+    display: inline-flex;
+    font-size: 1.15rem;
+    font-weight: 600;
+    gap: 0.6rem;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    max-width: 90%;
+    min-height: 0;
     text-align: center;
-    text-shadow: 0 2px 10px rgba(255, 134, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.result--winner {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    color: var(--text, #ffffff);
+    display: inline-flex;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    padding: 0.55rem 1.35rem;
+}
+
+.result--winner .result__label {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    color: var(--accent, #ff8600);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.65rem;
+    text-transform: uppercase;
+}
+
+.result--winner strong,
+.result--winner .result__name {
+    color: var(--text, #ffffff);
+    font-weight: 600;
 }
 
 .result--knockout {

@@ -129,7 +129,15 @@ export function initWheel(canvasElement, callbacks = {}) {
         getEligible: getFilteredSelectedMovies,
         refresh: () => { drawWheel(); ui.refreshMovies(); },
         inspect: movie => ui.handleSliceClick(movie),
-        clearWinner: () => { setWinnerId(null); clearVhsReveal(); }
+        clearWinner: () => {
+            setWinnerId(null);
+            clearVhsReveal();
+            const result = document.getElementById('result');
+            if (result) {
+                result.textContent = '';
+                result.className = 'result';
+            }
+        }
     });
     if (canvas) {
         setupCanvasResolution();
@@ -756,7 +764,16 @@ export async function spinWheel(spinMode = 'knockout', booster = null) {
         }
         playWinSound();
         drawWheel(selectedMovies);
-        if (result) result.textContent = winningMovie.name;
+        if (result) {
+            result.className = 'result result--winner';
+            const label = document.createElement('span');
+            label.className = 'result__label';
+            label.textContent = isRandomBoost ? 'Boosted' : 'Winner';
+            const name = document.createElement('strong');
+            name.className = 'result__name';
+            name.textContent = winningMovie.name + (winningMovie.year ? ` (${winningMovie.year})` : '');
+            result.replaceChildren(label, name);
+        }
         await revealVhsWinner(winningMovie);
         ui.triggerConfetti();
         // Record while the session is locked, so double clicks cannot create extra winners.

@@ -138,7 +138,7 @@
     height: 24px;
     left: 50%;
     position: absolute;
-    top: -2px;
+    top: 22px;
     transform: translateX(-50%) translateZ(120px);
     transform-origin: center 4px;
     width: 14px;

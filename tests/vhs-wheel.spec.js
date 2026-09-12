@@ -160,7 +160,9 @@ test('Returns wall handles quoted IDs and treats imported movie names as text', 
 
 test('classic spin lands on the weighted choice and preserves the saved style', async ({ page }) => {
     await oneSpin(page);
+    await page.locator('#settings-open').click();
     await page.locator('#wheel-style').selectOption('classic');
+    await page.locator('#settings-modal-close').click();
     await page.locator('.movie-weight__select').first().selectOption('5');
     await page.evaluate(() => { Math.random = () => 0.26; });
     await page.locator('#spin-button').click();
@@ -168,7 +170,9 @@ test('classic spin lands on the weighted choice and preserves the saved style', 
     await page.locator('#win-modal-close').click();
     await expect(page.locator('.spin-theater')).toHaveCount(0);
     await page.reload();
+    await page.locator('#settings-open').click();
     await expect(page.locator('#wheel-style')).toHaveValue('classic');
+    await page.locator('#settings-modal-close').click();
     await expect(page.locator('#wheel')).toBeVisible();
     await expect(page.locator('.vhs-scene')).toBeHidden();
 });
@@ -243,17 +247,23 @@ test('mobile winner dialog with poster fits within viewport and has reachable cl
 test('supports selectable tape capacities up to 100 tapes and persists setting', async ({ page }) => {
     await importLargeList(page);
     await oneSpin(page);
-    await page.locator('#vhs-capacity-select').selectOption('50');
+    await page.locator('#settings-open').click();
+    await page.locator('#settings-vhs-capacity').selectOption('50');
+    await page.locator('#settings-modal-close').click();
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(50);
     await expect(page.locator('#vhs-lineup-note')).toContainText('50 tapes from 1,001');
 
-    await page.locator('#vhs-capacity-select').selectOption('100');
+    await page.locator('#settings-open').click();
+    await page.locator('#settings-vhs-capacity').selectOption('100');
+    await page.locator('#settings-modal-close').click();
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(100);
     await expect(page.locator('#vhs-lineup-note')).toContainText('100 tapes from 1,001');
 
     await page.reload();
     await oneSpin(page);
-    await expect(page.locator('#vhs-capacity-select')).toHaveValue('100');
+    await page.locator('#settings-open').click();
+    await expect(page.locator('#settings-vhs-capacity')).toHaveValue('100');
+    await page.locator('#settings-modal-close').click();
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(100);
 });
 
@@ -345,41 +355,37 @@ test('vhs pointer flapper remains completely static and sits on top of wheel tap
     expect(animationCount).toBe(0);
 });
 
-test('can toggle bottom tape labels via select and settings checkbox', async ({ page }) => {
-    const labelsSelect = page.locator('#vhs-labels-select');
-    await expect(labelsSelect).toBeVisible();
-    await expect(labelsSelect).toHaveValue('show');
-
+test('can toggle bottom tape labels via settings checkbox', async ({ page }) => {
     // Initially rental labels are visible on tapes
     const firstRental = page.locator('.vhs-tapes .vhs-rental').first();
     await expect(firstRental).toBeVisible();
 
-    // Toggle to hide labels
-    await labelsSelect.selectOption('hide');
-    await expect(page.locator('body')).toHaveClass(/hide-tape-labels/);
-    await expect(firstRental).toBeHidden();
-
-    // Open settings and verify checkbox is unchecked
+    // Open settings and verify checkbox is checked
     await page.click('#settings-open');
     const settingsCheckbox = page.locator('#settings-vhs-labels');
     await expect(settingsCheckbox).toBeVisible();
-    await expect(settingsCheckbox).not.toBeChecked();
+    await expect(settingsCheckbox).toBeChecked();
+
+    // Toggle to hide labels
+    await settingsCheckbox.uncheck();
+    await expect(page.locator('body')).toHaveClass(/hide-tape-labels/);
+    await expect(firstRental).toBeHidden();
 
     // Toggle back via settings checkbox
     await settingsCheckbox.check();
     await expect(page.locator('body')).not.toHaveClass(/hide-tape-labels/);
     await expect(firstRental).toBeVisible();
-    await expect(labelsSelect).toHaveValue('show');
 
-    // Close settings modal
+    // Uncheck and close modal
+    await settingsCheckbox.uncheck();
     await page.click('#settings-modal-close');
+    await expect(firstRental).toBeHidden();
 
     // Check persistence across reload
-    await labelsSelect.selectOption('hide');
     await page.reload();
     await expect(page.locator('body')).toHaveClass(/hide-tape-labels/);
-    await expect(labelsSelect).toHaveValue('hide');
     await page.click('#settings-open');
     await expect(settingsCheckbox).not.toBeChecked();
+    await page.click('#settings-modal-close');
 });
 

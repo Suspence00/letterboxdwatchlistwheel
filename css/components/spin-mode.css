@@ -22,20 +22,24 @@
 }
 
 .spin-mode-card {
+    background: var(--surface-2);
+    border: 1.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    background: var(--surface-2);
-    border: 2px solid transparent;
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease;
     height: 100%;
+    padding: 1rem;
     text-align: center;
+    transition: all 0.2s ease;
 }
 
-.spin-mode-option input:checked+.spin-mode-card {
-    border-color: var(--accent);
+.spin-mode-option:hover .spin-mode-card {
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.spin-mode-option input:checked + .spin-mode-card {
     background: var(--surface-3);
+    border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent-glow);
 }
 

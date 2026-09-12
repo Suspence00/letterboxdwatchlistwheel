@@ -39,7 +39,7 @@ import {
     THEMES
 } from './utils.js';
 import { openSpinTheater } from './spin-theater.js';
-import { getCurrentSpinMode, applyLabelsPreference } from './vhs-wheel.js';
+import { getCurrentSpinMode, applyLabelsPreference, syncSettingsControls } from './vhs-wheel.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -601,6 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.settingsOpenBtn && elements.settingsModal) {
         elements.settingsOpenBtn.addEventListener('click', () => {
             elements.settingsModal.hidden = false;
+            syncSettingsControls();
             // Also ensure correct tab is active (default to first if none)
             // Logic to animate or handle focus can go here
         });

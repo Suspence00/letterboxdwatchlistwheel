@@ -95,7 +95,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await oneSpinCard.click();
 
     // Verify Button Text
-    await expect(page.locator('#spin-button')).toHaveText('Spin the One Spin to Rule them all');
+    await expect(page.locator('#spin-button')).toHaveText('Spin One Spin Mode');
   });
 
   test('Visuals: Slice Editor & Colors', async ({ page }) => {
