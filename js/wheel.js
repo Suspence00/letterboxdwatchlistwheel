@@ -912,8 +912,10 @@ async function runLastStandingMode(selectedMovies) {
             : speedConfig.knockoutRevealDelay;
         const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const revealDelay = isReducedMotion
-            ? 200
-            : (isVhsEnabled() ? Math.max(1100, baseRevealDelay) : baseRevealDelay);
+            ? 150
+            : (isVhsEnabled()
+                ? (isFinalShowdown ? Math.max(500, baseRevealDelay - 200) : Math.max(200, baseRevealDelay - 450))
+                : baseRevealDelay);
         await delay(revealDelay);
 
         if (eliminationPool.length > 1) {
