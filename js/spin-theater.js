@@ -191,20 +191,22 @@ export function prepareEliminationStackSlot(movie, order) {
     if (!list) return { left: 0, top: 0, width: 0, height: 0 };
 
     let slot = list.querySelector(`.vhs-stack-tape[data-movie-id="${CSS.escape(String(movie.id))}"]`);
+    const wheelTape = document.querySelector(`.vhs-tapes .vhs-tape[data-movie-id="${CSS.escape(String(movie.id))}"]`);
+    const sleeveHue = wheelTape?.style.getPropertyValue('--sleeve-hue')
+        || String((getMovieOriginalIndex(movie, appState.movies) * 43 + 15) % 360);
+    const posterUrl = wheelTape?.querySelector('.vhs-poster')?.src || movie.poster || '';
+
     if (!slot) {
         slot = document.createElement('div');
-        slot.className = 'vhs-stack-tape is-placeholder';
+        slot.className = `vhs-stack-tape is-placeholder${posterUrl ? ' has-poster' : ''}`;
         slot.dataset.movieId = movie.id;
         if (order !== undefined) slot.dataset.order = String(order);
         slot.setAttribute('role', 'listitem');
         slot.style.visibility = 'hidden';
-
-        const wheelTape = document.querySelector(`.vhs-tapes .vhs-tape[data-movie-id="${CSS.escape(String(movie.id))}"]`);
-        const sleeveHue = wheelTape?.style.getPropertyValue('--sleeve-hue')
-            || String((getMovieOriginalIndex(movie, appState.movies) * 43 + 15) % 360);
         slot.style.setProperty('--sleeve-hue', sleeveHue);
 
         slot.innerHTML = `<div class="vhs-stack-tape__cover">
+            ${posterUrl ? `<img class="vhs-stack-tape__poster" src="${posterUrl}" alt="" />` : ''}
             <div class="vhs-stack-tape__fallback">
                 <small>VIDEO CASSETTE</small>
                 <strong></strong>
@@ -217,7 +219,34 @@ export function prepareEliminationStackSlot(movie, order) {
             <span>#${order ?? ''}</span>
         </div>`;
         setStackMovieLabels(slot, movie);
+        if (posterUrl) {
+            const img = slot.querySelector('.vhs-stack-tape__poster');
+            if (img) {
+                img.addEventListener('error', () => {
+                    slot.classList.remove('has-poster');
+                }, { once: true });
+            }
+        }
         list.append(slot);
+    } else {
+        if (order !== undefined) slot.dataset.order = String(order);
+        slot.style.setProperty('--sleeve-hue', sleeveHue);
+        const stamp = slot.querySelector('.vhs-stack-tape__stamp');
+        if (stamp) stamp.textContent = `ELIMINATED #${order ?? ''}`;
+        const rental = slot.querySelector('.vhs-stack-tape__rental span');
+        if (rental) rental.textContent = `#${order ?? ''}`;
+        if (posterUrl) {
+            slot.classList.add('has-poster');
+            const cover = slot.querySelector('.vhs-stack-tape__cover');
+            if (cover && !cover.querySelector('.vhs-stack-tape__poster')) {
+                const img = document.createElement('img');
+                img.className = 'vhs-stack-tape__poster';
+                img.alt = '';
+                img.src = posterUrl;
+                img.addEventListener('error', () => slot.classList.remove('has-poster'), { once: true });
+                cover.prepend(img);
+            }
+        }
     }
     slot.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     return slot.getBoundingClientRect();
@@ -231,56 +260,80 @@ export function commitEliminationStackSlot(movie, order) {
     const wheelTape = document.querySelector(`.vhs-tapes .vhs-tape[data-movie-id="${CSS.escape(String(movie.id))}"]`);
     const sleeveHue = wheelTape?.style.getPropertyValue('--sleeve-hue')
         || String((getMovieOriginalIndex(movie, appState.movies) * 43 + 15) % 360);
+    const posterUrl = wheelTape?.querySelector('.vhs-poster')?.src || movie.poster || '';
 
     if (!slot) {
         slot = document.createElement('div');
         slot.dataset.movieId = movie.id;
+        slot.className = `vhs-stack-tape${posterUrl ? ' has-poster' : ''}`;
+        slot.setAttribute('role', 'listitem');
+        slot.style.setProperty('--sleeve-hue', sleeveHue);
+        slot.innerHTML = `<div class="vhs-stack-tape__cover">
+            ${posterUrl ? `<img class="vhs-stack-tape__poster" src="${posterUrl}" alt="" />` : ''}
+            <div class="vhs-stack-tape__fallback">
+                <small>VIDEO CASSETTE</small>
+                <strong></strong>
+                <em></em>
+            </div>
+            <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED #${order ?? ''}</span>
+        </div>
+        <div class="vhs-stack-tape__rental">
+            <b>VHS</b>
+            <span>#${order ?? ''}</span>
+        </div>`;
+        setStackMovieLabels(slot, movie);
+        if (posterUrl) {
+            const img = slot.querySelector('.vhs-stack-tape__poster');
+            if (img) {
+                img.addEventListener('error', () => {
+                    slot.classList.remove('has-poster');
+                }, { once: true });
+            }
+        }
         list.append(slot);
+    } else {
+        slot.classList.remove('is-placeholder');
+        slot.style.setProperty('--sleeve-hue', sleeveHue);
+        const stamp = slot.querySelector('.vhs-stack-tape__stamp');
+        if (stamp) stamp.textContent = `ELIMINATED #${order ?? ''}`;
+        const rental = slot.querySelector('.vhs-stack-tape__rental span');
+        if (rental) rental.textContent = `#${order ?? ''}`;
+
+        const cover = slot.querySelector('.vhs-stack-tape__cover');
+        if (posterUrl) {
+            slot.classList.add('has-poster');
+            let img = cover?.querySelector('.vhs-stack-tape__poster');
+            if (!img && cover) {
+                img = document.createElement('img');
+                img.className = 'vhs-stack-tape__poster';
+                img.alt = '';
+                img.src = posterUrl;
+                img.addEventListener('error', () => slot.classList.remove('has-poster'), { once: true });
+                cover.prepend(img);
+            } else if (img && img.src !== posterUrl) {
+                img.src = posterUrl;
+            }
+        }
     }
 
-    slot.className = 'vhs-stack-tape';
     slot.dataset.movieId = movie.id;
     if (order !== undefined) slot.dataset.order = String(order);
-    slot.setAttribute('role', 'listitem');
-    slot.style.setProperty('--sleeve-hue', sleeveHue);
     slot.style.visibility = 'visible';
     slot.title = `${movie.name}${movie.year ? ` (${movie.year})` : ''} · Eliminated #${order ?? ''}`;
 
-    let posterUrl = wheelTape?.querySelector('.vhs-poster')?.src || movie.poster || '';
-
-    slot.innerHTML = `<div class="vhs-stack-tape__cover">
-        <div class="vhs-stack-tape__fallback">
-            <small>VIDEO CASSETTE</small>
-            <strong></strong>
-            <em></em>
-        </div>
-        <span class="vhs-stack-tape__stamp" aria-hidden="true">ELIMINATED #${order ?? ''}</span>
-    </div>
-    <div class="vhs-stack-tape__rental">
-        <b>VHS</b>
-        <span>#${order ?? ''}</span>
-    </div>`;
-
-    setStackMovieLabels(slot, movie);
-    if (posterUrl) {
-        const img = document.createElement('img');
-        img.className = 'vhs-stack-tape__poster';
-        img.alt = '';
-        img.addEventListener('load', () => slot.classList.add('has-poster'), { once: true });
-        img.src = posterUrl;
-        slot.querySelector('.vhs-stack-tape__cover').prepend(img);
-    } else {
+    if (!posterUrl) {
         fetchMovieMetadata(movie).then(result => {
             if (!result?.data?.poster) return;
             const resolvedUrl = result.data.poster;
-            const cover = slot.querySelector('.vhs-stack-tape__cover');
-            if (cover && !cover.querySelector('.vhs-stack-tape__poster')) {
+            const currentCover = slot.querySelector('.vhs-stack-tape__cover');
+            if (currentCover && !currentCover.querySelector('.vhs-stack-tape__poster')) {
                 const img = document.createElement('img');
                 img.className = 'vhs-stack-tape__poster';
                 img.src = resolvedUrl;
                 img.alt = '';
                 img.loading = 'eager';
-                cover.prepend(img);
+                img.addEventListener('error', () => slot.classList.remove('has-poster'), { once: true });
+                currentCover.prepend(img);
                 slot.classList.add('has-poster');
             }
         });
