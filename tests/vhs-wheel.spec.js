@@ -389,3 +389,27 @@ test('can toggle bottom tape labels via settings checkbox', async ({ page }) => 
     await page.click('#settings-modal-close');
 });
 
+test('theater mode centers knockout status over the wheel and shows final contenders when under 10 movies', async ({ page }) => {
+    await page.locator('#spin-button').click();
+    await expect(page.locator('.spin-theater')).toBeVisible();
+
+    const resultInStage = page.locator('.spin-theater .wheel-stage #result');
+    await expect(resultInStage).toBeVisible();
+
+    const contenders = page.locator('#spin-theater-contenders');
+    await expect(contenders).toBeVisible();
+    await expect(contenders.locator('.knockout-remaining__item')).toHaveCount(10);
+
+    const stageBox = await page.locator('.spin-theater .wheel-stage').boundingBox();
+    const resultBox = await resultInStage.boundingBox();
+    const stageCenter = stageBox.x + stageBox.width / 2;
+    const resultCenter = resultBox.x + resultBox.width / 2;
+    expect(Math.abs(stageCenter - resultCenter)).toBeLessThan(5);
+
+    await expect(resultInStage).toContainText('Knocked out:');
+    const resultText = await resultInStage.textContent();
+    expect(resultText).not.toContain('💥');
+    expect(resultText).not.toContain('🔥');
+    expect(resultText).not.toContain('🏆');
+});
+

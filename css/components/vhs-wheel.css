@@ -489,7 +489,7 @@ body.is-spin-focused {
     height: auto;
     max-width: none;
     transform: none;
-    width: min(calc(100dvh - 100px), calc(100dvw - 2.5rem), 1040px);
+    width: min(calc(100dvh - 140px), calc(100dvw - 2.5rem), 960px);
 }
 
 .spin-theater.has-stack .spin-theater__stage {
@@ -505,7 +505,109 @@ body.is-spin-focused {
 
 .spin-theater.has-stack .wheel-stage {
     flex: 0 1 auto;
-    width: min(calc(100dvh - 120px), calc(100dvw - 444px - 2.5rem), 960px);
+    width: min(calc(100dvh - 150px), calc(100dvw - 460px), 880px);
+}
+
+.spin-theater.has-stack.has-contenders .wheel-stage {
+    width: min(calc(100dvh - 150px), calc(100dvw - 740px), 800px);
+}
+
+.spin-theater__contenders {
+    display: flex;
+    flex: 0 0 280px;
+    flex-direction: column;
+    max-height: min(600px, calc(100% - 1rem));
+    position: relative;
+    width: 280px;
+    z-index: 10;
+}
+
+.spin-theater__contenders[hidden] {
+    display: none !important;
+}
+
+.spin-theater__contenders .knockout-remaining {
+    background: #161a18;
+    border: 1px solid #333a36;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 0 #ffffff14, 0 3px 6px #0008;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    margin: 0;
+    max-height: 100%;
+    overflow: hidden;
+    padding: 8px 10px;
+}
+
+.spin-theater__contenders .knockout-remaining__header {
+    align-items: center;
+    border-bottom: 1px solid #28302c;
+    color: #f5cf68;
+    display: flex;
+    font: 800 11px/1.2 monospace;
+    justify-content: space-between;
+    letter-spacing: 0.14em;
+    padding-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.spin-theater__contenders .knockout-remaining__title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    margin: 0;
+}
+
+.spin-theater__contenders .knockout-remaining__list {
+    -ms-overflow-style: none;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    overflow-y: auto;
+    padding: 4px 0;
+    scrollbar-width: none;
+}
+
+.spin-theater__contenders .knockout-remaining__list::-webkit-scrollbar {
+    display: none;
+}
+
+.spin-theater__contenders .knockout-remaining__item {
+    align-items: center;
+    background: #121514;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    display: flex;
+    gap: 8px;
+    padding: 6px 8px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.spin-theater__contenders .knockout-remaining__item.is-active {
+    background: rgba(255, 93, 87, 0.18);
+    border-color: rgba(255, 93, 87, 0.6);
+    box-shadow: 0 2px 8px rgba(255, 93, 87, 0.2);
+}
+
+.spin-theater__contenders .knockout-remaining__name {
+    color: #f2ecdf;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.spin-theater__contenders .knockout-remaining__meta {
+    color: #8c9690;
+    font-size: 0.75rem;
+}
+
+.spin-theater__contenders .knockout-remaining__odds {
+    color: #d1c7b7;
+    font-size: 0.75rem;
 }
 
 .spin-theater__stack {
@@ -735,18 +837,34 @@ body.is-spin-focused {
 }
 
 .spin-theater .result {
-    animation: none;
-    background: none;
-    box-shadow: none;
-    color: #f2ecdf;
-    display: block;
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    font-weight: 700;
-    margin: 0;
-    padding: 0;
+    align-items: center;
+    box-sizing: border-box;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    max-width: 92%;
     text-align: center;
-    text-shadow: none;
+    z-index: 20;
+}
+
+.spin-theater .result--knockout {
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    margin: 0 auto 0.5rem;
+    padding: 0.45rem 1.1rem;
     transform: none;
+}
+
+.spin-theater .result--winner {
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    margin: 0 auto 0.5rem;
+    padding: 0.45rem 1.1rem;
+}
+
+.spin-theater .result--spinning {
+    font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+    margin: 0 auto 0.5rem;
+    padding: 0.4rem 1rem;
 }
 
 .spin-theater__hint {
@@ -759,6 +877,12 @@ body.is-spin-focused {
 @keyframes theaterEnter {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@media (max-width: 1100px) {
+    .spin-theater__contenders {
+        display: none !important;
+    }
 }
 
 @media (max-width: 768px) {

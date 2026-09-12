@@ -578,11 +578,24 @@ function tick(segments) {
         playTickSound();
         tickVhsPointer();
         lastTickIndex = index;
-        if (isLastStandingInProgress && typeof ui.highlightKnockoutCandidate === 'function') {
-            const focusedSegment = segments[index];
-            if (focusedSegment?.movie?.id) {
-                ui.highlightKnockoutCandidate(focusedSegment.movie.id);
+        const focusedSegment = segments[index];
+        const focusedMovie = focusedSegment?.movie;
+        if (focusedMovie) {
+            if (isLastStandingInProgress && typeof ui.highlightKnockoutCandidate === 'function') {
+                ui.highlightKnockoutCandidate(focusedMovie.id);
             }
+            const result = document.getElementById('result');
+            if (result) {
+                result.className = 'result result--spinning';
+                const label = document.createElement('span');
+                label.className = 'result__label';
+                label.textContent = isLastStandingInProgress ? 'Knocking Out' : 'Selecting';
+                const name = document.createElement('strong');
+                name.className = 'result__name';
+                name.textContent = focusedMovie.name;
+                result.replaceChildren(label, name);
+            }
+            setTheaterStatus(`${isLastStandingInProgress ? 'Knocking Out' : 'Selecting'}: ${focusedMovie.name}`);
         }
     }
 }

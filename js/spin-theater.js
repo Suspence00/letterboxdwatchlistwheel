@@ -5,7 +5,7 @@ import { fetchMovieMetadata } from './movie-metadata.js';
 /** Move the live wheel into a focused stage, preserving its place and page focus. */
 let theater;
 let stageSlot;
-let resultSlot;
+let knockoutSlot;
 let previousFocus;
 let previousScroll = 0;
 let inertStates = [];
@@ -39,14 +39,11 @@ export function lockSpinControls(locked) {
 export function openSpinTheater(mode) {
     if (theater) return;
     const stage = document.querySelector('.wheel-stage');
-    const result = document.getElementById('result');
-    if (!stage || !result) return;
+    if (!stage) return;
     previousFocus = document.activeElement;
     previousScroll = window.scrollY;
     stageSlot = document.createComment('wheel stage');
-    resultSlot = document.createComment('wheel result');
     stage.before(stageSlot);
-    result.before(resultSlot);
     theater = document.createElement('section');
     theater.className = 'spin-theater';
     if (mode === 'knockout') {
@@ -63,6 +60,23 @@ export function openSpinTheater(mode) {
         <button type="button" class="btn spin-theater__exit">Exit focus <span aria-hidden="true">↗</span></button>
         </header><div class="spin-theater__stage"></div>`;
     const theaterStage = theater.querySelector('.spin-theater__stage');
+
+    const knockoutBox = document.getElementById('knockout-remaining');
+    if (mode === 'knockout' && knockoutBox) {
+        knockoutSlot = document.createComment('knockout remaining slot');
+        knockoutBox.before(knockoutSlot);
+
+        const contendersAside = document.createElement('aside');
+        contendersAside.className = 'spin-theater__contenders';
+        contendersAside.id = 'spin-theater-contenders';
+        contendersAside.setAttribute('aria-label', 'Final Contenders');
+        contendersAside.hidden = Boolean(knockoutBox.hidden);
+        contendersAside.append(knockoutBox);
+
+        theaterStage.append(contendersAside);
+        theater.classList.toggle('has-contenders', !contendersAside.hidden);
+    }
+
     theaterStage.append(stage);
     if (mode === 'knockout') {
         const stackAside = document.createElement('aside');
@@ -89,7 +103,6 @@ export function openSpinTheater(mode) {
             }
         }
     }
-    theater.querySelector('.spin-theater__status-group').prepend(result);
     theater.querySelector('button').addEventListener('click', () => closeSpinTheater());
     theater.addEventListener('keydown', handleTheaterKeys);
     document.body.append(theater);
@@ -118,9 +131,15 @@ export function closeSpinTheater({ restoreFocus = true } = {}) {
     if (!theater) return false;
     document.querySelectorAll('.vhs-flight-proxy').forEach(element => element.remove());
     const stage = theater.querySelector('.wheel-stage');
-    const result = theater.querySelector('#result');
-    if (stage) stageSlot.replaceWith(stage);
-    if (result) resultSlot.replaceWith(result);
+    if (stage && stageSlot) {
+        stageSlot.replaceWith(stage);
+        stageSlot = null;
+    }
+    const knockoutBox = document.getElementById('knockout-remaining');
+    if (knockoutBox && knockoutSlot) {
+        knockoutSlot.replaceWith(knockoutBox);
+        knockoutSlot = null;
+    }
     inertStates.forEach(([element, wasInert]) => { element.inert = wasInert; });
     inertStates = [];
     theater.remove();

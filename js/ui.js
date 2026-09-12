@@ -2311,17 +2311,32 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
 
     if (hideFinalistsBox || !Array.isArray(remainingMovies) || !remainingMovies.length) {
         elements.knockoutBox.hidden = true;
+        const theaterContenders = document.getElementById('spin-theater-contenders');
+        if (theaterContenders) {
+            theaterContenders.hidden = true;
+            document.querySelector('.spin-theater')?.classList.toggle('has-contenders', false);
+        }
         updateWheelAsideLayout();
         return;
     }
 
     if (!showFromStart && remainingMovies.length > 10) {
         elements.knockoutBox.hidden = true;
+        const theaterContenders = document.getElementById('spin-theater-contenders');
+        if (theaterContenders) {
+            theaterContenders.hidden = true;
+            document.querySelector('.spin-theater')?.classList.toggle('has-contenders', false);
+        }
         updateWheelAsideLayout();
         return;
     }
 
     elements.knockoutBox.hidden = false;
+    const theaterContenders = document.getElementById('spin-theater-contenders');
+    if (theaterContenders) {
+        theaterContenders.hidden = false;
+        document.querySelector('.spin-theater')?.classList.toggle('has-contenders', true);
+    }
     const oddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: true });
     const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
     const themeLocked = isThemePaletteLocked();
@@ -2411,9 +2426,9 @@ export function updateKnockoutResultText(type, countOrMovie, extra) {
 
     if (type === 'start') {
         elements.resultEl.classList.add('result--knockout');
-        elements.resultEl.classList.remove('result--champion');
+        elements.resultEl.classList.remove('result--champion', 'result--spinning');
         setKnockoutResultContent(
-            '🔥 Movie Knockout begins! ',
+            'Movie Knockout begins! ',
             String(countOrMovie),
             ` movie${countOrMovie === 1 ? '' : 's'} enter the arena.`
         );
@@ -2422,12 +2437,15 @@ export function updateKnockoutResultText(type, countOrMovie, extra) {
         const eliminatedMovie = extra;
         const remainText = remainingCount === 1 ? 'Final showdown! One movie remains.' : `${remainingCount} movies remain.`;
         const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
-        setKnockoutResultContent('💥 Knocked out: ', eliminatedLabel, ` ${remainText}`);
+        elements.resultEl.classList.add('result--knockout');
+        elements.resultEl.classList.remove('result--spinning');
+        setKnockoutResultContent('Knocked out: ', eliminatedLabel, ` · ${remainText}`);
     } else if (type === 'winner') {
         const finalMovie = extra;
         elements.resultEl.classList.add('result--champion');
+        elements.resultEl.classList.remove('result--spinning');
         setKnockoutResultContent(
-            '🏆 Movie Knockout winner: ',
+            'Movie Knockout winner: ',
             finalMovie.name,
             finalMovie.year ? ` (${finalMovie.year})` : ''
         );
