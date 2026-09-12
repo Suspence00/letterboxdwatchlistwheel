@@ -239,6 +239,10 @@ async function populateWinnerModalMetadata(movie, metadataKey) {
 
 // Exported Functions
 
+/**
+ * @param {import('../types.js').Movie} movie
+ * @param {import('../types.js').WinnerContext} [context]
+ */
 export function showWinnerPopup(movie, context = {}) {
     const { spinMode } = context;
     if (!elements.winModal) return;

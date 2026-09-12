@@ -1,94 +1,111 @@
 /**
- * @file Type definitions and data contracts for Letterboxd Watchlist Wheel.
- * Native ES Module JSDoc annotations — 0 build step, 100% IDE & AI type awareness.
+ * Shared runtime data contracts for native ES modules.
+ * JSDoc supports editor tooling; it does not perform runtime validation.
  */
 
-/**
- * @typedef {Object} MovieBoosters
- * @property {number} [boosterName] Number of boosts given by this user
- */
+/** @typedef {string|number} MovieId */
 
 /**
- * @typedef {Object} MoviePosters
- * @property {string} [small]
- * @property {string} [medium]
- * @property {string} [large]
+ * @typedef {Object} MovieBooster
+ * @property {string} name Contributor name
+ * @property {number} timestamp Unix timestamp in milliseconds
+ * @property {string} source Contribution source
  */
 
 /**
  * @typedef {Object} Movie
- * @property {string|number} id Unique identifier for the movie (Letterboxd URI, slug, or custom ID)
- * @property {string} Name Display title of the movie
- * @property {string|number} [Year] Release year
- * @property {string} [LetterboxdURI] Canonical URL to the Letterboxd entry
+ * @property {MovieId} id Unique movie identifier
+ * @property {string} name Display title, normalized from CSV columns on import
+ * @property {string|number} [year] Release year
+ * @property {string} [uri] Letterboxd film URL
+ * @property {string} [date] Date added to the watchlist
+ * @property {number} [initialIndex] Original position before filtering or sorting
  * @property {number} [weight=1] Spin weight multiplier (1-5)
- * @property {string} [color] Hex color code for the wheel slice
- * @property {boolean} [isCustom=false] Whether this was manually added rather than imported
- * @property {string} [runtime] Formatted runtime string (e.g., "124 min")
- * @property {string} [synopsis] Overview / synopsis of the movie
- * @property {MoviePosters} [posters] Poster image URLs
- * @property {Object.<string, number>} [boosters] Map of booster names to count of boosts
+ * @property {string} [color] Hex slice color
+ * @property {boolean} [isCustom=false] Whether manually added
+ * @property {Array<MovieBooster|string>} [boosters] Contributions; strings are legacy entries
  */
+
+/** @typedef {'knockout'|'one-spin'|'random-boost'} SpinMode */
 
 /**
  * @typedef {Object} HistoryEntry
- * @property {Movie} movie The winning movie
- * @property {string} timestamp ISO timestamp of the spin
- * @property {'knockout'|'one-spin'} [mode] The spin mode used
- * @property {number} [rounds] Number of knockout rounds played
- * @property {string} [runnerUp] Runner-up movie name in knockout mode
+ * @property {string} id Unique history entry ID
+ * @property {MovieId} movieId Winning movie ID
+ * @property {string} name Winning movie title
+ * @property {string|number} [year] Release year
+ * @property {string} [uri] Film URL
+ * @property {number} timestamp Unix timestamp in milliseconds
+ * @property {string} mode Spin mode, or 'unknown' for unspecified history
  */
 
 /**
+ * Workspace index metadata. Movie data is saved separately per workspace.
  * @typedef {Object} Workspace
- * @property {string} id Unique identifier
- * @property {string} name Display name of the board/workspace
- * @property {Movie[]} movies List of movies in this board
- * @property {string[]} selectedIds IDs of movies enabled for the wheel
- * @property {HistoryEntry[]} history Spin history for this board
- * @property {string|null} [tiedListUrl] Associated Letterboxd list URL if synchronized
+ * @property {string} id Unique board identifier
+ * @property {string} name Display name
+ * @property {number} created Unix timestamp in milliseconds
+ * @property {number} lastModified Unix timestamp in milliseconds
+ * @property {string} [letterboxdUrl] Tied list URL, or an empty string
+ */
+
+/**
+ * @typedef {Object} RadarrPreferences
+ * @property {string} url
+ * @property {string} apiKey
+ * @property {number|null} qualityProfileId
+ * @property {string} rootFolderPath
+ * @property {boolean} searchOnAdd
  */
 
 /**
  * @typedef {Object} Preferences
- * @property {string} [theme] Visual theme key ('default', 'fantasy', 'retro-95', etc.)
- * @property {'vhs'|'classic'} [wheelStyle] Active wheel visual style
- * @property {number} [vhsCapacity] Max tapes rendered in VHS lineup (10, 24, 50, 100)
- * @property {boolean} [vhsLabels] Whether to show bottom rental labels
- * @property {boolean} [finalistsAlwaysVisible]
- * @property {boolean} [finalistsHideBox]
- * @property {boolean} [showCustoms]
+ * @property {string} [theme]
+ * @property {Object<string, string>} [themeColorOverrides]
+ * @property {'vhs'|'classic'} [wheelStyle]
+ * @property {number} [vhsCapacity]
+ * @property {boolean} [vhsShowLabels]
+ * @property {boolean} [hideFinalistsBox]
+ * @property {boolean} [showFinalistsFromStart]
  * @property {string} [discordWebhookUrl]
- * @property {string} [radarrUrl]
- * @property {string} [radarrApiKey]
- * @property {number|null} [radarrQualityProfileId]
- * @property {string|null} [radarrRootFolderPath]
- * @property {boolean} [radarrSearchOnAdd]
+ * @property {RadarrPreferences} [radarr]
+ */
+
+/**
+ * @typedef {Object} MovieFilter
+ * @property {string} query
+ * @property {string} normalizedQuery
+ * @property {boolean} showCustoms
+ * @property {string} sortMode
+ */
+
+/**
+ * @typedef {Object} KnockoutResult
+ * @property {number} order
+ * @property {'knocked-out'|'champion'} status
  */
 
 /**
  * @typedef {Object} AppState
- * @property {Movie[]} movies Active list of movies
- * @property {Set<string|number>} selectedIds Set of selected movie IDs
- * @property {HistoryEntry[]} history History of winners
- * @property {string} activeWorkspace Currently active workspace ID
- * @property {Object.<string, Workspace>} workspaces Map of workspace ID to Workspace
- * @property {Preferences} preferences User configuration and integration preferences
- * @property {Object} filter Active filter and sorting state
+ * @property {Movie[]} movies Active board's movies
+ * @property {Set<MovieId>} selectedIds
+ * @property {HistoryEntry[]} history
+ * @property {string|null} activeWorkspaceId
+ * @property {Workspace[]} workspaces Board index
+ * @property {MovieId|null} winnerId
+ * @property {SpinMode|null} winnerSpinMode
+ * @property {Preferences} preferences
+ * @property {MovieFilter} filter
+ * @property {Map<MovieId, KnockoutResult>} knockoutResults
  */
 
 /**
  * @typedef {Object} WinnerContext
- * @property {'knockout'|'one-spin'} [spinMode] Spin mode that produced the winner
- * @property {number} [roundCount] Number of knockout rounds
- * @property {Movie[]} [eliminatedMovies] Movies eliminated during knockout
- * @property {Movie|null} [runnerUp] Final eliminated contender
+ * @property {SpinMode} [spinMode]
+ * @property {number} [selectionOdds] Winner's normalized probability (0-1)
+ * @property {boolean} [isRestore] Reopening a winner without sending another notification
  */
 
-/**
- * @typedef {Object} OddsMap
- * @property {Object.<string|number, number>} individual Normalized odds per movie ID (0.0 to 1.0)
- * @property {number} totalWeight Sum of weights of all selected movies
- */
+/** @typedef {Map<MovieId, number>} OddsMap Normalized probabilities keyed by movie ID */
 
 export {};

@@ -9,6 +9,7 @@ const INDEX_KEY = 'letterboxd_workspaces_index';
 const ACTIVE_KEY = 'letterboxd_active_workspace_id';
 const LEGACY_KEY = 'letterboxd_wheel_state';
 
+/** @type {import('./types.js').AppState} */
 export const appState = {
     // Workspace Meta
     workspaces: [],

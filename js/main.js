@@ -36,6 +36,7 @@ import {
     getMovieOriginalIndex,
     getPaletteColorForIndex,
     getStoredWeight,
+    sanitizeColor,
     THEMES
 } from './utils.js';
 import { openSpinTheater } from './spin-theater.js';
@@ -297,7 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     movie.color = override;
                     return;
                 }
-                movie.color = getPaletteColorForIndex(paletteIndex, basePalette, { allowDynamic: true });
+                const defaultColor = getPaletteColorForIndex(paletteIndex, basePalette, { allowDynamic: true });
+                // Reapplying the saved default theme must retain custom slice colors.
+                movie.color = previousTheme === 'default'
+                    ? sanitizeColor(movie.color, defaultColor)
+                    : defaultColor;
             });
             appState.preferences.themeColorOverrides = {};
             return;

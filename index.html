@@ -321,6 +321,7 @@
         <div class="card-header__section">
           <button type="button" class="btn" id="history-btn">History</button>
           <button type="button" class="btn" id="reshow-winner-btn" disabled>Show Winner</button>
+          <button type="button" class="btn theater-toggle" id="wheel-theater-btn" aria-label="Enter Theater Mode">Theater Mode <span aria-hidden="true">⛶</span></button>
           <button type="button" class="btn sound-toggle" id="wheel-sound-toggle" aria-pressed="false"
             aria-label="Toggle wheel sound effects">
             <span class="sound-toggle__icon" aria-hidden="true">
@@ -352,8 +353,8 @@
           </label>
         </div>
         <div class="vhs-controls">
-          <button type="button" class="btn" id="vhs-shuffle">Draw another 10</button>
-          <p class="helper-text" id="vhs-lineup-note"></p>
+          <button type="button" class="btn" id="vhs-shuffle" hidden>Draw another 10</button>
+          <p class="visually-hidden" id="vhs-lineup-note" aria-live="polite"></p>
         </div>
         <div class="wheel-section">
           <div class="wheel-wrapper">
@@ -411,7 +412,6 @@
               </div>
               <div class="wheel-stage">
                 <p class="result" id="result" aria-live="polite"></p>
-                <button type="button" class="btn wheel-stage__theater-btn" id="wheel-theater-btn" aria-label="Enter Theater Mode">Theater Mode <span aria-hidden="true">⛶</span></button>
                 <canvas id="wheel" width="1080" height="1080" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
               </div>

@@ -33,7 +33,7 @@ Once your movies are loaded, they will appear in the **"2. Curate your wheel"** 
 ### Advanced Options
 Check the **Advanced options** box to reveal more controls:
 *   **Weights:** Increase the "weight" of a movie to make it more likely to win (or harder to eliminate in Knockout mode).
-*   **Colors:** Customize the color of each movie's slice on the wheel.
+*   **Colors:** Customize each movie's slice color in the default theme. Custom colors persist after reloading or switching boards. Other themes apply their own palettes; returning to the default theme restores your custom colors.
 *   **Export/Import:** Use **Export or import your wheel** to download a `.wheel` backup or paste one in. You can apply saved weights/colors to a newly imported Letterboxd list without re-importing movies, or fully restore movies, selections, and history.
 
 ## 3. Spinning the Wheel

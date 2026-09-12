@@ -19,7 +19,9 @@ For a detailed look at the algorithms used, see the **[Technical Deep Dive](Tech
 │   ├── ...             # Component-specific CSS
 ├── js/                 # JavaScript modules
 │   ├── main.js         # Entry point
-│   ├── ui.js           # UI interaction logic
+│   ├── ui.js           # UI initialization and public facade
+│   ├── ui/             # Focused UI components and movie-list rendering
+│   ├── types.js        # Shared JSDoc data contracts
 │   ├── wheel.js        # Canvas drawing and physics
 │   ├── state.js        # State management
 │   ├── ...
@@ -58,7 +60,30 @@ The app state is a simple object that tracks:
 State is automatically persisted to `localStorage` whenever it changes (debounced).
 
 ### UI (`js/ui.js`)
-Handles all DOM manipulations, event listeners, and updating the HTML to reflect the current state.
+Initializes UI components, connects page controls, and preserves the public exports used by other modules. Feature implementations live under `js/ui/` (winner dialog, boards, boosts, slice editor, history, knockout UI, and generic dialogs).
+
+Movie-list responsibilities are separated into three modules:
+
+* `js/ui/movie-list.js` filters and sorts movies and coordinates updates with the wheel and slice editor.
+* `js/ui/movie-list-item.js` builds individual rows and their selection, weight, color, and boost controls.
+* `js/ui/movie-list-viewport.js` renders the list and manages virtualization for large lists.
+
+Use initialization callbacks when a component needs to request an orchestrator update, rather than importing the facade back into the component. Keep related behavior together; the target of fewer than 500 lines is guidance for review, not a reason to fragment cohesive code.
+
+### Data Contracts (`js/types.js`)
+Shared JSDoc types describe normalized runtime data, including lowercase movie fields, booster contributions, the workspace index, and winner context. Reference these types from callers using JSDoc imports. These annotations support editor tooling; neither the browser nor the health check enforces type correctness.
+
+## Verification
+
+After JavaScript changes, run `node health_check.js`. It parses every JavaScript module under `js/` and reports advisory line-budget warnings. It does not execute modules, resolve imports or re-exports, or type-check JSDoc.
+
+For everyday changes, run the affected Playwright tests, for example:
+
+```bash
+npx playwright test tests/wheel.spec.js
+```
+
+Run `npx playwright test` before merging or deploying changes across components. Playwright starts the local server automatically; Python and the development dependencies must be installed, along with the Chromium browser (`npx playwright install chromium`). Import and wheel tests use `sample-watchlist.csv`, and covered external requests are mocked. If the system's `npx` launcher is unavailable, the equivalent local entry point is `node node_modules/@playwright/test/cli.js test`.
 
 ## Contributing
 

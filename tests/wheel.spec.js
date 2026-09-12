@@ -82,22 +82,6 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(spinBtn).toHaveText('Eliminating.', { timeout: 5000 });
   });
 
-  test('Spin Modes: 1 Spin', async ({ page }) => {
-    // Load sample data
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text=Upload CSV File');
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(SAMPLE_CSV_PATH);
-
-    // Select 1 Spin Mode
-    const oneSpinCard = page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' });
-    await oneSpinCard.scrollIntoViewIfNeeded();
-    await oneSpinCard.click();
-
-    // Verify Button Text
-    await expect(page.locator('#spin-button')).toHaveText('Spin One Spin Mode');
-  });
-
   test('Visuals: Slice Editor & Colors', async ({ page }) => {
     // Load sample data
     const fileChooserPromise = page.waitForEvent('filechooser');
@@ -112,7 +96,20 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     // Change color
     await firstMovieColorInput.fill('#ff0000');
 
-    // Verify value
+    // Wait for the app's debounced save, then verify the color survives reload.
+    await expect.poll(() => page.evaluate(() => {
+      const workspaceId = localStorage.getItem('letterboxd_active_workspace_id');
+      const saved = JSON.parse(localStorage.getItem(`letterboxd_workspace_${workspaceId}`));
+      return saved?.allMovies[0]?.color;
+    })).toBe('#ff0000');
+    await page.reload();
+    await expect(page.locator('.movie-color__input').first()).toHaveValue('#ff0000');
+
+    // A theme can temporarily replace the palette and then restore the custom color.
+    await page.click('#settings-open');
+    await page.locator('#theme-select').selectOption('fantasy');
+    await expect(firstMovieColorInput).toHaveValue('#c8963e');
+    await page.locator('#theme-select').selectOption('default');
     await expect(firstMovieColorInput).toHaveValue('#ff0000');
   });
 
@@ -326,6 +323,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await oneSpinCard.click();
 
     // 4. Spin!
+    await expect(page.locator('#spin-button')).toHaveText('Spin One Spin Mode');
     await page.click('#spin-button');
 
     // 5. Wait for the winner modal to show up

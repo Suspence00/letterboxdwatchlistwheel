@@ -286,7 +286,7 @@ test('theater mode remains completely stable with zero scrollbars or layout shif
     }
 });
 
-test('knockout elimination animation marks tape and reduces pool', async ({ page }) => {
+test('reduced-motion knockout marks eliminated tape and reduces pool without a flight animation', async ({ page }) => {
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
     await page.locator('#spin-button').click();
     await expect(page.locator('.spin-theater')).toBeVisible();
@@ -299,6 +299,7 @@ test('knockout elimination animation marks tape and reduces pool', async ({ page
     await expect(wallTape).toHaveCount(1);
     await expect(wallTape.locator('.vhs-stack-tape__stamp')).toHaveText('ELIMINATED #1');
     await expect(wallTape.locator('.vhs-stack-tape__rental')).toContainText('VHS');
+    await expect(page.locator('.spin-theater .vhs-flight-proxy')).toHaveCount(0);
 });
 
 test('can enter and return to theater mode via theater toggle button', async ({ page }) => {
@@ -329,24 +330,15 @@ test('can enter and return to theater mode via theater toggle button', async ({ 
     await expect(page.locator('#spin-theater-stack')).toBeVisible();
 });
 
-test('knockout elimination works smoothly with reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
-    await page.locator('#spin-button').click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10', { timeout: 5000 });
-    await expect(page.locator('#spin-theater-stack-list .vhs-stack-tape')).toHaveCount(1);
-    await expect(page.locator('.spin-theater .vhs-flight-proxy')).toHaveCount(0);
-});
-
 test('vhs pointer flapper remains completely static and sits on top of wheel tapes', async ({ page }) => {
     const flapper = page.locator('.vhs-flapper');
     await expect(flapper).toBeVisible();
     const styleInfo = await flapper.evaluate(el => ({
-        zIndex: window.getComputedStyle(el).zIndex,
+        zIndex: Number(window.getComputedStyle(el).zIndex),
+        rotorZIndex: Number.parseInt(window.getComputedStyle(el.parentElement.querySelector('.vhs-rotor')).zIndex, 10) || 0,
         hasElevation: window.getComputedStyle(el).transform !== 'none'
     }));
-    expect(styleInfo.zIndex).toBe('100');
+    expect(styleInfo.zIndex).toBeGreaterThan(styleInfo.rotorZIndex);
     expect(styleInfo.hasElevation).toBe(true);
 
     await oneSpin(page);

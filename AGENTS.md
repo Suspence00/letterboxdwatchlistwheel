@@ -17,7 +17,10 @@ This is a browser-only application built with HTML, CSS, and native ES modules. 
 | Feature Area | Primary File(s) | Notes |
 | :--- | :--- | :--- |
 | **Data Contracts & Types** | `js/types.js` | JSDoc `@typedef` annotations for `Movie`, `AppState`, etc. |
-| **UI Orchestrator & Barrel** | `js/ui.js` | Main UI entry point, re-exports all `js/ui/*.js` sub-modules. |
+| **UI Orchestrator & Barrel** | `js/ui.js` | Main UI entry point; preserves public feature exports while keeping component internals private. |
+| **Movie List Coordination** | `js/ui/movie-list.js` | Filtering, sorting, and list/wheel/editor updates. |
+| **Movie Row Controls** | `js/ui/movie-list-item.js` | Row markup and selection, weight, color, and boost controls. |
+| **Movie List Viewport** | `js/ui/movie-list-viewport.js` | List rendering and virtualization for large lists. |
 | **Winner Dialog & Radarr** | `js/ui/winner-modal.js` | Winner celebration, Radarr export, runtime/synopsis, trailers. |
 | **Knockout Stage & Contenders** | `js/ui/knockout-ui.js` | Knockout eliminations, contenders box, stage launch effects. |
 | **Slice Editor & Odds** | `js/ui/slice-editor.js` | Slice color picker, weight slider, live odds calculation display. |

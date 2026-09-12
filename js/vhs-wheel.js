@@ -217,15 +217,17 @@ export function updateVhsControls(eligible) {
     shuffle.hidden = !isVhsEnabled() || mode !== 'one-spin' || eligible.length <= capacity;
     shuffle.disabled = busy || pinnedIds.size >= capacity;
     shuffle.textContent = `Draw another ${capacity}`;
-    if (!isVhsEnabled()) note.textContent = 'All eligible movies share the classic wheel.';
-    else if (!eligible.length) note.textContent = 'Add movies to load the tapes.';
-    else if (mode === 'one-spin') {
-        const size = Math.min(eligible.length, capacity);
-        note.textContent = `${size} ${size === 1 ? 'tape' : 'tapes'} from ${eligible.length.toLocaleString()} eligible ${eligible.length === 1 ? 'movie' : 'movies'}. ${eligible.length > capacity ? 'Random draw; weights apply only within this lineup.' : 'Weights apply to this spin.'}${pinnedIds.size ? ` ${pinnedIds.size} pinned.` : ''}`;
-    } else if (mode === 'random-boost') note.textContent = 'Every eligible movie has an equal chance of a boost.';
-    else note.textContent = eligible.length > capacity
-        ? `All movies enter. Fast eliminations first; the final ${capacity} become VHS tapes.`
-        : 'Last tape standing wins. Higher weights reduce the chance of elimination.';
+    if (note) {
+        if (!isVhsEnabled()) note.textContent = 'All eligible movies share the classic wheel.';
+        else if (!eligible.length) note.textContent = 'Add movies to load the tapes.';
+        else if (mode === 'one-spin') {
+            const size = Math.min(eligible.length, capacity);
+            note.textContent = `${size} ${size === 1 ? 'tape' : 'tapes'} from ${eligible.length.toLocaleString()} eligible ${eligible.length === 1 ? 'movie' : 'movies'}. ${eligible.length > capacity ? 'Random draw; weights apply only within this lineup.' : 'Weights apply to this spin.'}${pinnedIds.size ? ` ${pinnedIds.size} pinned.` : ''}`;
+        } else if (mode === 'random-boost') note.textContent = 'Every eligible movie has an equal chance of a boost.';
+        else note.textContent = eligible.length > capacity
+            ? `All movies enter. Fast eliminations first; the final ${capacity} become VHS tapes.`
+            : 'Last tape standing wins. Higher weights reduce the chance of elimination.';
+    }
 }
 
 function updateInspector() {
