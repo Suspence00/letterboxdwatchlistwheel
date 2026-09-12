@@ -6,25 +6,24 @@ console.log('🔍 Starting Codebase Health Check...');
 
 let hasErrors = false;
 
-// 1. Check for Syntax Errors
-const jsFiles = [
-    'js/ui.js',
-    'js/main.js',
-    'js/wheel.js',
-    'js/utils.js',
-    'js/state.js',
-    'js/discord.js',
-    'js/import.js',
-    'js/backup.js',
-    'js/audio.js',
-    'js/radarr.js',
-    'js/movie-metadata.js',
-    'js/spin-theater.js',
-    'js/vhs-wheel.js',
-    'js/tape-viewer.js',
-    'js/verify.js'
-];
+// 1. Gather all JS source files dynamically
+function getJsFiles(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    let files = [];
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name).replace(/\\/g, '/');
+        if (entry.isDirectory()) {
+            files = files.concat(getJsFiles(fullPath));
+        } else if (entry.isFile() && entry.name.endsWith('.js')) {
+            files.push(fullPath);
+        }
+    }
+    return files;
+}
 
+const jsFiles = getJsFiles('js');
+
+console.log(`\n1. Running syntax checks across ${jsFiles.length} JavaScript modules...`);
 jsFiles.forEach(file => {
     try {
         execSync(`node -c ${file}`, { stdio: 'pipe' });
@@ -36,7 +35,7 @@ jsFiles.forEach(file => {
     }
 });
 
-// 2. Check for Duplicate Exported Functions
+// 2. Check for Duplicate Exported Functions in ui.js
 console.log('\n2. Checking for Duplicate Exports in ui.js...');
 try {
     const content = fs.readFileSync('js/ui.js', 'utf8');
@@ -62,10 +61,19 @@ try {
     console.error('  ❌ Failed to analyze js/ui.js:', e.message);
 }
 
+// 3. File Size & Line Budget Check
+console.log('\n3. Checking Module Line Budgets (Target < 600 lines per module)...');
+jsFiles.forEach(file => {
+    const lines = fs.readFileSync(file, 'utf8').split('\n').length;
+    if (lines > 600) {
+        console.warn(`  ⚠️  ${file} is large (${lines} lines). Consider decomposing to optimize for AI agents.`);
+    }
+});
+
 if (hasErrors) {
     console.log('\n❌ Health Check FAILED. Fix errors before committing.');
     process.exit(1);
 } else {
-    console.log('\n✅ Syntax checks PASSED. Run the browser tests to verify behavior.');
+    console.log('\n✅ Health checks PASSED. Run browser tests to verify behavior.');
     process.exit(0);
 }

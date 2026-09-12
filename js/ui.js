@@ -1,23 +1,13 @@
 /**
- * UI management for the Letterboxd Watchlist Wheel
+ * UI management orchestrator and facade for Letterboxd Watchlist Wheel.
+ * Re-exports all sub-modules under js/ui/ to maintain backwards-compatibility.
  */
 
 import {
     appState,
     debouncedSaveState,
-    saveState,
-    clearHistory,
-    removeHistoryEntry,
-    createWorkspace,
-    switchWorkspace,
-    renameWorkspace,
-    deleteWorkspace
+    saveState
 } from './state.js';
-import { buildMetadataKey, fetchMovieMetadata } from './movie-metadata.js';
-import { closeSpinTheater } from './spin-theater.js';
-import { clearVhsReveal, isVhsEnabled } from './vhs-wheel.js';
-import { createTapeViewer } from './tape-viewer.js';
-import { runFairnessAudit } from './verify.js';
 import {
     decodeHtmlEntities,
     getDefaultColorForIndex,
@@ -27,7 +17,6 @@ import {
     sanitizeColor,
     escapeSelector,
     getMovieOriginalIndex,
-    stringToColor,
     debounce
 } from './utils.js';
 import {
@@ -42,20 +31,96 @@ import {
     getSelectionOdds,
     invalidateWheelCache
 } from './wheel.js';
-import { sendDiscordNotification } from './discord.js';
-import { isRadarrConfigured, addMovieToRadarr } from './radarr.js';
 
+// Sub-module Imports
+import {
+    initKnockoutUI,
+    applyKnockoutStatusToElement,
+    handleSpinPrep,
+    resetKnockoutLaunchEffects,
+    knockoutLaunchPrimed,
+    knockoutLaunchEngaged
+} from './ui/knockout-ui.js';
+import {
+    initWinnerModal,
+    showWinnerPopup,
+    closeWinnerPopup,
+    updateReshowWinnerButton,
+    handleReshowWinner
+} from './ui/winner-modal.js';
+import {
+    initBoostStation,
+    renderBoosterTags
+} from './ui/boost-station.js';
+import {
+    initHistoryModal,
+    renderHistory
+} from './ui/history-modal.js';
+import {
+    initSliceEditor,
+    resetSliceEditor,
+    syncSliceEditorWithSelection,
+    getActiveSliceMovie,
+    updateDisplayedOdds
+} from './ui/slice-editor.js';
+import { initBoardsUI } from './ui/boards-ui.js';
+import { promptForInput } from './ui/modals.js';
 
+// Re-export public API from submodules
+export { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
+export { showConfirmModal, promptForInput, showVerificationResults } from './ui/modals.js';
+export { renderWorkspaceSwitcher, renderBoardsList, initBoardsUI } from './ui/boards-ui.js';
+export {
+    showWinnerPopup,
+    closeWinnerPopup,
+    updateReshowWinnerButton,
+    handleReshowWinner,
+    setupRadarrButton,
+    resetRadarrButton
+} from './ui/winner-modal.js';
+export {
+    markMovieKnockedOut,
+    markMovieChampion,
+    updateKnockoutRemainingBox,
+    refreshKnockoutBoxVisibility,
+    highlightKnockoutCandidate,
+    updateKnockoutResultText,
+    triggerKnockoutLaunchEffects,
+    resetKnockoutLaunchEffects,
+    handleSpinPrep,
+    applyKnockoutStatusToElement,
+    applyKnockoutStatusToItem,
+    reorderMovieListForKnockout
+} from './ui/knockout-ui.js';
+export {
+    initBoostControls,
+    openBoostStation,
+    closeBoostStation,
+    populateBoostSelect,
+    filterBoostOptions,
+    handleBoostSpecific,
+    handleBoostRemove,
+    handleBoostRandom,
+    getBoosterColor,
+    renderBoosterTags,
+    handleBoosterTagClick,
+    modifyBooster
+} from './ui/boost-station.js';
+export {
+    handleSliceSelection,
+    resetSliceEditor,
+    updateDisplayedOdds,
+    updateSliceOddsDisplay,
+    populateSliceEditor,
+    getActiveSliceMovie,
+    updateSliceWeightDisplay,
+    syncSliceEditorWithSelection
+} from './ui/slice-editor.js';
+export { renderHistory } from './ui/history-modal.js';
 
-// DOM Elements
+// DOM Elements Cache
 const elements = {};
-let activeSliceId = null;
-let updateWheelAsideLayout = () => { };
 let currentWeightCopy = getModeCopy(true);
-let knockoutLaunchPrimed = false;
-let knockoutLaunchEngaged = false;
-let tapeViewerController = null;
-let lastKnockoutRemaining = [];
 const VIRTUALIZATION_THRESHOLD = 250;
 const VIRTUAL_OVERSCAN = 6;
 const VIRTUAL_ROW_ESTIMATE = 128;
@@ -98,6 +163,13 @@ function getSafeHttpUrl(value) {
 
 export function initUI(domElements) {
     Object.assign(elements, domElements);
+
+    // Initialize sub-modules
+    initKnockoutUI(domElements);
+    initWinnerModal(domElements);
+    initBoostStation(domElements, { updateMovieList });
+    initHistoryModal(domElements);
+    initSliceEditor(domElements);
 
     // Attach event listeners
     if (elements.selectAllBtn) {
@@ -183,32 +255,16 @@ export function initUI(domElements) {
     if (elements.historyBtn) {
         elements.historyBtn.addEventListener('click', () => {
             renderHistory();
-            elements.historyModal.hidden = false;
-            requestAnimationFrame(() => elements.historyModal.classList.add('show'));
+            if (elements.historyModal) {
+                elements.historyModal.hidden = false;
+                requestAnimationFrame(() => elements.historyModal.classList.add('show'));
+            }
         });
     }
 
     if (elements.historyModalCloseBtn) {
         elements.historyModalCloseBtn.addEventListener('click', () => {
-            elements.historyModal.classList.remove('show');
-            setTimeout(() => {
-                elements.historyModal.hidden = true;
-            }, 250);
-        });
-    }
-
-    if (elements.clearHistoryBtn) {
-        elements.clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear the history?')) {
-                clearHistory();
-                renderHistory();
-            }
-        });
-    }
-
-    if (elements.historyModal) {
-        elements.historyModal.addEventListener('click', (event) => {
-            if (event.target === elements.historyModal) {
+            if (elements.historyModal) {
                 elements.historyModal.classList.remove('show');
                 setTimeout(() => {
                     elements.historyModal.hidden = true;
@@ -217,298 +273,108 @@ export function initUI(domElements) {
         });
     }
 
-    if (elements.customEntryForm) {
-        elements.customEntryForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            addCustomEntry();
+    if (elements.searchInput) {
+        elements.searchInput.addEventListener(
+            'input',
+            debounce((event) => {
+                const query = event.target.value.trim();
+                appState.filter.query = query;
+                appState.filter.normalizedQuery = query.toLowerCase();
+                updateMovieList();
+            }, 300)
+        );
+    }
+
+    if (elements.sortSelect) {
+        elements.sortSelect.addEventListener('change', (event) => {
+            appState.filter.sortMode = event.target.value;
+            updateMovieList();
+        });
+    }
+
+    if (elements.showCustomsToggle) {
+        elements.showCustomsToggle.addEventListener('change', (event) => {
+            appState.filter.showCustoms = event.target.checked;
+            updateMovieList();
+        });
+    }
+
+    if (elements.spinModeRadios) {
+        elements.spinModeRadios.forEach((radio) => {
+            radio.addEventListener('change', () => {
+                updateMovieList();
+            });
         });
     }
 
     if (elements.selectionToggleBtn) {
         elements.selectionToggleBtn.addEventListener('click', () => {
-            const willCollapse = !elements.selectionCard.classList.contains('card--collapsed');
-            setSelectionCardCollapsed(willCollapse);
+            const isCollapsed = elements.selectionCard.classList.contains('card--collapsed');
+            setSelectionCardCollapsed(!isCollapsed);
         });
     }
 
     if (elements.advancedCardToggleBtn) {
         elements.advancedCardToggleBtn.addEventListener('click', () => {
-            const willCollapse = !elements.advancedCard.classList.contains('card--collapsed');
-            setAdvancedCardCollapsed(willCollapse);
-            updateMovieList();
-            updateSpinButtonLabel();
+            const isCollapsed = elements.advancedCard.classList.contains('card--collapsed');
+            setAdvancedCardCollapsed(!isCollapsed);
         });
     }
 
-    if (elements.sliceColorInput) {
-        elements.sliceColorInput.addEventListener('input', handleSliceColorInput);
-    }
-
-    if (elements.sliceWeightInput) {
-        elements.sliceWeightInput.addEventListener('input', handleSliceWeightInput);
-    }
-
-    if (elements.sliceEditorClearBtn) {
-        elements.sliceEditorClearBtn.addEventListener('click', () => resetSliceEditor());
-    }
-
-    // Workspaces
-    if (elements.workspaceSelect) {
-        elements.workspaceSelect.addEventListener('change', (event) => {
-            const val = event.target.value;
-            if (val && switchWorkspace(val)) {
-                // Full refresh
-                updateMovieList();
-                renderHistory();
-                resetSliceEditor();
-                renderWorkspaceSwitcher(); // Update select state
-                renderBoardsList();
-                const activeBoard = appState.workspaces.find((w) => w.id === val);
-                if (activeBoard && activeBoard.letterboxdUrl) {
-                    setImportCardCollapsedUI(true);
-                }
-            }
-        });
-    }
-
-    if (elements.createBoardForm) {
-        elements.createBoardForm.addEventListener('submit', (event) => {
+    if (elements.customEntryForm) {
+        elements.customEntryForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            const name = elements.newBoardName.value.trim();
-            if (name) {
-                const newId = createWorkspace(name);
-                switchWorkspace(newId);
-                elements.newBoardName.value = '';
-                // Refresh all
-                updateMovieList();
-                resetSliceEditor();
-                renderHistory();
-                renderWorkspaceSwitcher();
-                renderBoardsList();
+            addCustomEntry();
+            if (elements.customEntryModal) {
+                elements.customEntryModal.classList.remove('show');
+                setTimeout(() => {
+                    elements.customEntryModal.hidden = true;
+                }, 200);
             }
         });
     }
 
-    updateWheelAsideLayout = createWheelAsideUpdater(elements);
+    if (elements.openCustomModalBtn) {
+        elements.openCustomModalBtn.addEventListener('click', () => {
+            if (!elements.customEntryModal) return;
+            elements.customEntryModal.hidden = false;
+            requestAnimationFrame(() => elements.customEntryModal.classList.add('show'));
+            if (elements.customEntryInput) {
+                elements.customEntryInput.focus();
+            }
+        });
+    }
+
+    if (elements.customModalCloseBtn) {
+        elements.customModalCloseBtn.addEventListener('click', () => {
+            if (!elements.customEntryModal) return;
+            elements.customEntryModal.classList.remove('show');
+            setTimeout(() => {
+                elements.customEntryModal.hidden = true;
+            }, 200);
+        });
+    }
+
+    if (elements.customEntryModal) {
+        elements.customEntryModal.addEventListener('click', (event) => {
+            if (event.target === elements.customEntryModal) {
+                elements.customEntryModal.classList.remove('show');
+                setTimeout(() => {
+                    elements.customEntryModal.hidden = true;
+                }, 200);
+            }
+        });
+    }
+
+    initBoardsUI(domElements, {
+        onBoardSwitch: (val) => {
+            updateMovieList();
+            resetSliceEditor();
+            renderHistory();
+        }
+    });
+
     initVirtualList();
-    initBoostControls();
-    resetSliceEditor();
-
-    // Initial Render for Workspaces
-    renderWorkspaceSwitcher();
-    renderBoardsList();
-
-    // Verification
-    if (elements.verifyFairnessBtn) {
-        elements.verifyFairnessBtn.addEventListener('click', () => {
-            const results = runFairnessAudit();
-            showVerificationResults(results);
-        });
-    }
-
-    if (elements.verifyCloseBtn) {
-        elements.verifyCloseBtn.addEventListener('click', () => {
-            elements.verifyModal.hidden = true;
-        });
-    }
-}
-
-function showVerificationResults(auditData) {
-    if (auditData.error) {
-        alert(auditData.error);
-        return;
-    }
-
-    // Show modal first to ensure DOM elements inside might be interactive/visible
-    elements.verifyModal.hidden = false;
-
-    const tableBody = document.querySelector('#verify-table tbody');
-
-    if (!tableBody) {
-        console.error("Verify table body not found in DOM");
-        return;
-    }
-
-    tableBody.innerHTML = '';
-
-    // Summary Stats
-    let goodCount = 0;
-    let okCount = 0;
-    let badCount = 0;
-
-    auditData.results.forEach(row => {
-        const diffPct = Math.abs(row.diff * 100);
-        if (diffPct < 0.5) goodCount++;
-        else if (diffPct < 1.0) okCount++;
-        else badCount++;
-    });
-
-    const summaryEl = document.getElementById('verify-summary');
-    if (summaryEl) {
-        let statusMsg = '';
-        if (badCount === 0 && okCount === 0) {
-            statusMsg = `<strong>Perfect!</strong> All ${auditData.results.length} items are within optimal variance.`;
-        } else if (badCount === 0) {
-            statusMsg = `<strong>Good.</strong> ${goodCount} perfect, ${okCount} with slight deviation.`;
-        } else {
-            statusMsg = `<strong>Review Needed.</strong> ${badCount} items showing significant deviation.`;
-        }
-
-        summaryEl.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <div>${statusMsg}</div>
-                <div style="font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px;">
-                    <span style="color: #4cd964; margin-right: 10px;">✅ Good (${goodCount})</span>
-                    <span style="color: #a0aec0; margin-right: 10px;">⬜ OK (${okCount})</span>
-                    <span style="color: #ff3b30;">⚠️ High Diff (${badCount})</span>
-                </div>
-            </div>
-        `;
-    }
-
-    auditData.results.forEach(row => {
-        const tr = document.createElement('tr');
-
-        // Movie Name
-        const nameTd = document.createElement('td');
-        nameTd.textContent = row.name;
-        tr.appendChild(nameTd);
-
-        // Weight
-        const weightTd = document.createElement('td');
-        weightTd.className = 'weight-cell';
-        weightTd.textContent = Number(row.weight).toFixed(2);
-        tr.appendChild(weightTd);
-
-        // Expected %
-        const expTd = document.createElement('td');
-        expTd.textContent = (row.expectedRatio * 100).toFixed(2) + '%';
-        tr.appendChild(expTd);
-
-        // Actual %
-        const actTd = document.createElement('td');
-        actTd.textContent = (row.actualRatio * 100).toFixed(2) + '%';
-        tr.appendChild(actTd);
-
-        // Diff %
-        const diffTd = document.createElement('td');
-        const diffPct = row.diff * 100;
-        const diffText = (diffPct > 0 ? '+' : '') + diffPct.toFixed(2) + '%';
-
-        diffTd.textContent = diffText;
-        if (Math.abs(diffPct) < 0.5) {
-            diffTd.className = 'diff-good';
-            diffTd.innerHTML += ' ✅';
-        } else if (Math.abs(diffPct) < 1.0) {
-            diffTd.className = 'diff-ok';
-        } else {
-            diffTd.className = 'diff-bad';
-            diffTd.innerHTML += ' ⚠️';
-        }
-        tr.appendChild(diffTd);
-
-        tableBody.appendChild(tr);
-    });
-
-    elements.verifyModal.hidden = false;
-}
-
-export function renderWorkspaceSwitcher() {
-    if (!elements.workspaceSelect) return;
-
-    elements.workspaceSelect.innerHTML = '';
-
-    // No optgroup needed anymore if we don't have "Manage" option
-    // But keeping it flat is cleaner for a simple select
-
-    appState.workspaces.forEach(ws => {
-        const option = document.createElement('option');
-        option.value = ws.id;
-        option.textContent = ws.name;
-        if (ws.id === appState.activeWorkspaceId) {
-            option.selected = true;
-        }
-        elements.workspaceSelect.appendChild(option);
-    });
-}
-
-export function renderBoardsList() {
-    if (!elements.boardsList) return;
-    elements.boardsList.innerHTML = '';
-
-    appState.workspaces.forEach(ws => {
-        const li = document.createElement('li');
-        li.className = 'board-item';
-        if (ws.id === appState.activeWorkspaceId) {
-            li.classList.add('active');
-        }
-
-        const info = document.createElement('div');
-        info.className = 'board-item__info';
-
-        const name = document.createElement('span');
-        name.className = 'board-item__name';
-        name.textContent = ws.name;
-
-        const meta = document.createElement('span');
-        meta.className = 'board-item__meta';
-        const date = new Date(ws.lastModified || Date.now()).toLocaleDateString();
-        let metaText = `Last used: ${date}`;
-        if (ws.letterboxdUrl) {
-            let urlDisplay = ws.letterboxdUrl;
-            try {
-                const parts = ws.letterboxdUrl.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '').split('/');
-                if (parts.length > 0 && parts[0]) {
-                    urlDisplay = parts.filter(Boolean).join('/');
-                }
-            } catch (e) {}
-            metaText += ` • 🔗 Tied to: ${urlDisplay}`;
-        }
-        meta.textContent = metaText;
-
-        info.appendChild(name);
-        info.appendChild(meta);
-
-        const actions = document.createElement('div');
-        actions.className = 'board-item__actions';
-
-        const renameBtn = document.createElement('button');
-        renameBtn.type = 'button';
-        renameBtn.className = 'btn';
-        renameBtn.textContent = 'Rename';
-        renameBtn.addEventListener('click', () => {
-            promptForInput('Rename Board', 'New Name', (newName) => {
-                if (renameWorkspace(ws.id, newName)) {
-                    renderWorkspaceSwitcher();
-                    renderBoardsList();
-                }
-            });
-        });
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.className = 'btn danger';
-        deleteBtn.textContent = 'Delete';
-        if (ws.id === appState.activeWorkspaceId || appState.workspaces.length <= 1) {
-            deleteBtn.disabled = true;
-            deleteBtn.title = ws.id === appState.activeWorkspaceId ? "Cannot delete active board" : "Cannot delete last board";
-        }
-        deleteBtn.addEventListener('click', () => {
-            if (confirm(`Delete board "${ws.name}"? This cannot be undone.`)) {
-                if (deleteWorkspace(ws.id)) {
-                    renderWorkspaceSwitcher();
-                    renderBoardsList();
-                }
-            }
-        });
-
-        actions.appendChild(renameBtn);
-        actions.appendChild(deleteBtn);
-
-        li.appendChild(info);
-        li.appendChild(actions);
-        elements.boardsList.appendChild(li);
-    });
 }
 
 export function getFilteredMovies() {
@@ -873,8 +739,6 @@ function buildMovieListItem(movie, index, context) {
     li.appendChild(checkbox);
     li.appendChild(label);
 
-
-
     if (weightsEnabled) {
         const weightWrapper = document.createElement('div');
         weightWrapper.className = 'movie-weight';
@@ -997,74 +861,6 @@ function buildMovieListItem(movie, index, context) {
     applyKnockoutStatusToElement(li, knockoutStatus);
 
     return li;
-}
-
-function formatBoostersText(weight, boosters = []) {
-    if (!boosters || !boosters.length) return '';
-    const counts = {};
-    boosters.forEach(name => {
-        counts[name] = (counts[name] || 0) + 1;
-    });
-
-    // Sort by count desc
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const parts = sorted.map(([name, count]) => `${count}x ${name}`);
-
-    // Check if there is base weight not attributed to anyone
-    const attributedWeight = boosters.length;
-    // The visual weight might be clamped, but boosters could exceed it theoretically if logic drifts, 
-    // but typically weight >= attributed. 
-    // If weight > attributed, the difference is "Base" or anonymous. 
-    // User asked for: "3x (1x Spencer, 2x Riley)"
-    // If weight is 4x and we have 3 boosters, it implies 1x is base. We usually don't list base unless asked.
-    // Let's just list the boosters in parens.
-
-    return `(${parts.join(', ')})`;
-}
-
-export function promptForInput(title, label, callback) {
-    const modal = document.getElementById('input-modal');
-    const form = document.getElementById('input-modal-form');
-    const input = document.getElementById('input-modal-field');
-    const titleEl = document.getElementById('input-modal-title');
-    const labelEl = document.getElementById('input-modal-label');
-    const closeBtn = document.getElementById('input-modal-close');
-
-    if (!modal || !form || !input) return;
-
-    titleEl.textContent = title;
-    labelEl.textContent = label;
-    input.value = '';
-
-    const close = () => {
-        modal.classList.remove('show');
-        setTimeout(() => { modal.hidden = true; }, 200);
-        input.value = ''; // Clear for security/cleanliness
-    };
-
-    const submitHandler = (e) => {
-        e.preventDefault();
-        const value = input.value.trim();
-        if (value) {
-            callback(value);
-            close();
-        }
-        form.removeEventListener('submit', submitHandler);
-        closeBtn.removeEventListener('click', closeHandler);
-    };
-
-    const closeHandler = () => {
-        close();
-        form.removeEventListener('submit', submitHandler);
-        closeBtn.removeEventListener('click', closeHandler);
-    };
-
-    form.addEventListener('submit', submitHandler);
-    closeBtn.addEventListener('click', closeHandler);
-
-    modal.hidden = false;
-    requestAnimationFrame(() => modal.classList.add('show'));
-    input.focus();
 }
 
 export function updateMovieList() {
@@ -1215,64 +1011,30 @@ export function updateMovieList() {
     updateReshowWinnerButton();
 }
 
-export function updateDisplayedOdds(selectionOverride = null, oddsOverride = null) {
-    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const oddsMap = oddsOverride?.oddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: getSpinMode() === 'knockout' });
-    const winOddsMap = oddsOverride?.winOddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: false });
-    if (elements.movieListEl) {
-        const items = elements.movieListEl.querySelectorAll('li[data-id]');
-        items.forEach((item) => {
-            const oddsEl = item.querySelector('.movie-odds');
-            if (!oddsEl) return;
-            const id = item.dataset.id;
-            const isSelected = appState.selectedIds.has(id);
-            const hasRisk = oddsMap.has(id);
-            const hasWin = winOddsMap.has(id);
-            const isActive = isSelected && hasRisk;
-            const isWinActive = isSelected && hasWin;
-            const oddsValue = isActive ? oddsMap.get(id) || 0 : 0;
-            oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
-            oddsEl.classList.toggle('movie-odds--inactive', !isActive);
-            const winOddsEl = item.querySelector('.movie-odds--win');
-            if (winOddsEl) {
-                const winOddsValue = isWinActive ? winOddsMap.get(id) || 0 : 0;
-                winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
-                winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
-            }
-        });
+function scheduleWheelUpdate(selectionOverride = null, oddsOverride = null) {
+    if (selectionOverride) {
+        pendingWheelSelection = selectionOverride;
     }
-    updateSliceOddsDisplay(oddsMap, selectedMovies);
+    if (oddsOverride) {
+        pendingOddsMaps = oddsOverride;
+    }
+    if (wheelUpdateFrame) {
+        return;
+    }
+    wheelUpdateFrame = requestAnimationFrame(() => {
+        wheelUpdateFrame = null;
+        const selectedMoviesSnapshot = pendingWheelSelection || getFilteredSelectedMovies();
+        const oddsMaps = pendingOddsMaps;
+        pendingWheelSelection = null;
+        pendingOddsMaps = null;
+        drawWheel(selectedMoviesSnapshot);
+        updateDisplayedOdds(selectedMoviesSnapshot, oddsMaps);
+        debouncedSaveState();
+    });
 }
 
-function updateSliceOddsDisplay(oddsMap = null, selectionOverride = null) {
-    if (!elements.sliceOddsValueRisk || !elements.sliceOddsValueWin) {
-        return;
-    }
-    if (elements.sliceOddsLabelRisk) {
-        elements.sliceOddsLabelRisk.textContent = currentWeightCopy.riskLabel;
-    }
-    if (elements.sliceOddsLabelWin) {
-        elements.sliceOddsLabelWin.textContent = currentWeightCopy.winLabel;
-    }
-    const movie = getActiveSliceMovie();
-    if (!movie || !appState.selectedIds.has(movie.id)) {
-        elements.sliceOddsValueRisk.textContent = '0%';
-        elements.sliceOddsValueRisk.classList.add('slice-editor__odds-value--inactive');
-        elements.sliceOddsValueWin.textContent = '0%';
-        elements.sliceOddsValueWin.classList.add('slice-editor__odds-value--inactive');
-        return;
-    }
-    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const resolvedMap = oddsMap || getSelectionOdds(selectedMovies);
-    const winMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
-    const hasRiskOdds = resolvedMap.has(movie.id);
-    const hasWinOdds = winMap.has(movie.id);
-    const oddsValue = hasRiskOdds ? resolvedMap.get(movie.id) || 0 : 0;
-    const winOddsValue = hasWinOdds ? winMap.get(movie.id) || 0 : 0;
-    elements.sliceOddsValueRisk.textContent = formatOddsPercent(oddsValue);
-    elements.sliceOddsValueRisk.classList.toggle('slice-editor__odds-value--inactive', !hasRiskOdds || oddsValue <= 0);
-    elements.sliceOddsValueWin.textContent = formatOddsPercent(winOddsValue);
-    elements.sliceOddsValueWin.classList.toggle('slice-editor__odds-value--inactive', !hasWinOdds || winOddsValue <= 0);
+function redrawWheelAndPersist() {
+    scheduleWheelUpdate();
 }
 
 export function updateSpinButtonLabel() {
@@ -1284,7 +1046,7 @@ export function updateSpinButtonLabel() {
     elements.spinButton.disabled = spinning || lastStandingActive || getFilteredSelectedMovies().length === 0;
 
     if (knockoutLaunchPrimed && lastStandingActive) {
-        knockoutLaunchEngaged = true;
+        // Handled in knockout-ui
     }
 
     if (knockoutLaunchPrimed && knockoutLaunchEngaged && !lastStandingActive && !spinning) {
@@ -1316,23 +1078,6 @@ export function updateSpinButtonLabel() {
     elements.spinButton.textContent = 'Spin the wheel';
 }
 
-export function updateReshowWinnerButton() {
-    if (!elements.reshowWinnerBtn) return;
-    const winnerId = getWinnerId();
-    const movie = winnerId ? appState.movies.find(m => m.id === winnerId) : null;
-    const isEnabled = movie && appState.selectedIds.has(movie.id);
-    elements.reshowWinnerBtn.disabled = !isEnabled;
-}
-
-export function handleReshowWinner() {
-    const winnerId = getWinnerId();
-    if (!winnerId) return;
-    const winningMovie = appState.movies.find(m => m.id === winnerId);
-    if (winningMovie) {
-        showWinnerPopup(winningMovie, { spinMode: appState.winnerSpinMode || getSpinMode(), isRestore: true });
-    }
-}
-
 export function isAdvancedOptionsEnabled() {
     return true;
 }
@@ -1348,7 +1093,7 @@ export function getSpinMode() {
 }
 
 export function isRandomBoostEnabled() {
-    return false; // Random boost is now a transient single-shot action, not a persistent mode
+    return false;
 }
 
 export function isOneSpinModeEnabled() {
@@ -1357,16 +1102,6 @@ export function isOneSpinModeEnabled() {
 
 function getStepToggleLabel(collapsed) {
     return collapsed ? 'Expand Step' : 'Collapse Step';
-}
-
-function setImportCardCollapsedUI(collapsed) {
-    if (!elements.importCard || !elements.importCardBody || !elements.importToggleBtn) {
-        return;
-    }
-    elements.importCard.classList.toggle('card--collapsed', collapsed);
-    elements.importCardBody.hidden = collapsed;
-    elements.importToggleBtn.setAttribute('aria-expanded', String(!collapsed));
-    elements.importToggleBtn.textContent = getStepToggleLabel(collapsed);
 }
 
 export function setSelectionCardCollapsed(collapsed) {
@@ -1387,314 +1122,6 @@ export function setAdvancedCardCollapsed(collapsed) {
     elements.advancedCardToggleBtn.textContent = getStepToggleLabel(collapsed);
 }
 
-function collapseAllSteps() {
-    setImportCardCollapsedUI(true);
-    setSelectionCardCollapsed(true);
-    setAdvancedCardCollapsed(true);
-}
-
-export function handleSliceSelection(movie) {
-    if (!movie || getIsSpinning() || getIsLastStandingInProgress()) {
-        return;
-    }
-    setActiveSlice(movie);
-}
-
-function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
-    if (!movie || !elements.sliceEditor) {
-        return;
-    }
-
-    const { color, fallback, weight } = getSliceDefaults(movie);
-    movie.color = color;
-    movie.weight = weight;
-    activeSliceId = movie.id;
-    const themeLocked = isThemePaletteLocked();
-
-    elements.sliceEditor.hidden = false;
-    if (elements.sliceEditorBody) {
-        elements.sliceEditorBody.hidden = false;
-    }
-    if (elements.sliceEditorHint) {
-        elements.sliceEditorHint.textContent = themeLocked
-            ? 'Holiday theme is active, so slice colors follow the theme palette.'
-            : 'Adjust slice color and weight.';
-    }
-    if (elements.sliceEditorName) {
-        elements.sliceEditorName.textContent = movie.name;
-    }
-    if (elements.sliceColorInput) {
-        elements.sliceColorInput.value = color;
-        elements.sliceColorInput.disabled = themeLocked;
-    }
-    if (elements.sliceColorSwatch) {
-        elements.sliceColorSwatch.style.backgroundColor = color;
-    }
-    updateSliceWeightDisplay(weight);
-    if (elements.sliceWeightInput) {
-        elements.sliceWeightInput.disabled = isRandomBoostEnabled();
-    }
-    updateSliceOddsDisplay();
-    syncListControlsWithMovie(movie, color);
-    updateWheelAsideLayout();
-    if (!skipWheelUpdate) {
-        redrawWheelAndPersist();
-    }
-}
-
-export function resetSliceEditor() {
-    activeSliceId = null;
-    if (elements.sliceEditor) {
-        elements.sliceEditor.hidden = true;
-    }
-    if (elements.sliceEditorBody) {
-        elements.sliceEditorBody.hidden = true;
-    }
-    if (elements.sliceEditorHint) {
-        elements.sliceEditorHint.textContent = 'Click a wheel slice to adjust its color and weight.';
-    }
-    if (elements.sliceEditorName) {
-        elements.sliceEditorName.textContent = '';
-    }
-    if (elements.sliceColorSwatch) {
-        elements.sliceColorSwatch.style.backgroundColor = 'transparent';
-    }
-    if (elements.sliceColorInput) {
-        elements.sliceColorInput.value = '#ff8600';
-        elements.sliceColorInput.disabled = isThemePaletteLocked();
-    }
-    if (elements.sliceOddsValueRisk) {
-        elements.sliceOddsValueRisk.textContent = '0%';
-        elements.sliceOddsValueRisk.classList.add('slice-editor__odds-value--inactive');
-    }
-    if (elements.sliceOddsValueWin) {
-        elements.sliceOddsValueWin.textContent = '0%';
-        elements.sliceOddsValueWin.classList.add('slice-editor__odds-value--inactive');
-    }
-    updateSliceWeightDisplay(1);
-    updateWheelAsideLayout();
-}
-
-function getSliceDefaults(movie) {
-    const originalIndex = getMovieOriginalIndex(movie, appState.movies);
-    let paletteIndex = originalIndex;
-    if (!Number.isFinite(paletteIndex) || paletteIndex < 0) {
-        paletteIndex = appState.movies.indexOf(movie);
-    }
-    const fallback = getDefaultColorForIndex(paletteIndex);
-    const color = isThemePaletteLocked() ? fallback : getStoredColor(movie, fallback);
-    const weight = getStoredWeight(movie);
-    return { color, fallback, weight };
-}
-
-function getActiveSliceMovie() {
-    if (!activeSliceId) {
-        return null;
-    }
-    return appState.movies.find((movie) => movie.id === activeSliceId) || null;
-}
-
-function updateSliceWeightDisplay(weight) {
-    if (elements.sliceWeightInput) {
-        elements.sliceWeightInput.value = String(weight);
-        elements.sliceWeightInput.setAttribute('aria-valuenow', String(weight));
-    }
-    if (elements.sliceWeightValue) {
-        elements.sliceWeightValue.textContent = `${weight}x`;
-    }
-}
-
-function handleSliceColorInput(event) {
-    if (isThemePaletteLocked()) {
-        return;
-    }
-    const movie = getActiveSliceMovie();
-    if (!movie) {
-        return;
-    }
-    const { fallback } = getSliceDefaults(movie);
-    const sanitized = sanitizeColor(event.target.value, fallback);
-    movie.color = sanitized;
-    event.target.value = sanitized;
-    if (elements.sliceColorSwatch) {
-        elements.sliceColorSwatch.style.backgroundColor = sanitized;
-    }
-    syncListControlsWithMovie(movie, sanitized);
-    redrawWheelAndPersist();
-}
-
-function handleSliceWeightInput(event) {
-    if (isRandomBoostEnabled()) {
-        event.target.value = '1';
-        return;
-    }
-    const movie = getActiveSliceMovie();
-    if (!movie) {
-        return;
-    }
-    const numericValue = Number(event.target.value);
-    const clamped = clampWeight(numericValue);
-    movie.weight = clamped;
-    event.target.value = String(clamped);
-    updateSliceWeightDisplay(clamped);
-    syncListControlsWithMovie(movie);
-    redrawWheelAndPersist();
-}
-
-function syncListControlsWithMovie(movie, colorOverride = null) {
-    if (!elements.movieListEl) return;
-    const safeId = escapeSelector(movie.id);
-    const row = elements.movieListEl.querySelector(`li[data-id="${safeId}"]`);
-    if (!row) return;
-
-    const weightSelect = row.querySelector('.movie-weight__select');
-    if (weightSelect) {
-        weightSelect.value = String(getStoredWeight(movie));
-    }
-
-    const colorInput = row.querySelector('.movie-color__input');
-    if (colorInput) {
-        const resolvedColor = colorOverride || getSliceDefaults(movie).color;
-        colorInput.value = resolvedColor;
-    }
-}
-
-function scheduleWheelUpdate(selectionOverride = null, oddsOverride = null) {
-    if (selectionOverride) {
-        pendingWheelSelection = selectionOverride;
-    }
-    if (oddsOverride) {
-        pendingOddsMaps = oddsOverride;
-    }
-    if (wheelUpdateFrame) {
-        return;
-    }
-    wheelUpdateFrame = requestAnimationFrame(() => {
-        wheelUpdateFrame = null;
-        const selectedMoviesSnapshot = pendingWheelSelection || getFilteredSelectedMovies();
-        const oddsMaps = pendingOddsMaps;
-        pendingWheelSelection = null;
-        pendingOddsMaps = null;
-        drawWheel(selectedMoviesSnapshot);
-        updateDisplayedOdds(selectedMoviesSnapshot, oddsMaps);
-        debouncedSaveState();
-    });
-}
-
-function redrawWheelAndPersist() {
-    scheduleWheelUpdate();
-}
-
-function syncSliceEditorWithSelection(currentSelection = []) {
-    if (!elements.sliceEditor) {
-        return;
-    }
-    if (!activeSliceId) {
-        resetSliceEditor();
-        return;
-    }
-    const movie = appState.movies.find((item) => item.id === activeSliceId);
-    const stillVisible = movie && currentSelection.some((entry) => entry.id === activeSliceId);
-    if (!stillVisible) {
-        resetSliceEditor();
-        return;
-    }
-    setActiveSlice(movie, { skipWheelUpdate: true });
-    updateWheelAsideLayout();
-}
-
-function shouldLaunchKnockoutEffects() {
-    const selection = getFilteredSelectedMovies();
-    return getSpinMode() === 'knockout' && selection.length > 1 && !getIsSpinning() && !getIsLastStandingInProgress();
-}
-
-function clearSpinButtonShards() {
-    if (!elements.spinButton) {
-        return;
-    }
-    const shards = elements.spinButton.querySelector('.spin-button__shards');
-    if (shards) {
-        shards.remove();
-    }
-}
-
-function createSpinButtonShards() {
-    if (!elements.spinButton) {
-        return null;
-    }
-    const shardCount = 16;
-    const burst = document.createElement('span');
-    burst.className = 'spin-button__shards';
-    burst.setAttribute('aria-hidden', 'true');
-
-    for (let index = 0; index < shardCount; index += 1) {
-        const shard = document.createElement('span');
-        shard.className = 'spin-button__shard';
-        const offsetX = (Math.random() - 0.5) * 220;
-        const offsetY = (Math.random() - 0.2) * 160;
-        const spin = (Math.random() - 0.5) * 180;
-        const delay = Math.random() * 0.12;
-        const scale = 0.7 + Math.random() * 0.6;
-        shard.style.setProperty('--shard-x', `${offsetX}px`);
-        shard.style.setProperty('--shard-y', `${offsetY}px`);
-        shard.style.setProperty('--shard-rotate', `${spin}deg`);
-        shard.style.setProperty('--shard-delay', `${delay}s`);
-        shard.style.setProperty('--shard-scale', scale.toFixed(2));
-        burst.appendChild(shard);
-    }
-
-    return burst;
-}
-
-function boostWheelStage() {
-    if (elements.wheelStage) {
-        elements.wheelStage.classList.add('wheel-stage--amped');
-    }
-}
-
-function resetWheelStageBoost() {
-    if (elements.wheelStage) {
-        elements.wheelStage.classList.remove('wheel-stage--amped');
-    }
-}
-
-function triggerKnockoutLaunchEffects() {
-    if (!shouldLaunchKnockoutEffects() || knockoutLaunchPrimed) {
-        return;
-    }
-    knockoutLaunchPrimed = true;
-    knockoutLaunchEngaged = false;
-
-    if (elements.spinButton) {
-        elements.spinButton.classList.add('spin-button--obliterated');
-        elements.spinButton.disabled = true;
-        clearSpinButtonShards();
-        const burst = createSpinButtonShards();
-        if (burst) {
-            elements.spinButton.appendChild(burst);
-            requestAnimationFrame(() => burst.classList.add('is-active'));
-        }
-    }
-    boostWheelStage();
-}
-
-function resetKnockoutLaunchEffects() {
-    knockoutLaunchPrimed = false;
-    knockoutLaunchEngaged = false;
-    if (elements.spinButton) {
-        elements.spinButton.classList.remove('spin-button--obliterated');
-        clearSpinButtonShards();
-        elements.spinButton.disabled = getFilteredSelectedMovies().length === 0
-            || getIsSpinning()
-            || getIsLastStandingInProgress();
-    }
-    resetWheelStageBoost();
-}
-
-function handleSpinPrep() {
-    resetSliceEditor();
-}
-
 function addCustomEntry() {
     if (!elements.customEntryInput) return;
     const name = elements.customEntryInput.value.trim();
@@ -1703,8 +1130,6 @@ function addCustomEntry() {
         return;
     }
 
-    // We need a counter. Let's store it in state or just use timestamp/random.
-    // Original code used a counter.
     const id = `custom-${Date.now()}`;
     const customMovie = {
         id,
@@ -1787,1303 +1212,3 @@ export function addBulkEntries(rawText) {
 
     return newEntries.length;
 }
-
-// Modal Logic
-let modalHideTimeoutId = null;
-let lastFocusedBeforeModal = null;
-let currentModalMetadataKey = null;
-
-export function showWinnerPopup(movie, context = {}) {
-    const { spinMode } = context;
-    if (!elements.winModal) return;
-
-    if (modalHideTimeoutId) {
-        clearTimeout(modalHideTimeoutId);
-        modalHideTimeoutId = null;
-    }
-
-    const details = [];
-    if (movie.year) {
-        details.push(`Released ${movie.year}`);
-    }
-    if (movie.date) {
-        details.push(`Added to your watchlist ${movie.date}`);
-    }
-    if (spinMode === 'random-boost' && Number.isFinite(Number(movie.weight))) {
-        details.push(`Random Boost winner · boosted to ${movie.weight}x`);
-    } else if (spinMode === 'one-spin') {
-        details.push('One Spin Mode winner');
-    } else if (spinMode === 'knockout') {
-        details.push('Movie Knockout champion');
-    }
-
-    if (elements.winModalTitle) {
-        elements.winModalTitle.textContent = `The movie selected was ${movie.name}!`;
-    }
-    if (elements.winModalDetails) {
-        elements.winModalDetails.textContent = details.length
-            ? details.join(' • ')
-            : 'Get comfy, cue it up, and enjoy the show!';
-    }
-
-    if (elements.winModalLink) {
-        const safeMovieUrl = getSafeHttpUrl(movie.uri);
-        if (safeMovieUrl) {
-            elements.winModalLink.href = safeMovieUrl;
-            elements.winModalLink.classList.remove('hidden');
-            elements.winModalLink.textContent = 'View on Letterboxd';
-        } else {
-            elements.winModalLink.classList.add('hidden');
-            elements.winModalLink.removeAttribute('href');
-        }
-    }
-
-    const metadataKey = buildMetadataKey(movie);
-    currentModalMetadataKey = metadataKey;
-    setWinnerModalLoadingState(movie, spinMode);
-    populateWinnerModalMetadata(movie, metadataKey).then((metadata) => {
-        if (!metadata) return;
-        const posterUrl = metadata.poster && metadata.poster !== 'N/A' ? metadata.poster : '';
-
-        // Calculate Odds
-        const totalWeight = appState.movies.reduce((sum, m) => {
-            return appState.selectedIds.has(m.id) ? sum + getStoredWeight(m) : sum;
-        }, 0);
-        const movieWeight = getStoredWeight(movie);
-        const odds = Number.isFinite(context.selectionOdds)
-            ? `${(context.selectionOdds * 100).toFixed(1)}%`
-            : totalWeight > 0 ? ((movieWeight / totalWeight) * 100).toFixed(1) + '%' : 'N/A';
-
-        if (!context.isRestore) {
-            sendDiscordNotification(movie.name, posterUrl, {
-                odds: odds,
-                weight: movieWeight,
-                link: movie.uri || null,
-                spinMode: spinMode
-            });
-        }
-    });
-
-    elements.winModal.setAttribute('aria-hidden', 'false');
-    const theater = document.querySelector('.spin-theater');
-    if (theater) theater.inert = true;
-    elements.winModal.removeAttribute('hidden');
-    requestAnimationFrame(() => {
-        elements.winModal.classList.add('show');
-    });
-
-    lastFocusedBeforeModal = document.activeElement;
-    if (elements.winModalCloseBtn) {
-        elements.winModalCloseBtn.focus();
-    }
-
-    // Radarr: show/hide the "Add to Radarr" button
-    setupRadarrButton(movie);
-    updateReshowWinnerButton();
-}
-
-export function closeWinnerPopup({ restoreFocus = true } = {}) {
-    if (!elements.winModal || elements.winModal.hasAttribute('hidden')) {
-        return;
-    }
-
-    if (modalHideTimeoutId) {
-        clearTimeout(modalHideTimeoutId);
-        modalHideTimeoutId = null;
-    }
-
-    elements.winModal.classList.remove('show');
-    elements.winModal.setAttribute('aria-hidden', 'true');
-
-    modalHideTimeoutId = window.setTimeout(() => {
-        elements.winModal.setAttribute('hidden', '');
-        const closedTheater = closeSpinTheater({ restoreFocus });
-        clearVhsReveal();
-        currentModalMetadataKey = null;
-        if (!closedTheater && restoreFocus && lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
-            lastFocusedBeforeModal.focus();
-        }
-        lastFocusedBeforeModal = null;
-        modalHideTimeoutId = null;
-        resetRadarrButton();
-        if (tapeViewerController) {
-            tapeViewerController.destroy();
-            tapeViewerController = null;
-        }
-        if (elements.winModalTapeViewer) {
-            elements.winModalTapeViewer.hidden = true;
-        }
-    }, 220);
-}
-
-let radarrButtonHandler = null;
-
-function setupRadarrButton(movie) {
-    const btn = elements.winModalRadarrBtn;
-    const statusEl = elements.winModalRadarrStatus;
-
-    if (!btn) return;
-
-    // Clean up previous handler
-    if (radarrButtonHandler) {
-        btn.removeEventListener('click', radarrButtonHandler);
-        radarrButtonHandler = null;
-    }
-
-    // Only show if Radarr is configured
-    if (!isRadarrConfigured()) {
-        btn.classList.add('hidden');
-        if (statusEl) statusEl.hidden = true;
-        return;
-    }
-
-    btn.classList.remove('hidden');
-    btn.disabled = false;
-    btn.textContent = 'Add to Radarr';
-    if (statusEl) {
-        statusEl.hidden = true;
-        statusEl.textContent = '';
-    }
-
-    radarrButtonHandler = async () => {
-        btn.disabled = true;
-        btn.textContent = 'Adding…';
-        if (statusEl) {
-            statusEl.hidden = false;
-            statusEl.textContent = 'Looking up movie in Radarr…';
-            statusEl.className = 'status radarr-modal-status';
-        }
-
-        try {
-            const result = await addMovieToRadarr(movie);
-            if (statusEl) {
-                statusEl.textContent = result.message;
-                statusEl.className = result.success
-                    ? 'status radarr-modal-status status--success'
-                    : 'status radarr-modal-status status--error';
-            }
-            if (result.success) {
-                btn.textContent = '✓ Added';
-            } else {
-                btn.textContent = 'Add to Radarr';
-                btn.disabled = false;
-            }
-        } catch (error) {
-            console.error('Radarr add failed:', error);
-            if (statusEl) {
-                statusEl.textContent = 'An unexpected error occurred.';
-                statusEl.className = 'status radarr-modal-status status--error';
-            }
-            btn.textContent = 'Add to Radarr';
-            btn.disabled = false;
-        }
-    };
-
-    btn.addEventListener('click', radarrButtonHandler);
-}
-
-function resetRadarrButton() {
-    const btn = elements.winModalRadarrBtn;
-    const statusEl = elements.winModalRadarrStatus;
-
-    if (radarrButtonHandler && btn) {
-        btn.removeEventListener('click', radarrButtonHandler);
-        radarrButtonHandler = null;
-    }
-
-    if (btn) {
-        btn.classList.add('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Add to Radarr';
-    }
-    if (statusEl) {
-        statusEl.hidden = true;
-        statusEl.textContent = '';
-    }
-}
-
-function setWinnerModalLoadingState(movie, spinMode) {
-    // Clean up any previous tape viewer
-    if (tapeViewerController) {
-        tapeViewerController.destroy();
-        tapeViewerController = null;
-    }
-
-    // Decide whether to use the 3D tape viewer or the flat poster
-    const useTapeViewer = isVhsEnabled() && elements.winModalTapeViewer && movie;
-
-    if (useTapeViewer) {
-        // Hide flat poster, show tape viewer
-        if (elements.winModalPosterWrapper) {
-            elements.winModalPosterWrapper.hidden = true;
-        }
-        if (elements.winModalPoster) {
-            elements.winModalPoster.removeAttribute('src');
-            elements.winModalPoster.alt = '';
-        }
-        elements.winModalTapeViewer.hidden = false;
-        tapeViewerController = createTapeViewer(elements.winModalTapeViewer, movie);
-        if (spinMode === 'knockout') {
-            tapeViewerController.root.classList.add('tape-viewer--champion');
-        }
-    } else {
-        // Classic flat poster path
-        if (elements.winModalTapeViewer) {
-            elements.winModalTapeViewer.hidden = true;
-        }
-        if (elements.winModalPosterWrapper) {
-            elements.winModalPosterWrapper.hidden = true;
-        }
-        if (elements.winModalPoster) {
-            elements.winModalPoster.removeAttribute('src');
-            elements.winModalPoster.alt = '';
-        }
-    }
-
-    if (elements.winModalRuntime) {
-        elements.winModalRuntime.textContent = 'Looking up runtime…';
-        elements.winModalRuntime.classList.add('is-loading');
-    }
-    if (elements.winModalSynopsis) {
-        elements.winModalSynopsis.textContent = 'Fetching synopsis…';
-        elements.winModalSynopsis.classList.add('is-loading');
-    }
-    if (elements.winModalTrailer) {
-        const trailerUrl = buildTrailerSearchUrl(movie?.name, movie?.year);
-        elements.winModalTrailer.href = trailerUrl;
-        elements.winModalTrailer.textContent = 'Find a trailer';
-        elements.winModalTrailer.classList.remove('hidden');
-        if (movie?.name) {
-            elements.winModalTrailer.setAttribute('aria-label', `Find a trailer for ${movie.name}`);
-        } else {
-            elements.winModalTrailer.removeAttribute('aria-label');
-        }
-    }
-}
-
-async function populateWinnerModalMetadata(movie, metadataKey) {
-    if (!movie || !movie.name) {
-        return applyWinnerModalFallback(movie);
-    }
-
-    const result = await fetchMovieMetadata(movie);
-    if (metadataKey !== currentModalMetadataKey) {
-        return;
-    }
-
-    if (!result || result.status !== 'success' || !result.data) {
-        return applyWinnerModalFallback(movie);
-    }
-
-    const { title, runtime, plot, poster, year } = result.data;
-
-    if (elements.winModalRuntime) {
-        elements.winModalRuntime.textContent = runtime || 'Runtime unavailable.';
-        elements.winModalRuntime.classList.toggle('is-loading', false);
-    }
-
-    if (elements.winModalSynopsis) {
-        elements.winModalSynopsis.textContent = plot || 'Synopsis unavailable. Check the movie page for more.';
-        elements.winModalSynopsis.classList.toggle('is-loading', false);
-    }
-
-    if (tapeViewerController && poster) {
-        // Update the 3D tape's poster
-        tapeViewerController.update(movie, poster);
-    } else if (elements.winModalPosterWrapper && elements.winModalPoster) {
-        if (poster) {
-            elements.winModalPoster.src = poster;
-            elements.winModalPoster.alt = title ? `Poster for ${title}` : 'Movie poster';
-            elements.winModalPosterWrapper.hidden = false;
-        } else {
-            elements.winModalPosterWrapper.hidden = true;
-            elements.winModalPoster.removeAttribute('src');
-            elements.winModalPoster.alt = '';
-        }
-    }
-
-    if (elements.winModalTrailer) {
-        const trailerUrl = buildTrailerSearchUrl(title || movie.name, year || movie.year);
-        elements.winModalTrailer.href = trailerUrl;
-        elements.winModalTrailer.textContent = 'Watch trailer';
-        if (title || movie.name) {
-            elements.winModalTrailer.setAttribute('aria-label', `Watch trailer for ${title || movie.name}`);
-        } else {
-            elements.winModalTrailer.removeAttribute('aria-label');
-        }
-        elements.winModalTrailer.classList.remove('hidden');
-    }
-    return result.data;
-}
-
-function applyWinnerModalFallback(movie) {
-    if (elements.winModalRuntime) {
-        elements.winModalRuntime.textContent = 'Runtime unavailable.';
-        elements.winModalRuntime.classList.toggle('is-loading', false);
-    }
-
-    if (elements.winModalSynopsis) {
-        elements.winModalSynopsis.textContent = 'Synopsis unavailable. Check the movie page for more.';
-        elements.winModalSynopsis.classList.toggle('is-loading', false);
-    }
-
-    if (elements.winModalPosterWrapper) {
-        elements.winModalPosterWrapper.hidden = true;
-    }
-    if (elements.winModalPoster) {
-        elements.winModalPoster.removeAttribute('src');
-        elements.winModalPoster.alt = '';
-    }
-
-    if (elements.winModalTrailer) {
-        const trailerUrl = buildTrailerSearchUrl(movie?.name, movie?.year);
-        elements.winModalTrailer.href = trailerUrl;
-        elements.winModalTrailer.textContent = 'Find a trailer';
-        if (movie?.name) {
-            elements.winModalTrailer.setAttribute('aria-label', `Find a trailer for ${movie.name}`);
-        } else {
-            elements.winModalTrailer.removeAttribute('aria-label');
-        }
-        elements.winModalTrailer.classList.remove('hidden');
-    }
-
-    return {
-        title: movie.name,
-        year: movie.year || '',
-        poster: ''
-    };
-}
-
-function buildTrailerSearchUrl(name, year) {
-    const terms = [name, year, 'trailer'].filter(Boolean).join(' ');
-    const query = terms || 'movie trailer';
-    return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-}
-
-// Confetti
-let confettiTimeoutId = null;
-
-function getConfettiPalette() {
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-hanukkah')) {
-        return ['#1d4ed8', '#60a5fa', '#facc15', '#fde68a', '#93c5fd', '#2563eb'];
-    }
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-holiday')) {
-        return ['#d1495b', '#2ea44f', '#f0c75e', '#f7e1a1', '#9b2f2f', '#4c956c'];
-    }
-    return ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
-}
-
-export function triggerConfetti() {
-    if (!elements.confettiContainer) return;
-
-    if (confettiTimeoutId) {
-        clearTimeout(confettiTimeoutId);
-        confettiTimeoutId = null;
-    }
-
-    elements.confettiContainer.classList.remove('show');
-    elements.confettiContainer.innerHTML = '';
-
-    const colors = getConfettiPalette();
-    const pieceCount = 140;
-
-    for (let i = 0; i < pieceCount; i += 1) {
-        const piece = document.createElement('span');
-        piece.className = 'confetti-piece';
-        const size = 8 + Math.random() * 8;
-        piece.style.width = `${size}px`;
-        piece.style.height = `${size * 1.4}px`;
-        piece.style.backgroundColor = colors[i % colors.length];
-        piece.style.left = `${Math.random() * 100}%`;
-        piece.style.animationDelay = `${Math.random() * 0.3}s`;
-        const duration = 2.2 + Math.random() * 1.5;
-        piece.style.animationDuration = `${duration}s`;
-        const horizontalDrift = (Math.random() - 0.5) * 40;
-        piece.style.setProperty('--confetti-x-move', `${horizontalDrift}vw`);
-        elements.confettiContainer.appendChild(piece);
-    }
-
-    void elements.confettiContainer.offsetWidth;
-    elements.confettiContainer.classList.add('show');
-
-    confettiTimeoutId = window.setTimeout(() => {
-        elements.confettiContainer.classList.remove('show');
-        elements.confettiContainer.innerHTML = '';
-        confettiTimeoutId = null;
-    }, 4200);
-}
-
-// History
-// History
-export function renderHistory() {
-    if (!elements.historyListEl) return;
-    elements.historyListEl.innerHTML = '';
-    if (!appState.history.length) {
-        if (elements.historyEmptyMsg) elements.historyEmptyMsg.hidden = false;
-        return;
-    }
-    if (elements.historyEmptyMsg) elements.historyEmptyMsg.hidden = true;
-
-    appState.history.forEach(entry => {
-        const li = document.createElement('li');
-        li.className = 'history-item';
-        const modeLabel = getModeLabel(entry.mode);
-
-        const date = new Date(entry.timestamp).toLocaleDateString(undefined, {
-            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-
-        const info = document.createElement('div');
-        info.className = 'history-item__info';
-
-        const name = document.createElement('span');
-        name.className = 'history-item__name';
-        name.textContent = `${entry.name || 'Untitled entry'} ${entry.year ? `(${entry.year})` : ''}`.trim();
-        info.appendChild(name);
-
-        if (modeLabel) {
-            const mode = document.createElement('span');
-            mode.className = 'history-item__mode';
-            mode.textContent = modeLabel;
-            info.appendChild(mode);
-        }
-
-        const dateEl = document.createElement('span');
-        dateEl.className = 'history-item__date';
-        dateEl.textContent = date;
-        info.appendChild(dateEl);
-
-        const actions = document.createElement('div');
-        actions.className = 'history-item__actions';
-        const safeUri = getSafeHttpUrl(entry.uri);
-        if (safeUri) {
-            const viewLink = document.createElement('a');
-            viewLink.href = safeUri;
-            viewLink.target = '_blank';
-            viewLink.className = 'btn btn--small';
-            viewLink.rel = 'noopener noreferrer';
-            viewLink.textContent = 'View';
-            actions.appendChild(viewLink);
-        }
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn--small btn--danger remove-history-btn';
-        removeBtn.setAttribute('aria-label', 'Remove from history');
-        removeBtn.textContent = '×';
-        removeBtn.addEventListener('click', () => {
-            if (confirm(`Remove “${entry.name}” from history?`)) {
-                removeHistoryEntry(entry.id);
-                renderHistory();
-            }
-        });
-        actions.appendChild(removeBtn);
-
-        li.appendChild(info);
-        li.appendChild(actions);
-
-        elements.historyListEl.appendChild(li);
-    });
-}
-
-// Knockout helpers
-export function markMovieKnockedOut(movieId, order) {
-    appState.knockoutResults.set(movieId, { order, status: 'knocked-out' });
-    applyKnockoutStatusToItem(movieId);
-    reorderMovieListForKnockout();
-}
-
-export function markMovieChampion(movieId, order) {
-    appState.knockoutResults.set(movieId, { order, status: 'champion' });
-    applyKnockoutStatusToItem(movieId);
-    reorderMovieListForKnockout();
-}
-
-export function updateKnockoutRemainingBox(remainingMovies = []) {
-    if (!elements.knockoutBox || !elements.knockoutList) return;
-
-    lastKnockoutRemaining = Array.isArray(remainingMovies) ? [...remainingMovies] : [];
-
-    const preferences = appState.preferences || {};
-    const hideFinalistsBox = Boolean(preferences.hideFinalistsBox);
-    const showFromStart = Boolean(preferences.showFinalistsFromStart);
-
-    if (hideFinalistsBox || !Array.isArray(remainingMovies) || !remainingMovies.length) {
-        elements.knockoutList.replaceChildren();
-        elements.knockoutBox.hidden = true;
-        const theaterContenders = document.getElementById('spin-theater-contenders');
-        if (theaterContenders) {
-            theaterContenders.hidden = true;
-            document.querySelector('.spin-theater')?.classList.toggle('has-contenders', false);
-        }
-        updateWheelAsideLayout();
-        return;
-    }
-
-    if (!showFromStart && remainingMovies.length > 10) {
-        elements.knockoutList.replaceChildren();
-        elements.knockoutBox.hidden = true;
-        const theaterContenders = document.getElementById('spin-theater-contenders');
-        if (theaterContenders) {
-            theaterContenders.hidden = true;
-            document.querySelector('.spin-theater')?.classList.toggle('has-contenders', false);
-        }
-        updateWheelAsideLayout();
-        return;
-    }
-
-    elements.knockoutBox.hidden = false;
-    const theaterContenders = document.getElementById('spin-theater-contenders');
-    if (theaterContenders) {
-        theaterContenders.hidden = false;
-        document.querySelector('.spin-theater')?.classList.toggle('has-contenders', true);
-    }
-    const oddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: true });
-    const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
-    const themeLocked = isThemePaletteLocked();
-
-    const items = [];
-    lastKnockoutRemaining.forEach((movie) => {
-        const originalIndex = getMovieOriginalIndex(movie, appState.movies);
-        let colorIndex = originalIndex;
-        if (!Number.isFinite(colorIndex) || colorIndex < 0) {
-            colorIndex = appState.movies.indexOf(movie);
-        }
-        const defaultColor = getDefaultColorForIndex(colorIndex);
-        const resolvedColor = themeLocked ? defaultColor : getStoredColor(movie, defaultColor);
-        if (movie.color !== resolvedColor) {
-            movie.color = resolvedColor;
-        }
-
-        const item = document.createElement('li');
-        item.className = 'knockout-remaining__item';
-        item.dataset.id = movie.id;
-
-        const titleRow = document.createElement('div');
-        titleRow.className = 'knockout-remaining__line';
-
-        const colorSwatch = document.createElement('span');
-        colorSwatch.className = 'knockout-remaining__color';
-        colorSwatch.style.backgroundColor = resolvedColor;
-        colorSwatch.setAttribute('aria-hidden', 'true');
-
-        const title = document.createElement('span');
-        title.className = 'knockout-remaining__name';
-        title.textContent = movie.name;
-
-        titleRow.appendChild(colorSwatch);
-        titleRow.appendChild(title);
-        item.appendChild(titleRow);
-
-        const metaParts = [];
-        if (movie.year) metaParts.push(movie.year);
-        if (movie.isCustom) metaParts.push('Custom');
-        if (metaParts.length) {
-            const meta = document.createElement('span');
-            meta.className = 'knockout-remaining__meta';
-            meta.textContent = metaParts.join(' | ');
-            item.appendChild(meta);
-        }
-
-        const winOddsValue = winOddsMap.get(movie.id) || oddsMap.get(movie.id) || 0;
-        const odds = document.createElement('span');
-        odds.className = 'knockout-remaining__odds';
-        odds.textContent = `Odds: ${formatOddsPercent(winOddsValue)}`;
-        item.appendChild(odds);
-
-        items.push(item);
-    });
-
-    elements.knockoutList.replaceChildren(...items);
-    updateWheelAsideLayout();
-}
-
-export function refreshKnockoutBoxVisibility() {
-    updateKnockoutRemainingBox(lastKnockoutRemaining);
-}
-
-export function highlightKnockoutCandidate(movieId) {
-    if (!elements.knockoutList) return;
-    const items = elements.knockoutList.querySelectorAll('.knockout-remaining__item');
-    items.forEach((item) => {
-        const isActive = Boolean(movieId && item.dataset.id === movieId);
-        item.classList.toggle('is-active', isActive);
-        if (isActive) {
-            item.setAttribute('aria-current', 'true');
-        } else {
-            item.removeAttribute('aria-current');
-        }
-    });
-}
-
-function setKnockoutResultContent(prefix, emphasizedText, suffix) {
-    elements.resultEl.replaceChildren();
-    const label = document.createElement('span');
-    label.className = 'result__label';
-    label.textContent = prefix;
-    const strong = document.createElement('strong');
-    strong.className = 'result__name';
-    strong.textContent = emphasizedText;
-    elements.resultEl.append(label, strong);
-    if (suffix) {
-        const meta = document.createElement('span');
-        meta.className = 'result__meta';
-        meta.textContent = suffix;
-        elements.resultEl.append(meta);
-    }
-}
-
-export function updateKnockoutResultText(type, countOrMovie, extra) {
-    if (!elements.resultEl) return;
-
-    if (type === 'start') {
-        elements.resultEl.className = 'result result--knockout';
-        setKnockoutResultContent(
-            'Movie Knockout:',
-            `${countOrMovie} movies`,
-            ' · enter the arena'
-        );
-    } else if (type === 'eliminated') {
-        const remainingCount = countOrMovie;
-        const eliminatedMovie = extra;
-        const remainText = remainingCount === 1 ? 'Final showdown!' : `${remainingCount} remain`;
-        const eliminatedLabel = `${eliminatedMovie.name}${eliminatedMovie.year ? ` (${eliminatedMovie.year})` : ''}`;
-        elements.resultEl.className = 'result result--knockout';
-        setKnockoutResultContent('Knocked out:', eliminatedLabel, ` · ${remainText}`);
-    } else if (type === 'winner') {
-        const finalMovie = extra;
-        elements.resultEl.className = 'result result--champion';
-        setKnockoutResultContent(
-            'Movie Knockout winner:',
-            finalMovie.name,
-            finalMovie.year ? ` (${finalMovie.year})` : ''
-        );
-    }
-}
-
-function applyKnockoutStatusToElement(element, status) {
-    if (!element) return;
-
-    if (!status) {
-        element.classList.remove('is-champion', 'is-knocked-out');
-        element.removeAttribute('data-knockout-order');
-        element.removeAttribute('data-knockout-status');
-        const existing = element.querySelector('.knockout-badge');
-        if (existing) {
-            existing.remove();
-        }
-        return;
-    }
-
-    element.dataset.knockoutOrder = String(status.order);
-    element.dataset.knockoutStatus = status.status;
-
-    element.classList.toggle('is-knocked-out', status.status === 'knocked-out');
-    element.classList.toggle('is-champion', status.status === 'champion');
-
-    let badge = element.querySelector('.knockout-badge');
-    if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'knockout-badge';
-        const removeButton = element.querySelector('.remove-custom');
-        if (removeButton && removeButton.parentElement === element) {
-            element.insertBefore(badge, removeButton);
-        } else {
-            element.appendChild(badge);
-        }
-    } else {
-        const removeButton = element.querySelector('.remove-custom');
-        if (removeButton && removeButton.parentElement === element && badge.nextSibling !== removeButton) {
-            element.insertBefore(badge, removeButton);
-        }
-    }
-
-    if (status.status === 'champion') {
-        badge.textContent = 'Knockout champion';
-    } else {
-        badge.textContent = status.order ? `Knocked out #${status.order}` : 'Knocked out';
-    }
-}
-
-function applyKnockoutStatusToItem(movieId) {
-    if (!elements.movieListEl) return;
-    const safeId = escapeSelector(movieId);
-    const item = elements.movieListEl.querySelector(`li[data-id="${safeId}"]`);
-    if (!item) return;
-    const status = appState.knockoutResults.get(movieId);
-    applyKnockoutStatusToElement(item, status);
-}
-
-function reorderMovieListForKnockout() {
-    if (!elements.movieListEl || !appState.knockoutResults.size || virtualListState.enabled) {
-        return;
-    }
-
-    const items = Array.from(elements.movieListEl.children).filter((item) => !item.classList.contains('empty'));
-    if (!items.length) {
-        return;
-    }
-
-    const sorted = items.sort((a, b) => {
-        const aOrder = Number.parseInt(a.dataset.knockoutOrder, 10);
-        const bOrder = Number.parseInt(b.dataset.knockoutOrder, 10);
-        const aHasOrder = Number.isFinite(aOrder);
-        const bHasOrder = Number.isFinite(bOrder);
-
-        if (aHasOrder && bHasOrder) {
-            return aOrder - bOrder;
-        }
-        if (aHasOrder) {
-            return -1;
-        }
-        if (bHasOrder) {
-            return 1;
-        }
-
-        const aIndex = Number.parseInt(a.dataset.originalIndex, 10);
-        const bIndex = Number.parseInt(b.dataset.originalIndex, 10);
-        if (Number.isFinite(aIndex) && Number.isFinite(bIndex)) {
-            return aIndex - bIndex;
-        }
-        return 0;
-    });
-
-    sorted.forEach((item) => {
-        elements.movieListEl.appendChild(item);
-    });
-}
-
-// Boost Station Logic
-// Boost Controls
-function initBoostControls() {
-    if (elements.randomBoostBtn) {
-        elements.randomBoostBtn.addEventListener('click', () => {
-            promptForInput('Who is this boost for?', 'Booster Name', (name) => {
-                const wheelSection = document.querySelector('.wheel-section');
-                if (wheelSection) {
-                    wheelSection.scrollIntoView({ behavior: 'smooth' });
-                }
-                spinWheel('random-boost', { booster: name });
-            });
-        });
-    }
-
-    // Keep Boost Modal listeners active just in case
-    if (elements.boostModalCloseBtn) {
-        elements.boostModalCloseBtn.addEventListener('click', closeBoostStation);
-    }
-    if (elements.boostModal) {
-        elements.boostModal.addEventListener('click', (e) => {
-            if (e.target === elements.boostModal) closeBoostStation();
-        });
-    }
-
-    if (elements.boostMovieFilter) {
-        elements.boostMovieFilter.addEventListener('input', (e) => {
-            filterBoostOptions(e.target.value);
-        });
-    }
-    if (elements.boostMovieSelect) {
-        elements.boostMovieSelect.addEventListener('change', () => {
-            const hasSelection = Boolean(elements.boostMovieSelect.value);
-            if (elements.btnBoostSpecific) {
-                elements.btnBoostSpecific.disabled = !hasSelection;
-            }
-            if (elements.btnBoostRemove) {
-                elements.btnBoostRemove.disabled = !hasSelection;
-            }
-        });
-        // Allow double click to confirm
-        elements.boostMovieSelect.addEventListener('dblclick', () => {
-            if (elements.boostMovieSelect.value) handleBoostSpecific();
-        });
-    }
-    if (elements.btnBoostSpecific) {
-        elements.btnBoostSpecific.addEventListener('click', handleBoostSpecific);
-    }
-    if (elements.btnBoostRemove) {
-        elements.btnBoostRemove.addEventListener('click', handleBoostRemove);
-    }
-    if (elements.btnBoostRandom) {
-        elements.btnBoostRandom.addEventListener('click', handleBoostRandom);
-    }
-}
-
-function openBoostStation() {
-    if (!elements.boostModal) return;
-    populateBoostSelect();
-    if (elements.boostBoosterName) elements.boostBoosterName.value = '';
-    if (elements.boostMovieFilter) elements.boostMovieFilter.value = '';
-    if (elements.btnBoostSpecific) elements.btnBoostSpecific.disabled = true;
-    if (elements.btnBoostRemove) elements.btnBoostRemove.disabled = true;
-
-    elements.boostModal.hidden = false;
-    requestAnimationFrame(() => elements.boostModal.classList.add('show'));
-    if (elements.boostBoosterName) elements.boostBoosterName.focus();
-}
-
-function closeBoostStation() {
-    if (!elements.boostModal) return;
-    elements.boostModal.classList.remove('show');
-    setTimeout(() => { elements.boostModal.hidden = true; }, 200);
-}
-
-function populateBoostSelect() {
-    if (!elements.boostMovieSelect) return;
-    elements.boostMovieSelect.innerHTML = '';
-
-    // Sort movies alphabetically for easier finding
-    const sorted = [...appState.movies].sort((a, b) => a.name.localeCompare(b.name));
-
-    sorted.forEach(movie => {
-        const option = document.createElement('option');
-        option.value = movie.id;
-        const weight = getStoredWeight(movie);
-        const weightLabel = weight > 1 ? ` [${weight}x]` : '';
-        option.textContent = `${movie.name} (${movie.year || 'N/A'})${weightLabel}`;
-        elements.boostMovieSelect.appendChild(option);
-    });
-}
-
-function filterBoostOptions(query) {
-    if (!elements.boostMovieSelect) return;
-    const term = query.toLowerCase();
-    const options = Array.from(elements.boostMovieSelect.options);
-
-    options.forEach(opt => {
-        const match = opt.textContent.toLowerCase().includes(term);
-        opt.hidden = !match;
-    });
-
-    // Auto-select first visible if current selection is hidden
-    if (elements.boostMovieSelect.value) {
-        const current = elements.boostMovieSelect.querySelector(`option[value="${elements.boostMovieSelect.value}"]`);
-        if (current && current.hidden) elements.boostMovieSelect.value = '';
-    }
-
-    // Disable button if nothing selected
-    const hasSelection = Boolean(elements.boostMovieSelect.value);
-    if (elements.btnBoostSpecific) elements.btnBoostSpecific.disabled = !hasSelection;
-    if (elements.btnBoostRemove) elements.btnBoostRemove.disabled = !hasSelection;
-}
-
-function handleBoostSpecific() {
-    const movieId = elements.boostMovieSelect ? elements.boostMovieSelect.value : null;
-    const name = elements.boostBoosterName ? elements.boostBoosterName.value.trim() : 'Anonymous';
-
-    if (!movieId) return;
-
-    const movie = appState.movies.find(m => m.id === movieId);
-    if (!movie) return;
-
-    // Boost Logic
-    const currentW = getStoredWeight(movie);
-    const newW = clampWeight(currentW + 1);
-    movie.weight = newW;
-    if (!movie.boosters) movie.boosters = [];
-    movie.boosters.push({
-        name: name || 'Anonymous',
-        timestamp: Date.now(),
-        source: 'manual'
-    });
-
-    if (elements.statusMessage) {
-        elements.statusMessage.textContent = `Boosted "${movie.name}" to ${newW}x (Booster: ${name || 'Anonymous'})`;
-    }
-
-    debouncedSaveState();
-    updateMovieList();
-    closeBoostStation();
-}
-
-function handleBoostRemove() {
-    const movieId = elements.boostMovieSelect ? elements.boostMovieSelect.value : null;
-
-    if (!movieId) return;
-
-    const movie = appState.movies.find(m => m.id === movieId);
-    if (!movie) return;
-
-    // Remove Boost Logic
-    const currentW = getStoredWeight(movie);
-    if (currentW <= 1) {
-        if (elements.statusMessage) {
-            elements.statusMessage.textContent = `Cannot remove boost: "${movie.name}" is already at 1x`;
-        }
-        return;
-    }
-
-    const newW = clampWeight(currentW - 1);
-    movie.weight = newW;
-
-    // Remove last added booster if present
-    if (movie.boosters && movie.boosters.length > 0) {
-        movie.boosters.pop();
-    }
-
-    if (elements.statusMessage) {
-        elements.statusMessage.textContent = `Removed boost from "${movie.name}" (now ${newW}x)`;
-    }
-
-    debouncedSaveState();
-    updateMovieList();
-    closeBoostStation();
-}
-
-function handleBoostRandom() {
-    const name = elements.boostBoosterName ? elements.boostBoosterName.value.trim() : 'Anonymous';
-    closeBoostStation();
-
-    const wheelSection = document.querySelector('.wheel-section');
-    if (wheelSection) {
-        wheelSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    spinWheel('random-boost', { booster: name || 'Anonymous' });
-}
-
-function createWheelAsideUpdater(domElements) {
-    const { wheelAside, wheelLayout, knockoutBox, sliceEditor } = domElements;
-    return () => {
-        if (!wheelAside || !wheelLayout) {
-            return;
-        }
-        const asideVisible = (knockoutBox && !knockoutBox.hidden) || (sliceEditor && !sliceEditor.hidden);
-        wheelAside.classList.toggle('is-hidden', !asideVisible);
-        wheelLayout.classList.toggle('is-centered', !asideVisible);
-    };
-}
-
-
-function populateSliceEditor(m) {
-    if (!elements.sliceEditor) return;
-    elements.sliceEditor.hidden = false;
-    if (elements.sliceEditorName) elements.sliceEditorName.textContent = m.name;
-    if (elements.sliceWeightValue) elements.sliceWeightValue.textContent = getStoredWeight(m) + 'x';
-}
-
-// Helper to get booster color
-function getBoosterColor(name) {
-    if (appState.preferences.boosterColors && appState.preferences.boosterColors[name]) {
-        return sanitizeColor(appState.preferences.boosterColors[name], stringToColor(name));
-    }
-    return stringToColor(name);
-}
-
-function renderBoosterTags(container, movie) {
-    if (!movie.boosters || !movie.boosters.length) return;
-
-    // Group by name (handle string or object)
-    const counts = {};
-    movie.boosters.forEach(b => {
-        const name = typeof b === 'string' ? b : b.name;
-        counts[name] = (counts[name] || 0) + 1;
-    });
-
-    // Sort by count desc
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
-    sorted.forEach(([name, count]) => {
-        const tag = document.createElement('span');
-        tag.className = 'booster-tag';
-        tag.title = `Manage boosts for ${name}`;
-
-        const color = getBoosterColor(name);
-
-        tag.style.backgroundColor = `${color}40`;
-        tag.style.borderColor = color;
-        tag.style.color = 'var(--text)';
-
-        const dot = document.createElement('span');
-        dot.style.backgroundColor = color;
-        dot.style.borderRadius = '50%';
-        dot.style.display = 'inline-block';
-        dot.style.height = '10px';
-        dot.style.marginRight = '4px';
-        dot.style.width = '10px';
-        tag.appendChild(dot);
-        tag.appendChild(document.createTextNode(`${name} `));
-
-        const countEl = document.createElement('span');
-        countEl.className = 'booster-tag__count';
-        countEl.textContent = `x${count}`;
-        tag.appendChild(countEl);
-
-        tag.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleBoosterTagClick(movie, name, count);
-        });
-        container.appendChild(tag);
-    });
-}
-
-function handleBoosterTagClick(movie, name, count) {
-    const existingOverlay = document.getElementById('booster-action-overlay');
-    if (existingOverlay) existingOverlay.remove();
-
-    // Get history for this person
-    const history = movie.boosters
-        .filter(b => (typeof b === 'string' ? b : b.name) === name)
-        .map(b => {
-            if (typeof b === 'string') return { timestamp: null, source: 'legacy' };
-            return { timestamp: b.timestamp, source: b.source || 'manual' };
-        })
-        .sort((a, b) => {
-            if (!a.timestamp) return 1; // Put legacy at bottom
-            if (!b.timestamp) return -1;
-            return b.timestamp - a.timestamp; // Newest first
-        });
-
-    const overlay = document.createElement('div');
-    overlay.id = 'booster-action-overlay';
-    overlay.className = 'win-modal show';
-    overlay.style.zIndex = '3000';
-
-    const currentColor = getBoosterColor(name);
-    const safeName = escapeHtml(name);
-    const safeMovieName = escapeHtml(movie.name);
-
-    // Build history list HTML
-    const historyListHtml = history.length > 0
-        ? `<div style="margin: 0 0 1rem 0; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
-            <ul style="margin: 0; padding: 0; list-style: none; max-height: 120px; overflow-y: auto;">
-            ${history.map(item => {
-            const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString(undefined, {
-                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-            }) : 'Legacy boost';
-
-            let label = 'Boost +1';
-            if (item.source === 'random') label = '🎲 Random Boost';
-            else if (item.source === 'manual') label = '➕ Manual Boost';
-
-            return `<li style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); display:flex; justify-content:space-between;">
-                    <span style="color: var(--text);">${label}</span>
-                    <span>${dateStr}</span>
-                </li>`;
-        }).join('')}
-           </ul></div>`
-        : '';
-
-    overlay.innerHTML = `
-        <div class="win-modal__content" style="max-width: 320px; text-align: left; padding: 1.5rem;">
-            <button type="button" class="win-modal__close" style="top: 0.5rem; right: 0.5rem;">&times;</button>
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.25rem;">
-                 <h3 class="win-modal__title" style="font-size: 1.2rem; margin:0;">${safeName}</h3>
-                 <input type="color" id="booster-color-picker" value="${currentColor}" title="Change color for ${safeName}" style="background:none; border:none; width:30px; height:30px; cursor:pointer;">
-            </div>
-            
-            <p style="color: var(--muted); margin-bottom: 0.75rem; font-size: 0.9rem;">
-                Contributions to <strong>${safeMovieName}</strong>: <strong>${count}</strong>
-            </p>
-            
-            ${historyListHtml}
-
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <button id="action-add-boost" class="btn" style="justify-content: center;">
-                    ➕ Add Boost (+1)
-                </button>
-                <button id="action-remove-boost" class="btn" style="justify-content: center;">
-                    ➖ Remove One (-1)
-                </button>
-                <button id="action-remove-all" class="btn btn--danger" style="justify-content: center;">
-                    🗑️ Remove All
-                </button>
-                <button id="action-done" class="btn btn--primary" style="justify-content: center; margin-top: 0.25rem;">
-                    Done
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    const close = () => overlay.remove();
-
-    // Bind events
-    overlay.querySelector('.win-modal__close').addEventListener('click', close);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) close();
-    });
-
-    const debouncedUpdate = debounce(() => updateMovieList(), 300);
-
-    // Color Picker Logic
-    const colorPicker = overlay.querySelector('#booster-color-picker');
-    const headerTitle = overlay.querySelector('.win-modal__title');
-
-    colorPicker.addEventListener('input', (e) => {
-        const newColor = e.target.value;
-        if (!appState.preferences.boosterColors) {
-            appState.preferences.boosterColors = {};
-        }
-        appState.preferences.boosterColors[name] = newColor;
-
-        // Immediate feedback in the popup
-        if (headerTitle) {
-            headerTitle.style.backgroundImage = 'none';
-            headerTitle.style.webkitTextFillColor = 'initial';
-            headerTitle.style.color = newColor;
-        }
-
-        debouncedSaveState();
-        debouncedUpdate();
-    });
-
-    overlay.querySelector('#action-done').addEventListener('click', close);
-
-    overlay.querySelector('#action-add-boost').addEventListener('click', () => {
-        modifyBooster(movie, name, 1);
-        close();
-    });
-
-    overlay.querySelector('#action-remove-boost').addEventListener('click', () => {
-        modifyBooster(movie, name, -1);
-        close();
-    });
-
-    overlay.querySelector('#action-remove-all').addEventListener('click', () => {
-        modifyBooster(movie, name, -count); // Remove all
-        close();
-    });
-}
-
-function modifyBooster(movie, name, delta) {
-    const currentW = getStoredWeight(movie);
-
-    if (delta > 0) {
-        // Add
-        const newW = clampWeight(currentW + delta);
-        if (newW === currentW) {
-            alert('Max weight reached!');
-            return;
-        }
-        movie.weight = newW;
-        if (!movie.boosters) movie.boosters = [];
-        // Push object with timestamp
-        for (let i = 0; i < delta; i++) {
-            movie.boosters.push({
-                name: name,
-                timestamp: Date.now(),
-                source: 'manual'
-            });
-        }
-
-    } else if (delta < 0) {
-        // Remove
-        const removeCount = Math.abs(delta);
-
-        // Filter indices matching name (handle both string and object)
-        const personIndices = movie.boosters.map((b, i) => {
-            const bName = typeof b === 'string' ? b : b.name;
-            return bName === name ? i : -1;
-        }).filter(i => i !== -1);
-
-        if (personIndices.length === 0) return;
-
-        const toRemove = Math.min(removeCount, personIndices.length);
-
-        // Remove from back
-        // We need to find the actual index in the main array each time because splice shifts indices
-        for (let i = 0; i < toRemove; i++) {
-            // Find LAST occurrence
-            let lastIdx = -1;
-            for (let j = movie.boosters.length - 1; j >= 0; j--) {
-                const b = movie.boosters[j];
-                const bName = typeof b === 'string' ? b : b.name;
-                if (bName === name) {
-                    lastIdx = j;
-                    break;
-                }
-            }
-            if (lastIdx > -1) {
-                movie.boosters.splice(lastIdx, 1);
-            }
-        }
-
-        const calculatedWeightFromBoosters = (movie.boosters ? movie.boosters.length : 0) + 1;
-        const targetW = clampWeight(Math.max(1, currentW - toRemove));
-        movie.weight = clampWeight(Math.max(calculatedWeightFromBoosters, targetW));
-    }
-
-    debouncedSaveState();
-    updateMovieList();
-}
-
-let confirmModalTimeoutId = null;
-
-/**
- * Shows the custom confirmation modal for Board Conflict
- * @param {Object} options
- */
-export function showConfirmModal({ title, message, confirmText, secondaryText, cancelText, onConfirm, onSecondary, onCancel }) {
-    const modal = document.getElementById('confirm-modal');
-    const titleEl = document.getElementById('confirm-modal-title');
-    const messageEl = document.getElementById('confirm-modal-message');
-    const confirmBtn = document.getElementById('confirm-modal-confirm');
-    const secondaryBtn = document.getElementById('confirm-modal-secondary');
-    const cancelBtn = document.getElementById('confirm-modal-cancel');
-    const closeBtn = document.getElementById('confirm-modal-close');
-
-    if (!modal) return;
-
-    if (confirmModalTimeoutId) {
-        clearTimeout(confirmModalTimeoutId);
-        confirmModalTimeoutId = null;
-    }
-
-    titleEl.textContent = title || 'Confirm';
-    messageEl.innerHTML = message || '';
-    confirmBtn.textContent = confirmText || 'Confirm';
-
-    if (secondaryText && secondaryBtn) {
-        secondaryBtn.textContent = secondaryText;
-        secondaryBtn.hidden = false;
-    } else if (secondaryBtn) {
-        secondaryBtn.hidden = true;
-    }
-
-    cancelBtn.textContent = cancelText || 'Cancel';
-
-    modal.hidden = false;
-    requestAnimationFrame(() => modal.classList.add('show'));
-
-    const close = () => {
-        modal.classList.remove('show');
-        if (confirmModalTimeoutId) clearTimeout(confirmModalTimeoutId);
-        confirmModalTimeoutId = setTimeout(() => {
-            modal.hidden = true;
-            confirmModalTimeoutId = null;
-        }, 200);
-        cleanup();
-    };
-
-    const confirmHandler = () => {
-        if (onConfirm) onConfirm();
-        close();
-    };
-
-    const secondaryHandler = () => {
-        if (onSecondary) onSecondary();
-        close();
-    };
-
-    const cancelHandler = () => {
-        if (onCancel) onCancel();
-        close();
-    };
-
-    const cleanup = () => {
-        confirmBtn.removeEventListener('click', confirmHandler);
-        if (secondaryBtn) secondaryBtn.removeEventListener('click', secondaryHandler);
-        cancelBtn.removeEventListener('click', cancelHandler);
-        closeBtn.removeEventListener('click', cancelHandler);
-    };
-
-    confirmBtn.addEventListener('click', confirmHandler);
-    if (secondaryBtn) secondaryBtn.addEventListener('click', secondaryHandler);
-    cancelBtn.addEventListener('click', cancelHandler);
-    closeBtn.addEventListener('click', cancelHandler);
-}
-
-
-

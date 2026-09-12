@@ -5,9 +5,32 @@ This is a browser-only application built with HTML, CSS, and native ES modules. 
 ## Code Conventions
 
 - Use semantic HTML and accessible names, states, and ARIA attributes when native semantics are insufficient.
-- Keep JavaScript within the modules under `js/`, place helpers near their callers, and avoid adding global state.
+- Keep JavaScript within focused, modular ES modules under `js/` (and submodules under `js/ui/`).
+- Place helpers near their callers, and avoid adding global state.
+- Keep individual module sizes lean (< 500 lines target) to preserve AI model context quality and avoid edit collisions.
+- Reference JSDoc types in `js/types.js` (`Movie`, `AppState`, `Workspace`, `WinnerContext`, etc.) for strict type awareness without build steps.
 - Put component-specific styles in `css/components/`. Within each CSS rule, keep declarations alphabetized and group related rules together.
 - Optimize new media for web delivery and store it with the existing static assets of the same type.
+
+## Architecture & Module Directory
+
+| Feature Area | Primary File(s) | Notes |
+| :--- | :--- | :--- |
+| **Data Contracts & Types** | `js/types.js` | JSDoc `@typedef` annotations for `Movie`, `AppState`, etc. |
+| **UI Orchestrator & Barrel** | `js/ui.js` | Main UI entry point, re-exports all `js/ui/*.js` sub-modules. |
+| **Winner Dialog & Radarr** | `js/ui/winner-modal.js` | Winner celebration, Radarr export, runtime/synopsis, trailers. |
+| **Knockout Stage & Contenders** | `js/ui/knockout-ui.js` | Knockout eliminations, contenders box, stage launch effects. |
+| **Slice Editor & Odds** | `js/ui/slice-editor.js` | Slice color picker, weight slider, live odds calculation display. |
+| **Boost Station & Tags** | `js/ui/boost-station.js` | Booster names, contributor tags, boost/unboost arithmetic. |
+| **Workspace & Boards** | `js/ui/boards-ui.js` | Board switcher dropdown, create/rename/delete boards modal. |
+| **History Modal** | `js/ui/history-modal.js` | Winner history log rendering and clearing. |
+| **Generic Modals & Dialogs** | `js/ui/modals.js` | Reusable confirm modal, prompt modal, fairness audit report. |
+| **Confetti Animation** | `js/ui/confetti.js` | Canvas-free lightweight CSS/DOM confetti particle burst. |
+| **Canvas Wheel Physics** | `js/wheel.js` | 2D Canvas rendering, slice geometry, physics simulation, easing. |
+| **3D VHS Wheel** | `js/vhs-wheel.js` | 3D cassette tape lineup, animations, cassette shaders. |
+| **Import & Scraping** | `js/import.js` | CSV parsing, Letterboxd web scraping via CORS proxy, sync. |
+| **Audio & Wheel.FM** | `js/audio.js` | Web Audio synthesizer effects and Wheel.FM radio player. |
+| **State Persistence** | `js/state.js` | `localStorage` state management, migrations, debounced persistence. |
 
 ## Relevant Documentation
 
