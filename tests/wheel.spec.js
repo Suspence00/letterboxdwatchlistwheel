@@ -607,6 +607,37 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(page.locator('#movie-list li.empty')).toBeVisible();
   });
 
+  test('Slice editor appears above the wheel without shrinking wheel canvas', async ({ page }) => {
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text=Upload CSV File');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(SAMPLE_CSV_PATH);
+    await expect(page.locator('#movie-list li')).toHaveCount(10);
+
+    await page.locator('#settings-open').click();
+    await page.locator('#wheel-style').selectOption('classic');
+    await page.locator('#settings-modal-close').click();
+    await expect(page.locator('#wheel')).toBeVisible();
+
+    const wheelBefore = await page.locator('#wheel').boundingBox();
+    expect(wheelBefore).not.toBeNull();
+
+    await page.evaluate(async () => {
+      const { appState } = await import('./js/state.js');
+      const { handleSliceSelection } = await import('./js/ui/slice-editor.js');
+      handleSliceSelection(appState.movies[0]);
+    });
+
+    await expect(page.locator('#slice-editor')).toBeVisible();
+    await expect(page.locator('#slice-editor-name')).toHaveText('The Witch');
+
+    const sliceEditorBox = await page.locator('#slice-editor').boundingBox();
+    const wheelAfter = await page.locator('#wheel').boundingBox();
+
+    expect(sliceEditorBox.y).toBeLessThan(wheelAfter.y);
+    expect(wheelAfter.width).toBeCloseTo(wheelBefore.width, 1);
+  });
+
 });
 
 

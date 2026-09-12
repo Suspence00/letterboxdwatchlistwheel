@@ -48,7 +48,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
+    margin-bottom: 0.75rem;
     margin-top: 0.5rem;
+    max-width: min(560px, 100%);
     padding: 1rem 1.1rem;
     width: 100%;
 }

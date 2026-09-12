@@ -83,11 +83,10 @@ function updateWheelAsideLayout() {
     const wheelAside = document.getElementById("wheel-aside") || document.querySelector(".wheel-aside");
     const wheelLayout = document.getElementById("wheel-layout") || document.querySelector(".wheel-layout");
     const knockoutBox = elements.knockoutBox;
-    const sliceEditor = document.getElementById("slice-editor");
     if (!wheelAside || !wheelLayout) {
         return;
     }
-    const asideVisible = (knockoutBox && !knockoutBox.hidden) || (sliceEditor && !sliceEditor.hidden);
+    const asideVisible = Boolean(knockoutBox && !knockoutBox.hidden);
     wheelAside.classList.toggle("is-hidden", !asideVisible);
     wheelLayout.classList.toggle("is-centered", !asideVisible);
 }

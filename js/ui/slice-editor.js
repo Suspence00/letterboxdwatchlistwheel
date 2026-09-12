@@ -139,8 +139,7 @@ function updateWheelAsideLayout() {
     const wheelLayout = elements.wheelLayout;
     if (!wheelAside || !wheelLayout) return;
     const knockoutBox = elements.knockoutBox;
-    const sliceEditor = elements.sliceEditor;
-    const asideVisible = (knockoutBox && !knockoutBox.hidden) || (sliceEditor && !sliceEditor.hidden);
+    const asideVisible = Boolean(knockoutBox && !knockoutBox.hidden);
     wheelAside.classList.toggle('is-hidden', !asideVisible);
     wheelLayout.classList.toggle('is-centered', !asideVisible);
 }
@@ -215,7 +214,7 @@ function setActiveSlice(movie, { skipWheelUpdate = false } = {}) {
     }
     if (elements.sliceEditorHint) {
         elements.sliceEditorHint.textContent = themeLocked
-            ? 'Holiday theme is active, so slice colors follow the theme palette.'
+            ? 'Slice colors follow the active theme palette.'
             : 'Adjust slice color and weight.';
     }
     if (elements.sliceEditorName) {

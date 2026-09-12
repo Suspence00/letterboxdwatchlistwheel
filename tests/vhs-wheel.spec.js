@@ -28,11 +28,21 @@ async function importLargeList(page, count = 1001) {
 test('sample movies have textured 3D sleeves and accessible inspection', async ({ page }) => {
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
     await expect(page.locator('.vhs-tapes .vhs-poster')).toHaveCount(10);
+    await expect(page.locator('.vhs-inspector__title')).toHaveText('Choose a tape to inspect it');
+    const initialInspectorBox = await page.locator('.vhs-inspector').boundingBox();
+    const initialSceneBox = await page.locator('.vhs-scene').boundingBox();
+    expect(initialInspectorBox.y).toBeLessThan(initialSceneBox.y);
     await page.getByRole('button', { name: 'Inspect The Witch (2015)', exact: true }).click();
     await expect(page.locator('.vhs-inspector__title')).toHaveText('The Witch');
     await expect(page.locator('.vhs-inspector__detail')).toContainText('10.0% elimination risk');
+    const sceneWidthBefore = (await page.locator('.vhs-scene').boundingBox()).width;
     await page.locator('#vhs-edit').click();
+    await expect(page.locator('#slice-editor')).toBeVisible();
     await expect(page.locator('#slice-editor-name')).toHaveText('The Witch');
+    const sliceEditorBox = await page.locator('#slice-editor').boundingBox();
+    const sceneBoxAfter = await page.locator('.vhs-scene').boundingBox();
+    expect(sliceEditorBox.y).toBeLessThan(sceneBoxAfter.y);
+    expect(sceneBoxAfter.width).toBeCloseTo(sceneWidthBefore, 1);
 });
 
 test('spin focuses the wheel, matches the pointer to the winner, and restores the page', async ({ page }) => {

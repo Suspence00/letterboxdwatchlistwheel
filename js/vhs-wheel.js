@@ -125,7 +125,7 @@ export function initVhsWheel(handlers) {
         <span class="vhs-inspector__detail"></span></div>
         <button class="btn" type="button" id="vhs-pin" aria-pressed="false" disabled>Pin tape</button>
         <button class="btn" type="button" id="vhs-edit" disabled>Edit weight</button>`;
-    stage.append(scene, inspector);
+    stage.append(inspector, scene);
     rotor = scene.querySelector('.vhs-rotor');
     new ResizeObserver(entries => {
         const width = entries[0].contentRect.width;

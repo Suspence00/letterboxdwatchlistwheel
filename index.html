@@ -358,6 +358,49 @@
         </div>
         <div class="wheel-section">
           <div class="wheel-wrapper">
+            <section class="slice-editor" id="slice-editor" aria-live="polite" hidden>
+              <div class="slice-editor__header">
+                <h3 class="slice-editor__title">Slice editor</h3>
+                <button type="button" class="btn" id="slice-editor-clear">Close</button>
+              </div>
+              <p class="slice-editor__hint" id="slice-editor-hint">Click a wheel slice to adjust its color and
+                weight.</p>
+              <div class="slice-editor__body" id="slice-editor-body" hidden>
+                <div class="slice-editor__row">
+                  <p class="slice-editor__name" id="slice-editor-name"></p>
+                  <span class="slice-editor__swatch" id="slice-color-swatch" aria-hidden="true"></span>
+                </div>
+                <label class="slice-editor__field" for="slice-color">
+                  <span class="slice-editor__label">Slice color</span>
+                  <input type="color" id="slice-color" class="slice-editor__color" name="slice-color"
+                    value="#ff8600" />
+                </label>
+                <label class="slice-editor__field" for="slice-weight">
+                  <div class="slice-editor__label-group">
+                    <div class="slice-editor__label-stack">
+                      <span class="slice-editor__label" id="slice-weight-label">Slice weight</span>
+                      <span class="weight-help" id="slice-weight-help" role="img"
+                        aria-label="Adjust how often this slice appears."
+                        title="Adjust how often this slice appears.">?</span>
+                    </div>
+                    <span class="slice-editor__weight-value" id="slice-weight-value">1x</span>
+                  </div>
+                  <input type="range" id="slice-weight" class="slice-editor__range" name="slice-weight" min="1"
+                    max="5" step="1" value="1" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" />
+                </label>
+                <div class="slice-editor__odds">
+                  <div class="slice-editor__odds-row">
+                    <span class="slice-editor__label" id="slice-odds-label-risk">Pick risk this spin</span>
+                    <span class="slice-editor__odds-value" id="slice-odds-value-risk">0%</span>
+                  </div>
+                  <div class="slice-editor__odds-row">
+                    <span class="slice-editor__label" id="slice-odds-label-win">Odds to be final winner</span>
+                    <span class="slice-editor__odds-value slice-editor__odds-value--secondary"
+                      id="slice-odds-value-win">0%</span>
+                  </div>
+                </div>
+              </div>
+            </section>
             <div class="wheel-layout" id="wheel-layout">
               <div class="wheel-aside" id="wheel-aside">
                 <section class="knockout-remaining" id="knockout-remaining" aria-live="polite" hidden>
@@ -365,49 +408,6 @@
                     <p class="knockout-remaining__title">Final Contenders!</p>
                   </div>
                   <ol class="knockout-remaining__list" id="knockout-remaining-list"></ol>
-                </section>
-                <section class="slice-editor" id="slice-editor" aria-live="polite" hidden>
-                  <div class="slice-editor__header">
-                    <h3 class="slice-editor__title">Slice editor</h3>
-                    <button type="button" class="btn" id="slice-editor-clear">Close</button>
-                  </div>
-                  <p class="slice-editor__hint" id="slice-editor-hint">Click a wheel slice to adjust its color and
-                    weight.</p>
-                  <div class="slice-editor__body" id="slice-editor-body" hidden>
-                    <div class="slice-editor__row">
-                      <p class="slice-editor__name" id="slice-editor-name"></p>
-                      <span class="slice-editor__swatch" id="slice-color-swatch" aria-hidden="true"></span>
-                    </div>
-                    <label class="slice-editor__field" for="slice-color">
-                      <span class="slice-editor__label">Slice color</span>
-                      <input type="color" id="slice-color" class="slice-editor__color" name="slice-color"
-                        value="#ff8600" />
-                    </label>
-                    <label class="slice-editor__field" for="slice-weight">
-                      <div class="slice-editor__label-group">
-                        <div class="slice-editor__label-stack">
-                          <span class="slice-editor__label" id="slice-weight-label">Slice weight</span>
-                          <span class="weight-help" id="slice-weight-help" role="img"
-                            aria-label="Adjust how often this slice appears."
-                            title="Adjust how often this slice appears.">?</span>
-                        </div>
-                        <span class="slice-editor__weight-value" id="slice-weight-value">1x</span>
-                      </div>
-                      <input type="range" id="slice-weight" class="slice-editor__range" name="slice-weight" min="1"
-                        max="5" step="1" value="1" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" />
-                    </label>
-                    <div class="slice-editor__odds">
-                      <div class="slice-editor__odds-row">
-                        <span class="slice-editor__label" id="slice-odds-label-risk">Pick risk this spin</span>
-                        <span class="slice-editor__odds-value" id="slice-odds-value-risk">0%</span>
-                      </div>
-                      <div class="slice-editor__odds-row">
-                        <span class="slice-editor__label" id="slice-odds-label-win">Odds to be final winner</span>
-                        <span class="slice-editor__odds-value slice-editor__odds-value--secondary"
-                          id="slice-odds-value-win">0%</span>
-                      </div>
-                    </div>
-                  </div>
                 </section>
               </div>
               <div class="wheel-stage">

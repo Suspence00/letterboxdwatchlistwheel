@@ -392,11 +392,11 @@ body.hide-tape-labels .vhs-stack-tape__cover {
 
 .vhs-inspector {
     align-items: center;
-    border-top: 1px solid #8884;
+    border-bottom: 1px solid #8884;
     display: flex;
     flex-wrap: wrap;
     gap: 0.7rem;
-    padding: 1rem 0;
+    padding: 0.5rem 0 1rem;
     width: 100%;
 }
 
