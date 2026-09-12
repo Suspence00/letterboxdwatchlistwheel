@@ -62,6 +62,7 @@
  * @typedef {Object} Preferences
  * @property {string} [theme]
  * @property {Object<string, string>} [themeColorOverrides]
+ * @property {boolean} [decorationsEnabled]
  * @property {'vhs'|'classic'} [wheelStyle]
  * @property {number} [vhsCapacity]
  * @property {boolean} [vhsShowLabels]

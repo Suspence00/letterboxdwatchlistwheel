@@ -300,14 +300,16 @@
 }
 
 .text-input {
-    flex: 1 1 220px;
-    min-width: 0;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 0.6rem 0.75rem;
     background: rgba(255, 255, 255, 0.08);
-    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--control-radius);
+    color: var(--text-primary);
+    flex: 1 1 220px;
     font: inherit;
+    height: var(--control-height);
+    min-height: var(--control-height);
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
 }
 
 /* 
@@ -328,8 +330,18 @@
 }
 
 .text-input:focus {
-    outline: 2px solid var(--accent);
+    border-color: var(--focus-ring);
+    outline: 3px solid color-mix(in srgb, var(--focus-ring) 45%, transparent);
     outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
 }
 
 .text-input--slim {
@@ -347,8 +359,8 @@
 .text-input--select {
     width: min(100%, 220px);
     padding: 0 1.85rem 0 0.75rem;
-    min-height: 2.3rem;
-    height: 2.3rem;
+    min-height: var(--control-height-compact);
+    height: var(--control-height-compact);
     line-height: 1.15;
     font-size: 0.95rem;
     appearance: none;
@@ -371,6 +383,7 @@
 .text-input--textarea {
     min-height: 140px;
     resize: vertical;
+    height: auto;
     width: 100%;
 }
 

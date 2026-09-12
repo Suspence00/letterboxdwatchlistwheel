@@ -50,6 +50,7 @@ export { updateMovieList, getFilteredMovies, getFilteredSelectedMovies } from '.
 export { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 export { showConfirmModal, promptForInput, showVerificationResults } from './ui/modals.js';
 export { renderWorkspaceSwitcher, renderBoardsList, initBoardsUI } from './ui/boards-ui.js';
+export { initThemePicker } from './ui/theme-picker.js';
 export {
     showWinnerPopup,
     closeWinnerPopup,

@@ -1,0 +1,69 @@
+/* Shared semantic surfaces keep each theme's palette visible across utility UI. */
+body {
+    --border: rgba(255, 255, 255, 0.15);
+    --border-strong: rgba(255, 255, 255, 0.24);
+    --control-gap: 0.5rem;
+    --control-height: 2.5rem;
+    --control-height-compact: 2.25rem;
+    --control-radius: 10px;
+    --focus-ring: var(--accent);
+    --section-gap: 1rem;
+    --surface: var(--card-bg);
+    --surface-control: rgba(255, 255, 255, 0.08);
+    --surface-muted: color-mix(in srgb, var(--card-bg) 72%, transparent 28%);
+    --surface-raised: color-mix(in srgb, var(--card-bg) 88%, white 12%);
+    --text-primary: var(--text);
+    --text-secondary: var(--muted);
+}
+
+.win-modal__content,
+.modal-content,
+.settings-modal__content {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+.data-transfer,
+.settings-panel,
+.settings-group,
+.import-section {
+    border-color: var(--border);
+}
+
+.btn,
+button.btn {
+    box-sizing: border-box;
+    height: var(--control-height);
+    min-height: var(--control-height);
+}
+
+.text-input,
+.import-input {
+    border-color: var(--border);
+}
+
+.text-input:not(textarea):not(.text-input--slim):not(.text-input--select),
+.import-input {
+    height: var(--control-height);
+    min-height: var(--control-height);
+}
+
+:where(button, input, select, textarea, [role="button"]):focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+}
+
+:where(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+}
+
+:where(.btn, .text-input, .import-input):disabled {
+    opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :where(.btn, .text-input, .import-input) {
+        transition-duration: 0.01ms;
+    }
+}

@@ -1,0 +1,349 @@
+/* Birthday Party Theme - Celebratory, Prestigious & Masculine Aesthetic */
+
+.birthday-decorations {
+    display: none;
+    height: 100%;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 0;
+}
+
+body.theme-birthday .birthday-decorations {
+    display: block;
+}
+
+body.theme-birthday {
+    --accent: #f59e0b;
+    --accent-strong: #2563eb;
+    --background: #0f141c;
+    --card-bg: rgba(18, 24, 34, 0.92);
+    --muted: #94a3b8;
+    --shadow: rgba(0, 0, 0, 0.55);
+    --text: #f8fafc;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(245, 158, 11, 0.14) 0%, transparent 42%),
+        radial-gradient(circle at 82% 16%, rgba(37, 99, 235, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 88%, rgba(217, 119, 6, 0.12) 0%, transparent 50%),
+        #0f141c;
+    color: var(--text);
+}
+
+body.theme-birthday .app-header {
+    border-bottom: 2px solid rgba(245, 158, 11, 0.28);
+}
+
+body.theme-birthday .app-header h1 {
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 16px rgba(245, 158, 11, 0.35), 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-birthday .app-header p {
+    color: #f59e0b;
+    font-style: italic;
+    opacity: 0.95;
+}
+
+body.theme-birthday .card,
+body.theme-birthday .win-modal__content,
+body.theme-birthday .settings-modal__content,
+body.theme-birthday .data-transfer,
+body.theme-birthday .import-section--hero,
+body.theme-birthday .settings-panel {
+    backdrop-filter: blur(16px);
+    background: var(--card-bg);
+    border: 1px solid rgba(245, 158, 11, 0.22);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.theme-birthday .card h2,
+body.theme-birthday .settings-group legend {
+    color: #f59e0b;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.28);
+}
+
+body.theme-birthday .btn.btn--primary,
+body.theme-birthday .btn.primary {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+    color: #0f172a;
+    font-weight: 700;
+}
+
+body.theme-birthday .btn.btn--primary:hover,
+body.theme-birthday .btn.primary:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #ea580c 100%);
+    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5), 0 0 12px rgba(37, 99, 235, 0.3);
+    color: #0f172a;
+    transform: translateY(-2px);
+}
+
+body.theme-birthday .btn {
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+body.theme-birthday .text-input,
+body.theme-birthday .import-input {
+    background: rgba(15, 20, 28, 0.88);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #f8fafc;
+}
+
+body.theme-birthday .text-input:focus,
+body.theme-birthday .import-input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    outline: 2px solid #2563eb;
+}
+
+body.theme-birthday .movie-odds--secondary,
+body.theme-birthday .movie-link:hover {
+    color: #f59e0b;
+}
+
+body.theme-birthday .seasonal-accent {
+    display: none !important;
+}
+
+/* Base Balloon Construction */
+.birthday-balloon {
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+    position: fixed;
+    z-index: 0;
+}
+
+.birthday-balloon::before {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    bottom: -6px;
+    content: '';
+    height: 0;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 0;
+}
+
+.birthday-balloon::after {
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    content: '';
+    height: 80px;
+    left: 50%;
+    position: absolute;
+    top: 100%;
+}
+
+/* Balloon Color Themes */
+.birthday-balloon--gold {
+    background: radial-gradient(circle at 35% 28%, #ffea9f 0%, #f59e0b 58%, #b45309 100%);
+}
+.birthday-balloon--gold::before {
+    border-bottom: 6px solid #b45309;
+}
+
+.birthday-balloon--blue {
+    background: radial-gradient(circle at 35% 28%, #93c5fd 0%, #2563eb 58%, #1e3a8a 100%);
+}
+.birthday-balloon--blue::before {
+    border-bottom: 6px solid #1e3a8a;
+}
+
+.birthday-balloon--navy {
+    background: radial-gradient(circle at 35% 28%, #60a5fa 0%, #1e40af 62%, #0f172a 100%);
+}
+.birthday-balloon--navy::before {
+    border-bottom: 6px solid #0f172a;
+}
+
+.birthday-balloon--emerald {
+    background: radial-gradient(circle at 35% 28%, #6ee7b7 0%, #059669 60%, #064e3b 100%);
+}
+.birthday-balloon--emerald::before {
+    border-bottom: 6px solid #064e3b;
+}
+
+.birthday-balloon--crimson {
+    background: radial-gradient(circle at 35% 28%, #fca5a5 0%, #dc2626 60%, #7f1d1d 100%);
+}
+.birthday-balloon--crimson::before {
+    border-bottom: 6px solid #7f1d1d;
+}
+
+.birthday-balloon--silver {
+    background: radial-gradient(circle at 35% 28%, #ffffff 0%, #cbd5e1 55%, #64748b 100%);
+}
+.birthday-balloon--silver::before {
+    border-bottom: 6px solid #64748b;
+}
+
+.birthday-balloon--amber {
+    background: radial-gradient(circle at 35% 28%, #fed7aa 0%, #d97706 60%, #78350f 100%);
+}
+.birthday-balloon--amber::before {
+    border-bottom: 6px solid #78350f;
+}
+
+.birthday-balloon--copper {
+    background: radial-gradient(circle at 35% 28%, #fdba74 0%, #ea580c 60%, #7c2d12 100%);
+}
+.birthday-balloon--copper::before {
+    border-bottom: 6px solid #7c2d12;
+}
+
+/* Corner Balloon Clusters (Bouquets) */
+.birthday-cluster {
+    bottom: 20px;
+    height: 180px;
+    pointer-events: none;
+    position: fixed;
+    width: 140px;
+    z-index: 0;
+}
+
+.birthday-cluster--left {
+    left: 15px;
+}
+
+.birthday-cluster--right {
+    right: 25px;
+}
+
+.birthday-cluster .birthday-balloon {
+    position: absolute;
+}
+
+.birthday-cluster .balloon-cluster-1 {
+    animation: cluster-sway-1 6s ease-in-out infinite;
+    bottom: 40px;
+    height: 66px;
+    left: 10px;
+    opacity: 0.88;
+    width: 54px;
+}
+
+.birthday-cluster .balloon-cluster-2 {
+    animation: cluster-sway-2 7s ease-in-out infinite;
+    bottom: 75px;
+    height: 60px;
+    left: 45px;
+    opacity: 0.9;
+    width: 48px;
+}
+
+.birthday-cluster .balloon-cluster-3 {
+    animation: cluster-sway-1 7.5s ease-in-out infinite reverse;
+    bottom: 30px;
+    height: 56px;
+    left: 70px;
+    opacity: 0.85;
+    width: 46px;
+}
+
+.birthday-cluster .balloon-cluster-4 {
+    animation: cluster-sway-2 8s ease-in-out infinite reverse;
+    bottom: 95px;
+    height: 62px;
+    left: 18px;
+    opacity: 0.85;
+    width: 50px;
+}
+
+.birthday-cluster .balloon-cluster-5 {
+    animation: cluster-sway-1 6.5s ease-in-out infinite;
+    bottom: 120px;
+    height: 54px;
+    left: 55px;
+    opacity: 0.82;
+    width: 44px;
+}
+
+.birthday-cluster .balloon-cluster-6 {
+    animation: cluster-sway-2 8.5s ease-in-out infinite;
+    bottom: 15px;
+    height: 50px;
+    left: 38px;
+    opacity: 0.8;
+    width: 42px;
+}
+
+/* Rising Balloons Array Across Viewport */
+.birthday-rising {
+    animation-iteration-count: infinite;
+    animation-name: balloon-rising-up;
+    animation-timing-function: linear;
+    bottom: -150px;
+    pointer-events: none;
+}
+
+.rising-1  { animation-delay: -2s;   animation-duration: 16s; height: 50px; left: 4%;  opacity: 0.65; width: 40px; }
+.rising-2  { animation-delay: -8s;   animation-duration: 19s; height: 60px; left: 10%; opacity: 0.75; width: 48px; }
+.rising-3  { animation-delay: -14s;  animation-duration: 15s; height: 42px; left: 18%; opacity: 0.55; width: 34px; }
+.rising-4  { animation-delay: -5s;   animation-duration: 22s; height: 68px; left: 26%; opacity: 0.8;  width: 54px; }
+.rising-5  { animation-delay: -11s;  animation-duration: 17s; height: 48px; left: 34%; opacity: 0.6;  width: 38px; }
+.rising-6  { animation-delay: -1s;   animation-duration: 20s; height: 62px; left: 42%; opacity: 0.75; width: 50px; }
+.rising-7  { animation-delay: -15s;  animation-duration: 18s; height: 46px; left: 50%; opacity: 0.65; width: 38px; }
+.rising-8  { animation-delay: -7s;   animation-duration: 23s; height: 66px; left: 58%; opacity: 0.8;  width: 52px; }
+.rising-9  { animation-delay: -13s;  animation-duration: 16s; height: 44px; left: 66%; opacity: 0.6;  width: 36px; }
+.rising-10 { animation-delay: -4s;   animation-duration: 21s; height: 64px; left: 74%; opacity: 0.75; width: 52px; }
+.rising-11 { animation-delay: -10s;  animation-duration: 17s; height: 52px; left: 82%; opacity: 0.65; width: 42px; }
+.rising-12 { animation-delay: -16s;  animation-duration: 19s; height: 58px; left: 90%; opacity: 0.7;  width: 46px; }
+.rising-13 { animation-delay: -3s;   animation-duration: 18s; height: 40px; left: 96%; opacity: 0.55; width: 32px; }
+.rising-14 { animation-delay: -9s;   animation-duration: 24s; height: 68px; left: 14%; opacity: 0.8;  width: 54px; }
+.rising-15 { animation-delay: -17s;  animation-duration: 20s; height: 54px; left: 62%; opacity: 0.7;  width: 44px; }
+.rising-16 { animation-delay: -6s;   animation-duration: 16s; height: 48px; left: 48%; opacity: 0.6;  width: 38px; }
+
+/* Animations */
+@keyframes cluster-sway-1 {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-14px) rotate(4deg);
+    }
+}
+
+@keyframes cluster-sway-2 {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-10px) rotate(-4deg);
+    }
+}
+
+@keyframes balloon-rising-up {
+    0% {
+        opacity: 0;
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    8% {
+        opacity: 0.75;
+    }
+    50% {
+        transform: translateY(-60vh) translateX(18px) rotate(4deg);
+    }
+    90% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-130vh) translateX(-18px) rotate(-4deg);
+    }
+}
+
+/* Reduced motion & disabled decorations */
+.decorations-disabled .birthday-decorations,
+body.decorations-disabled .birthday-decorations {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .birthday-rising,
+    .birthday-cluster .birthday-balloon {
+        animation: none !important;
+    }
+}

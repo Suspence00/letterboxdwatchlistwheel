@@ -1,23 +1,34 @@
 .btn {
-    border: none;
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
-    font-weight: 600;
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.08);
+    align-items: center;
+    background: var(--surface-control);
+    border: 1px solid transparent;
+    border-radius: var(--control-radius);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex;
+    font: inherit;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.2;
+    min-height: var(--control-height);
+    padding: 0.6rem 1rem;
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.14);
+    background: color-mix(in srgb, var(--surface-control) 70%, var(--accent) 30%);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
 }
 
 .btn:disabled {
-    opacity: 0.35;
     cursor: not-allowed;
+    opacity: 0.35;
+}
+
+.btn:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
 }
 
 .btn.primary {
@@ -26,14 +37,15 @@
     font-size: 1rem;
     letter-spacing: 0.03em;
     margin-top: 1rem;
+    min-height: 2.75rem;
     padding: 0.75rem 1.5rem;
 }
 
 .btn.danger {
-    background: rgba(255, 93, 87, 0.16);
+    background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
     color: #ffb3ad;
 }
 
 .btn.danger:hover:not(:disabled) {
-    background: rgba(255, 93, 87, 0.28);
+    background: color-mix(in srgb, var(--accent-strong) 28%, transparent);
 }

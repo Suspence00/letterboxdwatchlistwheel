@@ -1,30 +1,45 @@
-# Welcome to the Letterboxd Watchlist Wheel Wiki!
+# Welcome to the Letterboxd Watchlist Wheel Wiki
 
-The **Letterboxd Watchlist Wheel** is a web-based tool designed to help you decide what to watch next by spinning a wheel populated with your Letterboxd watchlist. It adds a layer of fun and suspense to your movie night selection process.
+The **Letterboxd Watchlist Wheel** is a sleek, local-first web application designed to turn movie night decision fatigue into an engaging, cinematic event. Built entirely with native ES modules and zero build dependencies, it transforms your Letterboxd watchlists and custom movie lists into interactive spinning wheels, 3D VHS cassette carousels, and high-stakes knockout tournaments.
+
+---
 
 ## Key Features
 
-*   **Direct Import:** Easily pull your watchlist directly from Letterboxd using a URL or username.
-*   **CSV Support:** Upload your own CSV files for custom lists.
-*   **Curated Spins:** Toggle specific movies on or off before spinning.
-*   **Knockout Mode:** A "Last Movie Standing" mode where movies are eliminated one by one.
-*   **Wheel.FM:** A built-in music player to set the mood while you spin.
-*   **Export/Import:** Download a `.wheel` backup or paste one to reapply weights and history later.
-*   **Local-First:** Your data stays in your browser. No accounts or servers required.
+*   **Direct Letterboxd Import with Pagination:** Seamlessly fetch public watchlists and custom lists of any size directly from Letterboxd via an intelligent scraping proxy with multi-page pagination support.
+*   **Tied List Syncing:** Associate your boards with Letterboxd lists to refresh titles in a single click while preserving custom weights, colors, and contributor tags.
+*   **Bulk Add / Paste List Modal:** Rapidly import raw text lists or paste titles in bulk without needing a structured CSV.
+*   **3D VHS Wheel Mode:** Experience an interactive, retro-tactile 3D cassette tape carousel rendered with realistic perspective, custom color palettes, and poster artwork sleeves.
+*   **Spin Theater Mode:** Enter an immersive full-screen focus stage featuring a live **Contenders Box** and a 4-wide grid **Returns Wall** with real-time cassette flight animations.
+*   **Workspaces & Multiple Boards:** Organize movies into isolated boards (e.g., *Horror Marathon*, *Oscar Nominees*, *Family Night*), each with independent state, selections, preferences, and winner histories.
+*   **Home Theater & Community Integrations:** Automatically export winning films to **Radarr v3** for immediate downloading and dispatch rich embed announcements to your **Discord** channels via webhooks.
+*   **Boost Station with Contributor Tags:** Give friends and movie-night guests contributor credit with named booster badges, weighted perks (up to 5x maximum weight), and exciting single-spin Random Boosts.
+*   **12 Handcrafted Visual Themes:** Shift atmospheres effortlessly between *Classic*, *Fantasy & Runic*, *Forest Camp*, *Modern*, *Retro 95*, *Alaska*, and seasonal holiday palettes.
+*   **Floating Draggable Wheel.FM:** Enjoy ambient background lo-fi, synthwave, and cinematic music with a floating player supporting Expanded, Compact, and draggable FAB bubble view modes.
+*   **Monte Carlo Fairness Verification:** Audit wheel fairness with an instant 10,000-spin Monte Carlo simulation engine comparing empirical results with mathematical probabilities.
 
-## Getting Started
+---
 
-If you are new to the project, check out the **[User Guide](User-Guide)** to learn how to set up your first wheel.
+## Documentation Index
 
-## Documentation
+Explore the comprehensive guides below for complete documentation on user features, local setup, and internal architecture:
 
-*   **[User Guide](User-Guide)**: Comprehensive instructions on using the application.
-*   **[Feature: Importing](Feature-Importing)**: Details on how to import your movies.
-*   **[Feature: Knockout Mode](Feature-Knockout-Mode)**: Explaining the elimination game mode.
-*   **[Feature: Wheel.FM](Feature-Wheel-FM)**: How to use the music player.
-*   **[Developer Guide](Developer-Guide)**: Information for contributors and developers.
-*   **[Technical Deep Dive](Technical-Deep-Dive)**: Detailed explanation of the randomization algorithms and code architecture.
+| Guide | Description |
+| :--- | :--- |
+| **[User Guide](User-Guide)** | Step-by-step walkthrough for importing movies, curating boards, spinning, configuring settings, and managing audio. |
+| **[Developer Guide](Developer-Guide)** | Overview of the codebase architecture, complete directory structure, modular UI components, and testing practices. |
+| **[Technical Deep Dive](Technical-Deep-Dive)** | Deep dive into probability mathematics (1x–5x weighting), 3D VHS sampling, theater state machine, and API contracts. |
+| **[Feature: Importing](Feature-Importing)** | Detailed reference for direct pagination imports, list synchronization, CSV formatting, and backup recovery. |
+| **[Feature: Knockout Mode](Feature-Knockout-Mode)** | Rules and mathematical rationale behind the Last Movie Standing elimination tournament, Spin Theater, and Returns Wall. |
+| **[Feature: VHS Wheel](Feature-VHS-Wheel)** | 3D cassette tape wheel mode, tactile inspection, lineup capacity configuration, and winner reveal. |
+| **[Feature: Themes](Feature-Themes)** | Complete visual catalog of all 12 themes, ambient particle effects, and custom slice color behavior. |
+| **[Feature: Fairness & Verification](Feature-Fairness-and-Verification)** | Monte Carlo simulation tool, statistical audit report table, Law of Large Numbers, and PRNG integrity. |
+| **[Feature: Wheel.FM](Feature-Wheel-FM)** | Instructions for configuring music channels, custom audio tracks, floating player modes, and audio synthesis. |
+| **[Feature: Workspaces & Boards](Feature-Workspaces-and-Boards)** | Managing isolated movie watchlists, tied Letterboxd URLs, 1-click sync, and conflict resolution. |
+| **[Feature: Boost Station](Feature-Boost-Station)** | Awarding contributor tags, manual and random boosts, 5x caps, and strategic odds impact. |
+| **[Feature: Integrations](Feature-Integrations)** | Automated queueing to Radarr libraries and winner broadcast embeds to Discord channels. |
 
-## Live Demo
+---
 
-You can run this project locally or host it on any static site provider (like GitHub Pages).
+> [!NOTE]
+> **Local-First & Privacy-Centric:** All movie data, workspace collections, preferences, and spin history are stored strictly within your browser via `localStorage`. No external databases, user accounts, or server runtimes are required.

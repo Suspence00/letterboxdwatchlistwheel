@@ -35,7 +35,8 @@ export const appState = {
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
         theme: 'default',
-        themeColorOverrides: {}
+        themeColorOverrides: {},
+        decorationsEnabled: true
     }
 };
 
@@ -203,6 +204,7 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
                 themeColorOverrides: safeOverrides,
+                decorationsEnabled: loaded.preferences.decorationsEnabled !== false,
                 discordWebhookUrl: loaded.preferences.discordWebhookUrl || '',
                 radarr: loaded.preferences.radarr || null,
                 importAppendMode: Boolean(loaded.preferences.importAppendMode),
@@ -214,6 +216,7 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: false,
                 theme: 'default',
                 themeColorOverrides: {},
+                decorationsEnabled: true,
                 importAppendMode: false,
                 vhsShowLabels: true
             };
@@ -248,6 +251,7 @@ export function resetState() {
         showFinalistsFromStart: false,
         theme: 'default',
         themeColorOverrides: {},
+        decorationsEnabled: true,
         importAppendMode: false,
         vhsShowLabels: true
     };

@@ -1,0 +1,105 @@
+.theme-picker {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.theme-picker__group {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.theme-picker__group-title {
+    color: var(--text-muted, #8b9bb4);
+    font-size: 0.75rem;
+    grid-column: 1 / -1;
+    letter-spacing: 0.08em;
+    margin: 0.25rem 0 0;
+    text-transform: uppercase;
+}
+
+.theme-card {
+    background: color-mix(in srgb, var(--surface, #182338) 82%, transparent);
+    border: 2px solid transparent;
+    border-radius: 0.75rem;
+    color: var(--text, #fff);
+    cursor: pointer;
+    min-width: 0;
+    padding: 0.45rem;
+    text-align: left;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-card:hover,
+.theme-card:focus-visible {
+    border-color: var(--accent, #ff8600);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.theme-card[aria-checked="true"] {
+    border-color: var(--accent, #ff8600);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #ff8600) 30%, transparent);
+}
+
+.theme-card__preview {
+    background: var(--theme-preview-bg);
+    border-radius: 0.45rem;
+    display: block;
+    min-height: 4.25rem;
+    overflow: hidden;
+    padding: 0.55rem;
+    position: relative;
+}
+
+.theme-card__preview-title {
+    color: var(--theme-preview-text);
+    font-family: var(--theme-preview-font);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.theme-card__preview-button {
+    background: var(--theme-preview-button);
+    border-radius: 0.25rem;
+    display: block;
+    height: 0.4rem;
+    margin-top: 0.35rem;
+    width: 3rem;
+}
+
+.theme-card__wheel-swatches {
+    bottom: 0.55rem;
+    display: flex;
+    gap: 0.18rem;
+    position: absolute;
+    right: 0.55rem;
+}
+
+.theme-card__wheel-swatches i {
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 50%;
+    display: block;
+    height: 0.55rem;
+    width: 0.55rem;
+}
+
+.theme-card__name {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin: 0.45rem 0.15rem 0.15rem;
+}
+
+.decorations-disabled [class$="-decorations"],
+.decorations-disabled .holiday-snow,
+.decorations-disabled .alaska-bear,
+.decorations-disabled .alaska-flag-accent,
+.decorations-disabled .seasonal-accent {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-card { transition: none; }
+}

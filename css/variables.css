@@ -1,11 +1,25 @@
 :root {
     color-scheme: light dark;
-    --background: #0b1622;
-    --card-bg: rgba(15, 26, 39, 0.9);
-    --text: #f5f7fa;
-    --muted: #b5c2d1;
     --accent: #ff8600;
     --accent-strong: #ff5d57;
+    --background: #0b1622;
+    --border: rgba(255, 255, 255, 0.15);
+    --border-strong: rgba(255, 255, 255, 0.24);
+    --card-bg: rgba(15, 26, 39, 0.9);
+    --control-gap: 0.5rem;
+    --control-height: 2.5rem;
+    --control-height-compact: 2.25rem;
+    --control-radius: 10px;
+    --focus-ring: var(--accent);
+    --muted: #b5c2d1;
+    --section-gap: 1rem;
     --shadow: rgba(0, 0, 0, 0.25);
+    --surface: var(--card-bg);
+    --surface-control: rgba(255, 255, 255, 0.08);
+    --surface-muted: color-mix(in srgb, var(--card-bg) 72%, transparent 28%);
+    --surface-raised: color-mix(in srgb, var(--card-bg) 88%, white 12%);
+    --text: #f5f7fa;
+    --text-primary: var(--text);
+    --text-secondary: var(--muted);
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

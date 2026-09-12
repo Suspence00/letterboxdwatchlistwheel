@@ -144,3 +144,12 @@ body.theme-cny .cny-decorations {
         animation: none;
     }
 }
+
+body.theme-cny .app-header {
+    border-bottom: 2px solid rgba(249, 199, 79, 0.55);
+}
+
+body.theme-cny .card {
+    border: 1px solid rgba(249, 199, 79, 0.35);
+    box-shadow: 0 12px 34px rgba(48, 0, 16, 0.55), inset 0 1px 0 rgba(249, 199, 79, 0.16);
+}

@@ -30,7 +30,7 @@ body.theme-alaska {
 
 body.theme-alaska .app-header {
     background: transparent;
-    color: #1e3a8a;
+    color: #e2e8f0;
     /* Dark blue text for legibility on light bg */
     padding-top: 4rem;
     padding-bottom: 2rem;
@@ -54,7 +54,7 @@ body.theme-alaska .app-header p {
 }
 
 body.theme-alaska .card {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(125, 211, 252, 0.25);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(12px);
     background: var(--card-bg);
@@ -433,4 +433,18 @@ body.theme-alaska .holiday-snow::before {
 
 body.theme-alaska .holiday-snow::after {
     animation: snow-fall 45s linear infinite;
+}
+
+body.theme-alaska .app-header::after {
+    background: radial-gradient(ellipse at center, rgba(250, 204, 21, 0.2), transparent 68%);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+body.theme-alaska .card h2,
+body.theme-alaska .settings-group legend {
+    color: #facc15;
+    text-shadow: 0 0 12px rgba(250, 204, 21, 0.28);
 }

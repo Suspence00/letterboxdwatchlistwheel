@@ -1,10 +1,13 @@
-﻿/**
+/**
  * Confetti animation effects
  */
 
 let confettiTimeoutId = null;
 
 export function getConfettiPalette() {
+    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-birthday')) {
+        return ['#f59e0b', '#2563eb', '#059669', '#dc2626', '#d97706', '#94a3b8', '#3b82f6', '#fbbf24'];
+    }
     if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-hanukkah')) {
         return ['#1d4ed8', '#60a5fa', '#facc15', '#fde68a', '#93c5fd', '#2563eb'];
     }

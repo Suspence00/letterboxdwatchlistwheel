@@ -49,6 +49,15 @@ body.theme-spooky .card {
         inset 0 0 15px rgba(75, 0, 130, 0.25);
 }
 
+body.theme-spooky .app-header {
+    border-bottom: 2px solid rgba(57, 255, 20, 0.42);
+}
+
+body.theme-spooky .card h2,
+body.theme-spooky .settings-group legend {
+    text-shadow: 0 0 10px rgba(255, 117, 24, 0.5), 2px 2px 0 #190b24;
+}
+
 body.theme-spooky .card h2,
 body.theme-spooky .settings-group legend {
     color: #ff7518;

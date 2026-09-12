@@ -48,6 +48,35 @@ body.theme-hanukkah .btn.primary {
     color: #0b1028;
 }
 
+body.theme-holiday .app-header,
+body.theme-hanukkah .app-header {
+    border-bottom: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+body.theme-holiday .app-header h1,
+body.theme-hanukkah .app-header h1 {
+    font-weight: 800;
+    letter-spacing: 0.035em;
+}
+
+body.theme-holiday .card,
+body.theme-hanukkah .card {
+    border: 1px solid color-mix(in srgb, var(--accent-strong) 45%, transparent);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.theme-holiday .btn.btn--primary,
+body.theme-holiday .btn.primary {
+    background: linear-gradient(135deg, #d1495b, #a91e3a);
+    box-shadow: 0 0 18px rgba(209, 73, 91, 0.35);
+}
+
+body.theme-hanukkah .btn.btn--primary,
+body.theme-hanukkah .btn.primary {
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
+    box-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
+}
+
 .seasonal-accent {
     align-items: center;
     display: none;

@@ -144,6 +144,46 @@
     </div>
   </div>
 
+  <div class="birthday-decorations" aria-hidden="true">
+    <!-- Balloon Bouquet Left -->
+    <div class="birthday-cluster birthday-cluster--left">
+      <div class="birthday-balloon birthday-balloon--gold balloon-cluster-1"></div>
+      <div class="birthday-balloon birthday-balloon--blue balloon-cluster-2"></div>
+      <div class="birthday-balloon birthday-balloon--emerald balloon-cluster-3"></div>
+      <div class="birthday-balloon birthday-balloon--navy balloon-cluster-4"></div>
+      <div class="birthday-balloon birthday-balloon--silver balloon-cluster-5"></div>
+      <div class="birthday-balloon birthday-balloon--amber balloon-cluster-6"></div>
+    </div>
+
+    <!-- Balloon Bouquet Right -->
+    <div class="birthday-cluster birthday-cluster--right">
+      <div class="birthday-balloon birthday-balloon--blue balloon-cluster-1"></div>
+      <div class="birthday-balloon birthday-balloon--gold balloon-cluster-2"></div>
+      <div class="birthday-balloon birthday-balloon--crimson balloon-cluster-3"></div>
+      <div class="birthday-balloon birthday-balloon--copper balloon-cluster-4"></div>
+      <div class="birthday-balloon birthday-balloon--emerald balloon-cluster-5"></div>
+      <div class="birthday-balloon birthday-balloon--navy balloon-cluster-6"></div>
+    </div>
+
+    <!-- Rising Balloons Across Viewport -->
+    <div class="birthday-balloon birthday-balloon--gold birthday-rising rising-1"></div>
+    <div class="birthday-balloon birthday-balloon--blue birthday-rising rising-2"></div>
+    <div class="birthday-balloon birthday-balloon--emerald birthday-rising rising-3"></div>
+    <div class="birthday-balloon birthday-balloon--silver birthday-rising rising-4"></div>
+    <div class="birthday-balloon birthday-balloon--navy birthday-rising rising-5"></div>
+    <div class="birthday-balloon birthday-balloon--amber birthday-rising rising-6"></div>
+    <div class="birthday-balloon birthday-balloon--crimson birthday-rising rising-7"></div>
+    <div class="birthday-balloon birthday-balloon--copper birthday-rising rising-8"></div>
+    <div class="birthday-balloon birthday-balloon--gold birthday-rising rising-9"></div>
+    <div class="birthday-balloon birthday-balloon--blue birthday-rising rising-10"></div>
+    <div class="birthday-balloon birthday-balloon--emerald birthday-rising rising-11"></div>
+    <div class="birthday-balloon birthday-balloon--silver birthday-rising rising-12"></div>
+    <div class="birthday-balloon birthday-balloon--navy birthday-rising rising-13"></div>
+    <div class="birthday-balloon birthday-balloon--amber birthday-rising rising-14"></div>
+    <div class="birthday-balloon birthday-balloon--crimson birthday-rising rising-15"></div>
+    <div class="birthday-balloon birthday-balloon--gold birthday-rising rising-16"></div>
+  </div>
+
   <header class="app-header">
     <div class="header-controls">
       <h1>Letterboxd Watchlist Wheel</h1>
@@ -588,8 +628,14 @@
                 <option value="retro-95">Retro 95</option>
                 <option value="spooky">Spooky Halloween</option>
                 <option value="forest">Forest Camp</option>
+                <option value="birthday">Birthday Party</option>
               </select>
             </div>
+            <div id="theme-picker" class="theme-picker" style="margin-top: 0.75rem;"></div>
+            <label class="filter-toggle" for="decorations-toggle" style="margin-top: 0.75rem;">
+              <input type="checkbox" id="decorations-toggle" checked />
+              <span>Enable ambient theme decorations</span>
+            </label>
           </fieldset>
 
           <fieldset class="settings-group" id="settings-vhs-group">

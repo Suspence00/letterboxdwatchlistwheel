@@ -4,6 +4,7 @@ body.theme-fantasy {
   --accent: #d4a373;
   --accent-hover: #faedcd;
   --bg: #120e0b;
+  --background: #120e0b;
   --card-bg: rgba(26, 20, 16, 0.85);
   --danger: #9e2a2b;
   --danger-hover: #ba3c3d;
@@ -117,7 +118,28 @@ body.theme-fantasy .text-input:focus,
 body.theme-fantasy .import-input:focus {
   border-color: #d4a373;
   box-shadow: 0 0 0 2px rgba(200, 150, 62, 0.25);
-  outline: none;
+  outline: 2px solid rgba(250, 237, 205, 0.75);
+  outline-offset: 1px;
+}
+
+body.theme-fantasy .app-header {
+  border-bottom: 1px solid rgba(212, 163, 115, 0.35);
+  position: relative;
+}
+
+body.theme-fantasy .app-header::after,
+body.theme-fantasy .card-header::after {
+  color: rgba(212, 163, 115, 0.55);
+  content: '✦  ◇  ✦';
+  font-family: Georgia, serif;
+  letter-spacing: 0.45em;
+  pointer-events: none;
+}
+
+body.theme-fantasy .app-header::after {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 0.65rem;
 }
 
 body.theme-fantasy .spin-mode-card {

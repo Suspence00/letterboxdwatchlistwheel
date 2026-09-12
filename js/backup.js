@@ -124,6 +124,7 @@ function buildBackupPayload() {
             vhsShowLabels: appState.preferences?.vhsShowLabels !== false,
             hideFinalistsBox: Boolean(appState.preferences?.hideFinalistsBox),
             showFinalistsFromStart: Boolean(appState.preferences?.showFinalistsFromStart),
+            decorationsEnabled: appState.preferences?.decorationsEnabled !== false,
             theme: appState.preferences?.theme,
             boosterColors: appState.preferences?.boosterColors || {},
             themeColorOverrides: appState.preferences?.themeColorOverrides || {}
@@ -390,6 +391,7 @@ function normalizePreferences(preferences = {}) {
         vhsShowLabels: preferences?.vhsShowLabels !== false,
         hideFinalistsBox: Boolean(preferences?.hideFinalistsBox),
         showFinalistsFromStart: Boolean(preferences?.showFinalistsFromStart),
+        decorationsEnabled: preferences?.decorationsEnabled !== false,
         theme: typeof preferences?.theme === 'string' ? preferences.theme : 'default',
         boosterColors: typeof preferences?.boosterColors === 'object' ? preferences.boosterColors : {},
         themeColorOverrides: typeof preferences?.themeColorOverrides === 'object' ? preferences.themeColorOverrides : {}

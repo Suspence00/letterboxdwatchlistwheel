@@ -28,9 +28,6 @@ body.theme-retro-95 button,
 body.theme-retro-95 input,
 body.theme-retro-95 select,
 body.theme-retro-95 textarea,
-body.theme-retro-95 span,
-body.theme-retro-95 p,
-body.theme-retro-95 label,
 body.theme-retro-95 h1,
 body.theme-retro-95 h2,
 body.theme-retro-95 h3,
@@ -103,7 +100,6 @@ body.theme-retro-95 .btn {
     border-right: 2px solid #808080 !important;
     border-bottom: 2px solid #808080 !important;
     box-shadow: 1px 1px 0px 0px #000000 !important;
-    padding: 4px 12px !important;
     cursor: pointer !important;
     font-weight: normal !important;
     transform: none !important;
@@ -128,6 +124,14 @@ body.theme-retro-95 .btn.btn--primary {
     outline: 1px solid #000000 !important;
 }
 
+body.theme-retro-95 .btn:focus-visible,
+body.theme-retro-95 input:focus-visible,
+body.theme-retro-95 select:focus-visible,
+body.theme-retro-95 textarea:focus-visible {
+    outline: 1px dotted #000000 !important;
+    outline-offset: 2px;
+}
+
 /* Text Inputs */
 body.theme-retro-95 .text-input {
     background: #ffffff !important;
@@ -137,7 +141,6 @@ body.theme-retro-95 .text-input {
     border-right: 2px solid #ffffff !important;
     border-bottom: 2px solid #ffffff !important;
     box-shadow: inset 1px 1px 0px 0px #000000 !important;
-    padding: 4px !important;
 }
 
 body.theme-retro-95 .text-input:focus {

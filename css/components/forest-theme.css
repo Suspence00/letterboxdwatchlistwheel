@@ -53,6 +53,21 @@ body.theme-forest .settings-group legend {
     font-family: 'Georgia', serif;
 }
 
+body.theme-forest .app-header {
+    background: linear-gradient(180deg, rgba(27, 61, 42, 0.72), transparent);
+    border-bottom: 1px solid rgba(229, 143, 36, 0.24);
+}
+
+body.theme-forest .app-header h1,
+body.theme-forest .card h2,
+body.theme-forest .settings-group legend {
+    text-shadow: 0 2px 0 #0b120e, 0 0 18px rgba(229, 143, 36, 0.42);
+}
+
+body.theme-forest .card {
+    background: linear-gradient(145deg, rgba(29, 49, 37, 0.96), rgba(16, 27, 21, 0.96));
+}
+
 body.theme-forest .btn.btn--primary {
     background: linear-gradient(135deg, #e58f24 0%, #a03c00 100%);
     box-shadow: 0 4px 15px rgba(229, 143, 36, 0.3);

@@ -180,6 +180,24 @@ export const forestPalette = [
     '#D2D7D3'  // Birch Silver
 ];
 
+export const birthdayPalette = [
+    '#2563eb', // Royal Celebration Blue
+    '#f59e0b', // Champagne Gold
+    '#059669', // Emerald Festivity
+    '#dc2626', // Classic Crimson
+    '#0284c7', // Cobalt Blue
+    '#d97706', // Warm Amber
+    '#7c3aed', // Regal Violet
+    '#0d9488', // Deep Teal
+    '#ea580c', // Copper Flame
+    '#475569', // Slate Steel
+    '#eab308', // Star Gold
+    '#1e40af', // Deep Navy
+    '#047857', // Forest Emerald
+    '#b91c1c', // Burgundy Red
+    '#3b82f6'  // Electric Sapphire
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
@@ -192,7 +210,8 @@ export const THEMES = [
     { id: 'america', name: '4th of July', palette: americaPalette },
     { id: 'retro-95', name: 'Retro 95', palette: retro95Palette },
     { id: 'spooky', name: 'Spooky Halloween', palette: spookyPalette },
-    { id: 'forest', name: 'Forest Camp', palette: forestPalette }
+    { id: 'forest', name: 'Forest Camp', palette: forestPalette },
+    { id: 'birthday', name: 'Birthday Party', palette: birthdayPalette }
 ];
 
 export const DEFAULT_SLICE_COLOR = basePalette[0];

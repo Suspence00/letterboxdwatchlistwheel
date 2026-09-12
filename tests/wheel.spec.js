@@ -148,6 +148,26 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await themeSelect.selectOption('holiday');
     await expect(page.locator('body')).toHaveClass(/theme-holiday/);
     await expect(firstColorInput).toHaveValue('#c93737');
+
+    // Switch to birthday theme
+    await themeSelect.selectOption('birthday');
+    await expect(page.locator('body')).toHaveClass(/theme-birthday/);
+    await expect(firstColorInput).toHaveValue('#2563eb');
+    await expect(page.locator('.birthday-decorations')).toBeVisible();
+    await expect(page.locator('.birthday-balloon--gold').first()).toBeVisible();
+
+    // Verify disabling decorations hides birthday decorations
+    await page.evaluate(() => document.body.classList.add('decorations-disabled'));
+    await expect(page.locator('.birthday-decorations')).toBeHidden();
+    await page.evaluate(() => document.body.classList.remove('decorations-disabled'));
+    await expect(page.locator('.birthday-decorations')).toBeVisible();
+
+    const confettiColors = await page.evaluate(async () => {
+      const { getConfettiPalette } = await import('./js/ui/confetti.js');
+      return getConfettiPalette();
+    });
+    expect(confettiColors).toContain('#2563eb');
+    expect(confettiColors).toContain('#f59e0b');
   });
 
   test('Boost System: Dropdowns & Tags', async ({ page }) => {

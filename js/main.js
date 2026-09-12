@@ -23,7 +23,8 @@ import {
     updateDisplayedOdds,
     promptForInput,
     updateReshowWinnerButton,
-    addBulkEntries
+    addBulkEntries,
+    initThemePicker
 } from './ui.js';
 import { initImport, setImportCardCollapsed } from './import.js';
 import { initBackup } from './backup.js';
@@ -110,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         finalistsHideToggle: document.getElementById('finalists-hide-box'),
         showCustomsToggle: document.getElementById('filter-show-customs'),
         themeSelect: document.getElementById('theme-select'),
+        themePicker: document.getElementById('theme-picker'),
+        decorationsToggle: document.getElementById('decorations-toggle'),
         customEntryForm: document.getElementById('custom-entry-form'),
         customEntryInput: document.getElementById('custom-entry-name'),
         openCustomModalBtn: document.getElementById('open-custom-modal'),
@@ -321,6 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.preferences.themeColorOverrides = overrides;
     };
 
+    let themePicker = null;
+
     const applyTheme = (theme, options = {}) => {
         const { force = false } = options;
         const safeTheme = normalizeTheme(theme);
@@ -342,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.themeSelect.value = safeTheme;
         }
         appState.preferences.theme = safeTheme;
+        themePicker?.sync(safeTheme);
 
         // Show/hide retro Tip of the Day window
         const retroWindow = document.querySelector('.retro-window');
@@ -359,6 +365,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initThemeSelector = () => {
         populateThemeSelect();
+        themePicker = initThemePicker({
+            themes: THEMES,
+            select: elements.themeSelect,
+            container: elements.themePicker,
+            decorationsToggle: elements.decorationsToggle,
+            appState,
+            applyTheme,
+            saveState
+        });
         applyTheme(appState.preferences?.theme, { force: true });
 
         if (elements.themeSelect) {
@@ -385,7 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initBackup(elements, {
         refreshMovies: updateMovieList,
         renderHistory,
-        refreshPreferences: syncFinalistsToggles,
+        refreshPreferences: () => {
+            syncFinalistsToggles();
+            applyTheme(appState.preferences?.theme, { force: true });
+            themePicker?.sync(appState.preferences?.theme || 'default');
+            themePicker?.syncDecorations();
+        },
         resetKnockoutUI: refreshKnockoutBoxVisibility
     });
 
@@ -452,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         syncFinalistsToggles();
         applyTheme(appState.preferences?.theme, { force: true });
+        themePicker?.syncDecorations();
         applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
         refreshDiscordSettings();
         refreshRadarrSettings();
