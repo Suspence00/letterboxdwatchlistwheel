@@ -889,7 +889,6 @@ async function runLastStandingMode(selectedMovies) {
 
         ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
         ui.updateKnockoutRemainingBox(eliminationPool);
-        setTheaterStatus(`${remainingCount} ${remainingCount === 1 ? 'tape' : 'tapes'} remaining`);
         ui.updateOdds?.(eliminationPool);
 
         playKnockoutSound();
@@ -904,6 +903,7 @@ async function runLastStandingMode(selectedMovies) {
         }
 
         ui.updateKnockoutRemainingBox(eliminationPool);
+        setTheaterStatus(`${remainingCount} ${remainingCount === 1 ? 'tape' : 'tapes'} remaining`);
         drawWheel(eliminationPool);
         ui.refreshMovies();
 
