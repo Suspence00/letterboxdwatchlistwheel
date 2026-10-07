@@ -49,7 +49,7 @@ import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/
 import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 import {
     initWheelchinkoUI, syncWheelchinko, triggerDrop, triggerRandomDrop,
-    getWheelchinkoStyle, getIsRapidEliminating
+    getWheelchinkoStyle, getIsRapidEliminating, getSpinchinkoButtonLabel
 } from './ui/wheelchinko-ui.js';
 
 // Re-export public API from submodules
@@ -124,7 +124,8 @@ export function initUI(domElements) {
         showWinnerPopup,
         getEligibleMovies: getFilteredSelectedMovies,
         onInspectMovie: handleSliceSelection,
-        updateSpinButtonLabel
+        updateSpinButtonLabel,
+        spinWheel
     });
 
     // Attach event listeners
@@ -343,19 +344,13 @@ export function updateSpinButtonLabel() {
         selector.hidden = spinning || lastStandingActive;
     }
 
-    if (lastStandingActive) {
-        elements.spinButton.textContent = 'Eliminating.';
-        return;
-    }
+    if (lastStandingActive) { elements.spinButton.textContent = 'Eliminating.'; return; }
 
     if (spinMode === 'wheelchinko') {
-        if (getWheelchinkoStyle() === 'elimination') {
-            elements.spinButton.textContent = getIsRapidEliminating()
-                ? 'Stop Wheelchinko Elimination'
-                : 'Start Wheelchinko Elimination';
-        } else {
-            elements.spinButton.textContent = 'Drop Wheelchinko Puck';
-        }
+        const style = getWheelchinkoStyle();
+        elements.spinButton.textContent = style === 'elimination'
+            ? (getIsRapidEliminating() ? 'Stop Wheelchinko Elimination' : 'Start Wheelchinko Elimination')
+            : (style === 'spinchinko' ? getSpinchinkoButtonLabel() : 'Drop Wheelchinko Puck');
         return;
     }
 

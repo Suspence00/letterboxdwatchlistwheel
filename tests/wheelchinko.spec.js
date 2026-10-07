@@ -45,16 +45,13 @@ test.describe('Wheelchinko Mode', () => {
     await expect(slots.first().locator('.wheelchinko-slot-num')).toHaveText('1');
   });
 
-  test('Switching between Lineup, Dynamic Slots, and Elimination styles', async ({ page }) => {
+  test('Switching between Random 10, Elimination, and Spinchinko styles', async ({ page }) => {
     await page.locator('.spin-mode-card').filter({ hasText: 'Wheelchinko' }).click();
 
-    // Default style is Lineup
-    await expect(page.locator('#wheelchinko-style-lineup')).toHaveClass(/is-active/);
-
-    // Switch to Dynamic Slots
-    await page.click('#wheelchinko-style-dynamic');
-    await expect(page.locator('#wheelchinko-style-dynamic')).toHaveClass(/is-active/);
-    await expect(page.locator('#wheelchinko-style-lineup')).not.toHaveClass(/is-active/);
+    // Default style is Random 10
+    const lineupBtn = page.locator('#wheelchinko-style-lineup');
+    await expect(lineupBtn).toHaveText('Random 10');
+    await expect(lineupBtn).toHaveClass(/is-active/);
 
     // Switch to Elimination style
     await page.click('#wheelchinko-style-elimination');
@@ -62,6 +59,13 @@ test.describe('Wheelchinko Mode', () => {
     await expect(page.locator('#wheelchinko-tourney-status')).toBeVisible();
     await expect(page.locator('#wheelchinko-tourney-text')).toContainText('Elimination tournament');
     await expect(page.locator('#wheelchinko-drop-btn')).toHaveText('Start Elimination');
+
+    // Switch to Spinchinko style
+    await page.click('#wheelchinko-style-spinchinko');
+    await expect(page.locator('#wheelchinko-style-spinchinko')).toHaveClass(/is-active/);
+    await expect(page.locator('#wheelchinko-spinchinko-bar')).toBeVisible();
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText('Drop 10 Golden Pucks');
+    await expect(page.locator('#spinchinko-type-one-spin')).toHaveClass(/is-active/);
   });
 
   test('Manual aim and drop resolves a winning movie and shows winner modal', async ({ page }) => {
@@ -187,15 +191,42 @@ test.describe('Wheelchinko Mode', () => {
     const canvasWrap = page.locator('#wheelchinko-canvas-wrap');
     await expect(canvasWrap.locator('#wheelchinko-slots')).toBeVisible();
 
-    // Switch to Dynamic Slots style (which renders all 20 movies on the board)
-    await page.click('#wheelchinko-style-dynamic');
+    // Switch to Elimination style (which renders all 20 movies on the board)
+    await page.click('#wheelchinko-style-elimination');
 
     const slots = page.locator('#wheelchinko-slots .wheelchinko-slot');
     await expect(slots).toHaveCount(20);
+  });
 
-    // Drop puck and verify it clears dividers and lands in winner modal
-    await page.click('#wheelchinko-random-btn');
-    await expect(page.locator('#win-modal')).toBeVisible({ timeout: 15000 });
+  test('Spinchinko mode drops golden pucks, qualifies finalists, and spins wheel showdown', async ({ page }) => {
+    await page.locator('.spin-mode-card').filter({ hasText: 'Wheelchinko' }).click();
+
+    // Switch to Spinchinko style
+    await page.click('#wheelchinko-style-spinchinko');
+    await expect(page.locator('#wheelchinko-style-spinchinko')).toHaveClass(/is-active/);
+    await expect(page.locator('#wheelchinko-spinchinko-bar')).toBeVisible();
+
+    // Drop 10 golden pucks
+    await page.click('#wheelchinko-drop-btn');
+
+    // Wait for the drop to complete and qualifiers to be selected
+    await expect(page.locator('.wheelchinko-slot.is-qualified')).toHaveCount(10, { timeout: 15000 });
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Wheel \(10 Finalists\)/);
+    await expect(page.locator('#wheelchinko-spinchinko-redrop-btn')).toBeVisible();
+
+    // Test wheel mode toggle to Knockout
+    await page.click('#spinchinko-type-knockout');
+    await expect(page.locator('#spinchinko-type-knockout')).toHaveClass(/is-active/);
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Knockout Wheel \(10 Finalists\)/);
+
+    // Switch back to 1 Spin Mode and launch wheel spin
+    await page.click('#spinchinko-type-one-spin');
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Wheel \(10 Finalists\)/);
+    await page.click('#wheelchinko-drop-btn');
+
+    // Winner modal should appear from the wheel spin
+    await expect(page.locator('#win-modal')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('#win-modal-title')).toContainText('The movie selected was');
   });
 
   test('Wheelchinko multi-puck selector works and automatically locks to 1 puck at final 10', async ({ page }) => {

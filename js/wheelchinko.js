@@ -19,16 +19,10 @@ const FLOOR_Y = 1000;
 const LEFT_WALL = 42;
 const RIGHT_WALL = WIDTH - 42;
 const WHEEL_COLORS = ['#ff8600', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#f59e0b'];
+const GOLD_COLORS = ['#fbbf24', '#f59e0b', '#d97706', '#fef08a', '#f59e0b', '#b45309'];
 
-let canvas = null;
-let ctx = null;
-let animId = null;
-let isSimulating = false;
-let pucks = [];
-let pegs = [];
-let deflectors = [];
-let slots = [];
-let slotDividers = [];
+let canvas = null, ctx = null, animId = null, isSimulating = false;
+let pucks = [], pegs = [], deflectors = [], slots = [], slotDividers = [];
 let aimX = WIDTH / 2;
 let showAimGuide = true;
 let lastSoundTime = 0;
@@ -115,7 +109,7 @@ export function setAimX(normalizedFraction) {
 export function resetAimX() { aimX = WIDTH / 2; if (!isSimulating) renderStaticBoard(); }
 export function getIsDropping() { return isSimulating; }
 
-function createPuck(x, vyMultiplier, y = 45) {
+function createPuck(x, vyMultiplier, y = 45, isGolden = false) {
     return {
         x, y,
         vx: (Math.random() - 0.5) * 50,
@@ -125,24 +119,25 @@ function createPuck(x, vyMultiplier, y = 45) {
         spin: (Math.random() - 0.5) * 4,
         settled: false,
         settledReported: false,
+        isGolden,
         trail: []
     };
 }
 
-export function launchPuck(customX = null, { speed = 1.0, count = 1, targets = null } = {}) {
+export function launchPuck(customX = null, { speed = 1.0, count = 1, targets = null, golden = false } = {}) {
     if (isSimulating) return false;
-    const puckCount = Math.max(1, Math.min(5, Number(count) || 1));
+    const puckCount = Math.max(1, Math.min(10, Number(count) || 1));
     pucks = [];
 
     if (Array.isArray(targets) && targets.length > 0) {
         const delays = Array.from({ length: targets.length }, (_, i) => i).sort(() => Math.random() - 0.5);
         for (let i = 0; i < targets.length; i += 1) {
             const px = Math.max(70, Math.min(WIDTH - 70, targets[i]));
-            pucks.push(createPuck(px, speed, 45 - delays[i] * 32));
+            pucks.push(createPuck(px, speed, 45 - delays[i] * 32, golden));
         }
     } else if (puckCount === 1) {
         const clampedX = Math.max(70, Math.min(WIDTH - 70, typeof customX === 'number' ? customX : aimX));
-        pucks.push(createPuck(clampedX, speed, 45));
+        pucks.push(createPuck(clampedX, speed, 45, golden));
     } else {
         const span = (WIDTH - 200) / puckCount;
         const delays = Array.from({ length: puckCount }, (_, i) => i).sort(() => Math.random() - 0.5);
@@ -150,7 +145,7 @@ export function launchPuck(customX = null, { speed = 1.0, count = 1, targets = n
             const px = typeof customX === 'number'
                 ? Math.max(70, Math.min(WIDTH - 70, customX + (i - (puckCount - 1) / 2) * 38))
                 : 100 + span * (i + 0.5) + (Math.random() - 0.5) * (span * 0.4);
-            pucks.push(createPuck(px, speed, 45 - delays[i] * 32));
+            pucks.push(createPuck(px, speed, 45 - delays[i] * 32, golden));
         }
     }
 
@@ -446,25 +441,26 @@ function drawAimGuide() {
     drawMiniWheel(aimX, 45, getActivePuckRadius(), 0, 0.65);
 }
 
-function drawMiniWheel(centerX, centerY, radius, angle = 0, alpha = 1) {
+function drawMiniWheel(centerX, centerY, radius, angle = 0, alpha = 1, isGolden = false) {
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(centerX, centerY);
     ctx.rotate(angle);
     const sliceAngle = (Math.PI * 2) / 6;
+    const colors = isGolden ? GOLD_COLORS : WHEEL_COLORS;
     for (let i = 0; i < 6; i += 1) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, radius, i * sliceAngle, (i + 1) * sliceAngle);
-        ctx.fillStyle = WHEEL_COLORS[i];
+        ctx.fillStyle = colors[i];
         ctx.fill();
     }
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = isGolden ? '#fef08a' : '#ffffff';
     ctx.lineWidth = Math.max(1, radius * 0.12);
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = isGolden ? '#451a03' : '#0f172a';
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.64, 0, Math.PI * 2);
     ctx.fill();
@@ -477,7 +473,7 @@ function drawMiniWheel(centerX, centerY, radius, angle = 0, alpha = 1) {
         ctx.font = `900 ${fontSize}px system-ui, -apple-system, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('PTW!', 0, 0.5);
+        ctx.fillText(isGolden ? '★' : 'PTW!', 0, 0.5);
     }
     ctx.restore();
 }
@@ -488,12 +484,12 @@ function drawPucks() {
         if (p.trail && p.trail.length > 1) {
             for (let i = 0; i < p.trail.length - 1; i += 1) {
                 const pt = p.trail[i];
-                ctx.fillStyle = `rgba(255, 134, 0, ${(i / p.trail.length) * 0.22})`;
+                ctx.fillStyle = p.isGolden ? `rgba(245, 158, 11, ${(i / p.trail.length) * 0.35})` : `rgba(255, 134, 0, ${(i / p.trail.length) * 0.22})`;
                 ctx.beginPath();
                 ctx.arc(pt.x, pt.y, p.r * 0.7, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
-        drawMiniWheel(p.x, p.y, p.r, p.angle, 1);
+        drawMiniWheel(p.x, p.y, p.r, p.angle, 1, p.isGolden);
     }
 }

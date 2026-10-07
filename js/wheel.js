@@ -257,7 +257,7 @@ export function drawWheel(movies = null, segments = null) {
     const pointer = document.querySelector('.pointer');
     const vhsControls = document.querySelector('.vhs-controls');
 
-    if (isWheelchinko) {
+    if (isWheelchinko && !spinPool) {
         if (wheelchinkoStage) wheelchinkoStage.hidden = false;
         if (classicWheel) classicWheel.hidden = true;
         if (pointer) pointer.hidden = true;
@@ -738,15 +738,18 @@ function performSpin(selectedMovies, options = {}) {
     });
 }
 
-export async function spinWheel(spinMode = 'knockout', booster = null) {
+export async function spinWheel(spinMode = 'knockout', booster = null, moviesOverride = null) {
     if (isSpinning || isLastStandingInProgress || spinSessionActive) return;
-    const eligible = getFilteredSelectedMovies();
+    const hasOverride = Array.isArray(moviesOverride) && moviesOverride.length > 0;
+    const eligible = hasOverride ? moviesOverride : getFilteredSelectedMovies();
     if (!eligible.length) return;
 
     spinSessionActive = true;
     const isSingleSpin = spinMode === 'one-spin';
     const isRandomBoost = spinMode === 'random-boost';
-    const selectedMovies = isSingleSpin ? getVhsLineup(eligible, spinMode) : [...eligible];
+    const selectedMovies = hasOverride
+        ? [...moviesOverride]
+        : (isSingleSpin ? getVhsLineup(eligible, spinMode) : [...eligible]);
     let completed = false;
     const weightBackup = new Map();
 

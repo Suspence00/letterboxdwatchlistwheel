@@ -205,6 +205,36 @@
     to { opacity: 1; transform: scale(1); }
 }
 
+.wheelchinko-slot.is-qualified {
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.85), inset 0 0 14px rgba(245, 158, 11, 0.65);
+    filter: brightness(1.2);
+}
+
+.wheelchinko-slot.is-qualified .wheelchinko-slot-poster-wrap {
+    border-color: #f59e0b;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.85), inset 0 0 10px rgba(245, 158, 11, 0.7);
+}
+
+.wheelchinko-slot.is-qualified::before {
+    animation: qualifyPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #fbbf24;
+    content: '★';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 2vw, 1.8rem);
+    font-weight: 900;
+    inset: 0;
+    position: absolute;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.95), 0 0 18px rgba(245, 158, 11, 0.9);
+    z-index: 5;
+}
+
+@keyframes qualifyPop {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 .wheelchinko-slot.is-eliminated {
     box-shadow: inset 0 0 16px rgba(239, 68, 68, 0.85);
     filter: grayscale(1) brightness(0.4);
@@ -489,6 +519,76 @@
 
 .wheelchinko-puck-selector.is-final-10 {
     border-color: rgba(245, 158, 11, 0.5);
+}
+
+.wheelchinko-spinchinko-bar {
+    align-items: center;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: 6px;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.4rem 0.85rem;
+    width: 100%;
+}
+
+.wheelchinko-spinchinko-info {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.wheelchinko-spinchinko-title {
+    color: #fbbf24;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.wheelchinko-spinchinko-desc {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+}
+
+.spinchinko-wheel-type-group {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+}
+
+.spinchinko-wheel-type-label {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.spinchinko-wheel-type-btn {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.55rem;
+    transition: all 0.15s ease;
+}
+
+.spinchinko-wheel-type-btn:hover {
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #f1f5f9;
+}
+
+.spinchinko-wheel-type-btn.is-active {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
 }
 
 /* Theater Mode Integration (scaled to 80% of screen to fit entire board without cutoff) */

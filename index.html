@@ -464,14 +464,15 @@
                 <div class="wheelchinko-stage" id="wheelchinko-stage" hidden>
                   <div class="wheelchinko-header">
                     <div class="wheelchinko-styles" role="group" aria-label="Wheelchinko Style">
-                      <button type="button" class="wheelchinko-style-btn is-active" id="wheelchinko-style-lineup" data-style="lineup">Lineup</button>
-                      <button type="button" class="wheelchinko-style-btn" id="wheelchinko-style-dynamic" data-style="dynamic">Dynamic Slots</button>
+                      <button type="button" class="wheelchinko-style-btn is-active" id="wheelchinko-style-lineup" data-style="lineup">Random 10</button>
                       <button type="button" class="wheelchinko-style-btn" id="wheelchinko-style-elimination" data-style="elimination">Elimination</button>
+                      <button type="button" class="wheelchinko-style-btn" id="wheelchinko-style-spinchinko" data-style="spinchinko">Spinchinko</button>
                     </div>
                     <div class="wheelchinko-actions">
                       <button type="button" class="btn" id="wheelchinko-redraw-btn" hidden>Draw another 10</button>
                       <button type="button" class="btn btn--primary" id="wheelchinko-drop-btn">Drop Puck</button>
                       <button type="button" class="btn" id="wheelchinko-random-btn">Random Drop</button>
+                      <button type="button" class="btn" id="wheelchinko-spinchinko-redrop-btn" hidden>Re-drop 10 Pucks</button>
                       <button type="button" class="btn" id="wheelchinko-reset-tourney-btn" hidden>Reset Tournament</button>
                       <button type="button" class="btn theater-toggle" id="wheelchinko-theater-btn" aria-label="Enter Theater Mode">Theater Mode <span aria-hidden="true">⛶</span></button>
                     </div>
@@ -485,6 +486,17 @@
                       <button type="button" class="wheelchinko-puck-btn is-active" data-count="3">3</button>
                       <button type="button" class="wheelchinko-puck-btn" data-count="4">4</button>
                       <button type="button" class="wheelchinko-puck-btn" data-count="5">5</button>
+                    </div>
+                  </div>
+                  <div class="wheelchinko-spinchinko-bar" id="wheelchinko-spinchinko-bar" hidden>
+                    <div class="wheelchinko-spinchinko-info">
+                      <span class="wheelchinko-spinchinko-title">Spinchinko Qualifier</span>
+                      <span class="wheelchinko-spinchinko-desc" id="wheelchinko-spinchinko-desc">Drop 10 golden pucks to qualify 10 finalists for the wheel showdown!</span>
+                    </div>
+                    <div class="spinchinko-wheel-type-group" role="group" aria-label="Spinchinko Wheel Spin Mode">
+                      <span class="spinchinko-wheel-type-label">Wheel Spin Mode:</span>
+                      <button type="button" class="spinchinko-wheel-type-btn is-active" id="spinchinko-type-one-spin" data-wheel-type="one-spin">1 Spin Mode</button>
+                      <button type="button" class="spinchinko-wheel-type-btn" id="spinchinko-type-knockout" data-wheel-type="knockout">Knockout Mode</button>
                     </div>
                   </div>
                   <div class="wheelchinko-aim-bar" id="wheelchinko-aim-bar" title="Click or drag to position drop chute">

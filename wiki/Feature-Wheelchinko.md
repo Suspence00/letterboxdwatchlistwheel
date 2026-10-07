@@ -10,9 +10,9 @@ Wheelchinko features three distinct game styles tailored for different group siz
 
 | Style | Description | Mechanics |
 | :--- | :--- | :--- |
-| **Lineup** *(Default)* | Fixed 10-slot showcase | Samples 10 movies from your eligible watchlist. Includes a **Draw another 10** redraw button when your watchlist exceeds capacity. |
-| **Dynamic Slots** | Scaled proportional layout | Allocates slots to selected movies (up to 25 slots). Slices with higher weight multipliers (2x–5x) receive proportional representation. |
+| **Random 10** *(Default)* | Fixed 10-slot showcase | Samples 10 movies from your eligible watchlist. Includes a **Draw another 10** redraw button when your watchlist exceeds capacity. |
 | **Elimination** | Mega-Wide Battle Royale (Up to 100 Movies) | Puts **all contenders (up to 100 movies)** directly onto the board simultaneously in a unified Battle Royale! Drops rapid multi-puck salvos (1 to 5 pucks) targeting active contenders evenly across the entire width. Hit movies are knocked out (`✕`), and the **remaining slots dynamically expand in real time**! As contenders thin out (100 → 50 → 20 → 10), posters grow progressively larger until two massive finalist showdown cards face off. Automatically throttles to **1 single puck at the Final 10** for maximum drama! |
+| **Spinchinko** | 10 Golden Pucks Qualifier & Wheel Showdown | Puts **all contenders (up to 100 movies)** onto the board simultaneously. Drops a salvo of **10 golden pucks** simultaneously across the field. Landing slots are qualified with golden borders, ambient glow, and star badges (`★`). Once 10 distinct finalists are qualified, they transfer to the wheel for a grand finale showdown! Users can select either **1 Spin Mode** or **Knockout Mode** for the wheel showdown, and can re-drop pucks at any time. |
 
 ---
 
