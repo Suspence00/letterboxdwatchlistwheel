@@ -124,6 +124,43 @@ export function playKnockoutSound() {
     oscillator.stop(now + 0.5);
 }
 
+export function playPegBounceSound(pitchMod = 1) {
+    if (wheelSoundsMuted) return;
+    ensureAudioContext();
+    const now = audioContext.currentTime;
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = 'triangle';
+    const baseFreq = 840 * Math.max(0.6, Math.min(1.6, pitchMod));
+    oscillator.frequency.setValueAtTime(baseFreq, now);
+    oscillator.frequency.exponentialRampToValueAtTime(baseFreq * 0.45, now + 0.04);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.05);
+}
+
+export function playSlotLandSound() {
+    if (wheelSoundsMuted) return;
+    ensureAudioContext();
+    const now = audioContext.currentTime;
+    [587.33, 880].forEach((freq, idx) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const start = now + idx * 0.08;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.1, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.25);
+        osc.connect(gain).connect(audioContext.destination);
+        osc.start(start);
+        osc.stop(start + 0.28);
+    });
+}
+
 function updateWheelSoundToggle() {
     if (!elements.wheelSoundToggleBtn) return;
     const label = wheelSoundsMuted ? 'Unmute wheel sounds' : 'Mute wheel sounds';

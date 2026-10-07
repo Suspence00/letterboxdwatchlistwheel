@@ -11,6 +11,7 @@ import {
     revealVhsWinner, clearVhsReveal, getCurrentSpinMode, animateVhsKnockout
 } from './vhs-wheel.js';
 import { openSpinTheater, closeSpinTheater, setTheaterStatus, lockSpinControls, clearEliminationStack } from './spin-theater.js';
+import { syncWheelchinko } from './ui/wheelchinko-ui.js';
 
 const TAU = 2 * Math.PI;
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -250,6 +251,25 @@ export function getSelectionOdds(selectedMovies = null, options = {}) {
 }
 
 export function drawWheel(movies = null, segments = null) {
+    const isWheelchinko = getCurrentSpinMode() === 'wheelchinko';
+    const wheelchinkoStage = document.getElementById('wheelchinko-stage');
+    const classicWheel = document.getElementById('wheel');
+    const pointer = document.querySelector('.pointer');
+    const vhsControls = document.querySelector('.vhs-controls');
+
+    if (isWheelchinko) {
+        if (wheelchinkoStage) wheelchinkoStage.hidden = false;
+        if (classicWheel) classicWheel.hidden = true;
+        if (pointer) pointer.hidden = true;
+        if (vhsControls) vhsControls.hidden = true;
+        renderVhsWheel([], 0);
+        syncWheelchinko();
+        return;
+    }
+
+    if (wheelchinkoStage) wheelchinkoStage.hidden = true;
+    if (pointer) pointer.hidden = false;
+
     const eligible = getFilteredSelectedMovies();
     let selectedMovies;
     if (spinPool) {

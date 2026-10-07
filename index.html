@@ -391,6 +391,13 @@
               <span class="spin-mode-desc">Single dramatic spin. Weights increase winning change.</span>
             </div>
           </label>
+          <label class="spin-mode-option">
+            <input type="radio" name="spin-mode" value="wheelchinko">
+            <div class="spin-mode-card">
+              <span class="spin-mode-title">Wheelchinko</span>
+              <span class="spin-mode-desc">Gravity pegboard. Drop a puck through the pegs into a movie slot.</span>
+            </div>
+          </label>
         </div>
         <div class="vhs-controls">
           <button type="button" class="btn" id="vhs-shuffle" hidden>Draw another 10</button>
@@ -454,6 +461,42 @@
                 <p class="result" id="result" aria-live="polite"></p>
                 <canvas id="wheel" width="1080" height="1080" role="img" aria-label="Wheel of selected movies"></canvas>
                 <div class="pointer" aria-hidden="true"></div>
+                <div class="wheelchinko-stage" id="wheelchinko-stage" hidden>
+                  <div class="wheelchinko-header">
+                    <div class="wheelchinko-styles" role="group" aria-label="Wheelchinko Style">
+                      <button type="button" class="wheelchinko-style-btn is-active" id="wheelchinko-style-lineup" data-style="lineup">Lineup</button>
+                      <button type="button" class="wheelchinko-style-btn" id="wheelchinko-style-dynamic" data-style="dynamic">Dynamic Slots</button>
+                      <button type="button" class="wheelchinko-style-btn" id="wheelchinko-style-elimination" data-style="elimination">Elimination</button>
+                    </div>
+                    <div class="wheelchinko-actions">
+                      <button type="button" class="btn" id="wheelchinko-redraw-btn" hidden>Draw another 10</button>
+                      <button type="button" class="btn btn--primary" id="wheelchinko-drop-btn">Drop Puck</button>
+                      <button type="button" class="btn" id="wheelchinko-random-btn">Random Drop</button>
+                      <button type="button" class="btn" id="wheelchinko-reset-tourney-btn" hidden>Reset Tournament</button>
+                      <button type="button" class="btn theater-toggle" id="wheelchinko-theater-btn" aria-label="Enter Theater Mode">Theater Mode <span aria-hidden="true">⛶</span></button>
+                    </div>
+                  </div>
+                  <div class="wheelchinko-tourney-status" id="wheelchinko-tourney-status" hidden>
+                    <span class="wheelchinko-tourney-text" id="wheelchinko-tourney-text">Elimination tournament active</span>
+                    <div class="wheelchinko-puck-selector" id="wheelchinko-puck-selector" role="group" aria-label="Simultaneous Pucks">
+                      <span class="wheelchinko-puck-label">Pucks:</span>
+                      <button type="button" class="wheelchinko-puck-btn" data-count="1">1</button>
+                      <button type="button" class="wheelchinko-puck-btn" data-count="2">2</button>
+                      <button type="button" class="wheelchinko-puck-btn is-active" data-count="3">3</button>
+                      <button type="button" class="wheelchinko-puck-btn" data-count="4">4</button>
+                      <button type="button" class="wheelchinko-puck-btn" data-count="5">5</button>
+                    </div>
+                  </div>
+                  <div class="wheelchinko-aim-bar" id="wheelchinko-aim-bar" title="Click or drag to position drop chute">
+                    <span class="wheelchinko-aim-hint">Click or drag along the bar to aim</span>
+                    <div class="wheelchinko-aim-marker" id="wheelchinko-aim-marker" style="left: 50%;"></div>
+                  </div>
+                  <div class="wheelchinko-canvas-wrap" id="wheelchinko-canvas-wrap">
+                    <div class="wheelchinko-slots" id="wheelchinko-slots" role="region" aria-label="Movie slots"></div>
+                    <canvas id="wheelchinko-canvas" width="1400" height="1040" role="img" aria-label="Wheelchinko pegboard"></canvas>
+                  </div>
+                  <div class="wheelchinko-tooltip" id="wheelchinko-tooltip" role="tooltip" aria-hidden="true" hidden></div>
+                </div>
               </div>
             </div>
             <button type="button" class="btn primary" id="spin-button" disabled>Spin the wheel</button>

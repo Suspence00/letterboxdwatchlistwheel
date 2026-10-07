@@ -219,6 +219,7 @@ export function updateVhsControls(eligible) {
     shuffle.textContent = `Draw another ${capacity}`;
     if (note) {
         if (!isVhsEnabled()) note.textContent = 'All eligible movies share the classic wheel.';
+        else if (mode === 'wheelchinko') note.textContent = 'Drop a puck down the pegboard to pick a movie.';
         else if (!eligible.length) note.textContent = 'Add movies to load the tapes.';
         else if (mode === 'one-spin') {
             const size = Math.min(eligible.length, capacity);
@@ -303,6 +304,12 @@ function makeTape(movie, index, interactive = true) {
 /** Only the rotor transform changes per frame; posters and cuboids are reused. */
 export function renderVhsWheel(movies, angle, { spinning = false, winnerId = null } = {}) {
     if (!scene) return false;
+    if (getCurrentSpinMode() === 'wheelchinko') {
+        scene.hidden = true;
+        inspector.hidden = true;
+        scene.closest('.wheel-stage')?.classList.remove('has-vhs');
+        return false;
+    }
     const visible = useVhsForMovies(movies);
     scene.hidden = !visible;
     inspector.hidden = !visible;

@@ -1,0 +1,524 @@
+/* Wheelchinko Pegboard Component Styles */
+.wheelchinko-stage {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0 auto;
+    max-width: min(100%, 1100px);
+    position: relative;
+    width: 100%;
+}
+
+.wheelchinko-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.wheelchinko-styles {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--control-radius);
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+}
+
+.wheelchinko-style-btn {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.wheelchinko-style-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+}
+
+.wheelchinko-style-btn.is-active {
+    background: var(--surface-raised);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    color: var(--text);
+}
+
+.wheelchinko-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Aim Bar */
+.wheelchinko-aim-bar {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    cursor: crosshair;
+    display: flex;
+    height: 38px;
+    justify-content: space-between;
+    padding: 0 1rem;
+    position: relative;
+    user-select: none;
+    width: 100%;
+}
+
+.wheelchinko-aim-bar:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent);
+}
+
+.wheelchinko-aim-hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+    text-align: center;
+    width: 100%;
+}
+
+.wheelchinko-aim-marker {
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    height: 18px;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease-out;
+    width: 18px;
+}
+
+/* Canvas Area */
+.wheelchinko-canvas-wrap {
+    background: #0f1724;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+#wheelchinko-canvas {
+    display: block;
+    height: auto;
+    max-width: 100%;
+    pointer-events: none;
+    position: relative;
+    width: 100%;
+    z-index: 2;
+}
+
+/* Slot Bins */
+.wheelchinko-slots {
+    border-bottom: 2px solid rgba(245, 158, 11, 0.4);
+    box-sizing: border-box;
+    display: grid;
+    gap: 0;
+    height: 30.769%;
+    left: 2.857%;
+    padding: 0;
+    pointer-events: auto;
+    position: absolute;
+    top: 65.385%;
+    width: 94.286%;
+    z-index: 1;
+}
+
+.wheelchinko-slot {
+    align-items: center;
+    background: rgba(9, 14, 23, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-end;
+    margin: 0;
+    overflow: hidden;
+    padding: 0 1px 3px;
+    position: relative;
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+}
+
+.wheelchinko-slot:first-child {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wheelchinko-slot:hover {
+    filter: brightness(1.2);
+}
+
+.wheelchinko-slot.is-winner {
+    box-shadow: inset 0 0 16px rgba(255, 134, 0, 0.9), 0 0 20px rgba(255, 134, 0, 0.7);
+    filter: brightness(1.25) saturate(1.2);
+    z-index: 5;
+}
+
+.wheelchinko-slot.is-winner .wheelchinko-slot-poster-wrap {
+    border-color: #ff8600;
+    box-shadow: 0 0 18px rgba(255, 134, 0, 0.95), inset 0 0 10px rgba(255, 134, 0, 0.75);
+}
+
+.wheelchinko-slot.is-advanced {
+    box-shadow: inset 0 0 16px rgba(16, 185, 129, 0.85);
+    filter: brightness(1.15);
+}
+
+.wheelchinko-slot.is-advanced .wheelchinko-slot-poster-wrap {
+    border-color: #10b981;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.85);
+}
+
+.wheelchinko-slot.is-advanced::before {
+    animation: advancePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #10b981;
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 2vw, 1.8rem);
+    font-weight: 900;
+    inset: 0;
+    position: absolute;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.95);
+    z-index: 5;
+}
+
+@keyframes advancePop {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.wheelchinko-slot.is-eliminated {
+    box-shadow: inset 0 0 16px rgba(239, 68, 68, 0.85);
+    filter: grayscale(1) brightness(0.4);
+}
+
+.wheelchinko-slot.is-eliminated .wheelchinko-slot-poster-wrap {
+    border-color: #ef4444;
+    box-shadow: inset 0 0 14px rgba(239, 68, 68, 0.9);
+}
+
+.wheelchinko-slot.is-eliminated::before {
+    animation: eliminatePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #ef4444;
+    content: '✕';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 2vw, 1.8rem);
+    font-weight: 900;
+    inset: 0;
+    position: absolute;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.95);
+    z-index: 5;
+}
+
+@keyframes eliminatePop {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.wheelchinko-slot-poster-wrap {
+    aspect-ratio: 2 / 3;
+    background: #090e18;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    flex-shrink: 0;
+    max-height: calc(100% - 6px);
+    max-width: min(100%, 260px);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.wheelchinko-slot-poster {
+    aspect-ratio: 2 / 3;
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    width: 100%;
+}
+
+.wheelchinko-slot.has-poster .wheelchinko-slot-poster {
+    opacity: 1;
+}
+
+.wheelchinko-slot-poster-fallback {
+    align-items: center;
+    background: linear-gradient(145deg, #141c2c 0%, #0a0f19 100%);
+    box-sizing: border-box;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 3px;
+    position: absolute;
+    text-align: center;
+}
+
+.wheelchinko-slot.has-poster .wheelchinko-slot-poster-fallback {
+    display: none;
+}
+
+.wheelchinko-slot-fallback-title {
+    color: var(--text-secondary);
+    display: -webkit-box;
+    font-size: clamp(0.46rem, 0.7vw, 0.62rem);
+    font-weight: 600;
+    line-height: 1.15;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.wheelchinko-slot-num {
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    color: #fff;
+    font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+    font-weight: 700;
+    left: 2px;
+    padding: 1px 3px;
+    position: absolute;
+    top: 2px;
+    z-index: 2;
+}
+
+.wheelchinko-slot-weight {
+    background: var(--accent);
+    border-radius: 3px;
+    color: #000;
+    font-size: clamp(0.45rem, 0.7vw, 0.6rem);
+    font-weight: 800;
+    padding: 1px 3px;
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    z-index: 2;
+}
+
+/* Compact Slot Density for Battle Royale (31 - 60 contenders) */
+.wheelchinko-slots.is-compact-slots .wheelchinko-slot {
+    padding: 0 1px 2px;
+}
+
+.wheelchinko-slots.is-compact-slots .wheelchinko-slot-num {
+    font-size: 0.48rem;
+    left: 1px;
+    padding: 0 2px;
+    top: 1px;
+}
+
+.wheelchinko-slots.is-compact-slots .wheelchinko-slot-weight {
+    font-size: 0.44rem;
+    padding: 0 2px;
+    right: 1px;
+    top: 1px;
+}
+
+/* Ultra-Compact Slot Density for Mega-Wide Fields (61 - 100 contenders) */
+.wheelchinko-slots.is-ultra-compact .wheelchinko-slot {
+    border-right-width: 0.5px;
+    padding: 0 0.5px 1px;
+}
+
+.wheelchinko-slots.is-ultra-compact .wheelchinko-slot-poster-wrap {
+    border-radius: 2px;
+    border-width: 0.5px;
+}
+
+.wheelchinko-slots.is-ultra-compact .wheelchinko-slot-num,
+.wheelchinko-slots.is-ultra-compact .wheelchinko-slot-weight {
+    display: none;
+}
+
+.wheelchinko-slots.is-ultra-compact .wheelchinko-slot-fallback-title {
+    -webkit-line-clamp: 2;
+    font-size: 0.38rem;
+}
+
+/* Tooltip Popover */
+.wheelchinko-tooltip {
+    backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.96);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 250px;
+    min-width: 140px;
+    opacity: 0;
+    padding: 0.5rem 0.75rem;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    white-space: normal;
+    z-index: 100;
+}
+
+.wheelchinko-tooltip.is-visible {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 10px));
+}
+
+.wheelchinko-tooltip::after {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--border-strong);
+    bottom: -6px;
+    content: '';
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+}
+
+.wheelchinko-tooltip-title {
+    color: var(--text, #fff);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.wheelchinko-tooltip-meta {
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* VHS variant */
+.wheelchinko-slot--vhs .wheelchinko-slot-poster-wrap {
+    border-left: 3px solid var(--sleeve-color, var(--accent));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Tourney status bar & Multi-Puck Selector */
+.wheelchinko-tourney-status {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    width: 100%;
+}
+
+.wheelchinko-tourney-text {
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.wheelchinko-puck-selector {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px 4px;
+}
+
+.wheelchinko-puck-label {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 4px;
+    padding-left: 2px;
+}
+
+.wheelchinko-puck-btn {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 700;
+    min-width: 24px;
+    padding: 2px 6px;
+    transition: all 0.15s ease;
+}
+
+.wheelchinko-puck-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
+.wheelchinko-puck-btn.is-active {
+    background: var(--accent);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    color: #000;
+}
+
+.wheelchinko-puck-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.wheelchinko-puck-selector.is-final-10 {
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+/* Theater Mode Integration (scaled to 80% of screen to fit entire board without cutoff) */
+.spin-theater.is-wheelchinko {
+    background: radial-gradient(ellipse at 50% 50%, #1a2230 0%, #0c111c 55%, #05080f 100%);
+    padding: clamp(0.35rem, 0.8vw, 0.75rem);
+}
+
+.spin-theater.is-wheelchinko .spin-theater__stage {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+}
+
+.spin-theater.is-wheelchinko .wheel-stage {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    max-width: 1344px;
+    width: min(calc((100dvh - 150px) * 1.346 * 0.8), calc(100dvw - 2rem) * 0.8, 1344px);
+}
+
+.spin-theater.is-wheelchinko .wheelchinko-stage {
+    gap: 0.35rem;
+    max-width: 100%;
+    width: 100%;
+}
+
+.spin-theater.is-wheelchinko .wheelchinko-canvas-wrap {
+    max-height: none;
+}

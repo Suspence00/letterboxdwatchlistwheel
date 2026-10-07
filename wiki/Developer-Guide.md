@@ -57,6 +57,7 @@ letterboxdwatchlistwheel/
 │       ├── tape-viewer.css         # Static 3D VHS cassette preview display
 │       ├── verify.css              # Monte Carlo fairness audit report table
 │       ├── vhs-wheel.css           # 3D VHS carousel, Returns Wall & flight animations
+│       ├── wheelchinko.css         # Wheelchinko vertical pegboard & slot styling
 │       ├── wheel-fm.css            # Floating draggable audio player & FAB bubble
 │       ├── wheel.css               # 2D Canvas wheel & mechanical flapper pointer
 │       └── workspaces.css          # Multi-board switcher dropdown & board management
@@ -77,6 +78,7 @@ letterboxdwatchlistwheel/
 │   ├── verify.js                   # 10,000-spin Monte Carlo simulation fairness auditor
 │   ├── vhs-wheel.js                # 3D VHS carousel engine, sampling, & flight animation
 │   ├── wheel.js                    # 2D Canvas wheel physics, easing, & sector geometry
+│   ├── wheelchinko.js              # Wheelchinko 2D physics engine, peg grid & collisions
 │   └── ui/                         # Focused UI submodules
 │       ├── boards-ui.js            # Workspace switcher & board CRUD modal
 │       ├── boost-station.js        # Booster contributor tags & weight adjustment
@@ -89,6 +91,7 @@ letterboxdwatchlistwheel/
 │       ├── movie-list.js           # Filtering, sorting, and coordinator synchronization
 │       ├── slice-editor.js         # Slice color picker & live odds readout display
 │       ├── theme-picker.js         # Accessible theme card picker & decoration toggle
+│       ├── wheelchinko-ui.js       # Wheelchinko slot orchestration, styles, & drop aim
 │       └── winner-modal.js         # Winner celebration, trailer search, & Radarr dispatch
 ├── wheel-fm/                       # Ambient audio files and channel playlists
 │   ├── playlist.json               # Channel configurations and track metadata
@@ -128,6 +131,12 @@ To prevent monolithic controllers and maintain clean separation of concerns, UI 
 * **Radarr Client:** Directly communicates with Radarr v3 REST API endpoints (`/api/v3/qualityprofile`, `/api/v3/rootfolder`, `/api/v3/movie/lookup`, `/api/v3/movie`) using `X-Api-Key` authentication.
 * **Discord Webhooks:** Constructs rich JSON embeds with Blurple branding, movie poster thumbnail, release year, winning odds, and Letterboxd hyperlink.
 * **Metadata Scraping:** Fetches movie runtime and plot synopsis on demand via a Cloudflare worker proxy to TMDB.
+
+### 6. Wheelchinko Pegboard (`js/wheelchinko.js`, `js/ui/wheelchinko-ui.js`)
+* **Multi-Substep Physics:** 2D gravity simulation runs with 4 sub-steps per frame, preventing peg-tunneling and ensuring elastic restitution with stochastic micro-deflections.
+* **Three Play Styles:** Lineup (10-slot batch with redraw), Dynamic Slots (proportional representation based on weights), and Elimination Tournament (multi-drop elimination until one champion film remains).
+* **Interactive & Random Drops:** Supports manual aim positioning along the top drop bar as well as random single-click drops.
+* **Adaptive VHS Slots:** When 3D VHS mode is enabled, bottom slot bins render with authentic cassette spines and deterministic sleeve accents.
 
 ---
 

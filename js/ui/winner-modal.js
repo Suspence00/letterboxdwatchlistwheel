@@ -265,6 +265,8 @@ export function showWinnerPopup(movie, context = {}) {
         details.push('One Spin Mode winner');
     } else if (spinMode === 'knockout') {
         details.push('Movie Knockout champion');
+    } else if (spinMode === 'wheelchinko') {
+        details.push('Wheelchinko winner');
     }
 
     if (elements.winModalTitle) {

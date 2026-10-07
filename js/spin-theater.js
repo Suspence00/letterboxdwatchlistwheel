@@ -55,6 +55,8 @@ export function openSpinTheater(mode, total = 0) {
     if (mode === 'knockout') {
         totalEliminationPool = total || appState.selectedIds?.size || appState.movies?.length || 0;
         theater.classList.add('has-stack');
+    } else if (mode === 'wheelchinko') {
+        theater.classList.add('is-wheelchinko');
     }
     theater.setAttribute('role', 'dialog');
     theater.setAttribute('aria-modal', 'true');
@@ -120,6 +122,7 @@ export function openSpinTheater(mode, total = 0) {
     document.body.classList.add('is-spin-focused');
     updateTheaterButtonState(false);
     theater.querySelector('button').focus({ preventScroll: true });
+    window.dispatchEvent(new Event('resize'));
 }
 
 function handleTheaterKeys(event) {
@@ -154,6 +157,7 @@ export function closeSpinTheater({ restoreFocus = true } = {}) {
     document.body.classList.remove('is-spin-focused');
     window.scrollTo({ top: previousScroll, behavior: 'instant' });
     updateTheaterButtonState();
+    window.dispatchEvent(new Event('resize'));
     if (restoreFocus && previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     return true;
 }

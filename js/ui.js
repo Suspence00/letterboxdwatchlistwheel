@@ -30,6 +30,7 @@ import {
 } from './ui/knockout-ui.js';
 import {
     initWinnerModal,
+    showWinnerPopup,
     closeWinnerPopup,
     handleReshowWinner
 } from './ui/winner-modal.js';
@@ -40,12 +41,19 @@ import {
 } from './ui/history-modal.js';
 import {
     initSliceEditor,
-    resetSliceEditor
+    resetSliceEditor,
+    handleSliceSelection
 } from './ui/slice-editor.js';
 import { initBoardsUI } from './ui/boards-ui.js';
 import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/movie-list.js';
+import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
+import {
+    initWheelchinkoUI, syncWheelchinko, triggerDrop, triggerRandomDrop,
+    getWheelchinkoStyle, getIsRapidEliminating
+} from './ui/wheelchinko-ui.js';
 
 // Re-export public API from submodules
+export { syncWheelchinko, triggerDrop, triggerRandomDrop };
 export { updateMovieList, getFilteredMovies, getFilteredSelectedMovies } from './ui/movie-list.js';
 export { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 export { showConfirmModal, promptForInput, showVerificationResults } from './ui/modals.js';
@@ -111,6 +119,13 @@ export function initUI(domElements) {
     initBoostStation(domElements, { updateMovieList });
     initHistoryModal(domElements);
     initSliceEditor(domElements);
+    initWheelchinkoUI(domElements, {
+        triggerConfetti,
+        showWinnerPopup,
+        getEligibleMovies: getFilteredSelectedMovies,
+        onInspectMovie: handleSliceSelection,
+        updateSpinButtonLabel
+    });
 
     // Attach event listeners
     if (elements.selectAllBtn) {
@@ -141,6 +156,10 @@ export function initUI(domElements) {
 
     if (elements.spinButton) {
         elements.spinButton.addEventListener('click', () => {
+            if (getSpinMode() === 'wheelchinko') {
+                triggerDrop();
+                return;
+            }
             handleSpinPrep();
             spinWheel(getSpinMode());
         });
@@ -262,16 +281,17 @@ export function initUI(domElements) {
         });
     }
 
+    const closeCustomModal = () => {
+        if (!elements.customEntryModal) return;
+        elements.customEntryModal.classList.remove('show');
+        setTimeout(() => { elements.customEntryModal.hidden = true; }, 200);
+    };
+
     if (elements.customEntryForm) {
         elements.customEntryForm.addEventListener('submit', (event) => {
             event.preventDefault();
             addCustomEntry();
-            if (elements.customEntryModal) {
-                elements.customEntryModal.classList.remove('show');
-                setTimeout(() => {
-                    elements.customEntryModal.hidden = true;
-                }, 200);
-            }
+            closeCustomModal();
         });
     }
 
@@ -280,30 +300,17 @@ export function initUI(domElements) {
             if (!elements.customEntryModal) return;
             elements.customEntryModal.hidden = false;
             requestAnimationFrame(() => elements.customEntryModal.classList.add('show'));
-            if (elements.customEntryInput) {
-                elements.customEntryInput.focus();
-            }
+            if (elements.customEntryInput) elements.customEntryInput.focus();
         });
     }
 
     if (elements.customModalCloseBtn) {
-        elements.customModalCloseBtn.addEventListener('click', () => {
-            if (!elements.customEntryModal) return;
-            elements.customEntryModal.classList.remove('show');
-            setTimeout(() => {
-                elements.customEntryModal.hidden = true;
-            }, 200);
-        });
+        elements.customModalCloseBtn.addEventListener('click', closeCustomModal);
     }
 
     if (elements.customEntryModal) {
         elements.customEntryModal.addEventListener('click', (event) => {
-            if (event.target === elements.customEntryModal) {
-                elements.customEntryModal.classList.remove('show');
-                setTimeout(() => {
-                    elements.customEntryModal.hidden = true;
-                }, 200);
-            }
+            if (event.target === elements.customEntryModal) closeCustomModal();
         });
     }
 
@@ -326,10 +333,6 @@ export function updateSpinButtonLabel() {
     const spinning = getIsSpinning();
     elements.spinButton.disabled = spinning || lastStandingActive || getFilteredSelectedMovies().length === 0;
 
-    if (knockoutLaunchPrimed && lastStandingActive) {
-        // Handled in knockout-ui
-    }
-
     if (knockoutLaunchPrimed && knockoutLaunchEngaged && !lastStandingActive && !spinning) {
         resetKnockoutLaunchEffects();
     }
@@ -342,6 +345,17 @@ export function updateSpinButtonLabel() {
 
     if (lastStandingActive) {
         elements.spinButton.textContent = 'Eliminating.';
+        return;
+    }
+
+    if (spinMode === 'wheelchinko') {
+        if (getWheelchinkoStyle() === 'elimination') {
+            elements.spinButton.textContent = getIsRapidEliminating()
+                ? 'Stop Wheelchinko Elimination'
+                : 'Start Wheelchinko Elimination';
+        } else {
+            elements.spinButton.textContent = 'Drop Wheelchinko Puck';
+        }
         return;
     }
 
