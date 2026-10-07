@@ -19,6 +19,8 @@ Each cassette tape is modeled as an interactive 3D cuboid with distinct textured
 
 ## Interactive Inspection
 
+Each movie in a `.wheel` file may include an optional `vhsCoverImage` image URL. Full Restore preserves this URL, and VHS tapes and the winner's VHS cover use it instead of the usual poster lookup. It is retained when exporting the wheel. Entries without a nonempty string use the existing artwork behavior; other movie metadata and the classic wheel are unchanged.
+
 Users can examine individual tapes before or after spinning:
 
 1. **Hover & Keyboard Focus**: Hovering over or tabbing to any tape elevates its position in 3D space with an accessible golden focus indicator (`outline: 4px solid #ffcf87;`).

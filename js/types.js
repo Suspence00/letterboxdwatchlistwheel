@@ -18,6 +18,7 @@
  * @property {string} name Display title, normalized from CSV columns on import
  * @property {string|number} [year] Release year
  * @property {string} [uri] Letterboxd film URL
+ * @property {string} [vhsCoverImage] Optional image URL overriding VHS cover artwork
  * @property {string} [date] Date added to the watchlist
  * @property {number} [initialIndex] Original position before filtering or sorting
  * @property {number} [weight=1] Spin weight multiplier (1-5)

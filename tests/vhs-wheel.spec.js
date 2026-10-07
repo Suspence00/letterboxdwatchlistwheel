@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 const sample = path.resolve('sample-watchlist.csv');
 const tinyPoster = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7S8AAAAASUVORK5CYII=', 'base64');
@@ -17,6 +18,72 @@ test.beforeEach(async ({ page }) => {
 async function oneSpin(page) {
     await page.getByText('1 Spin Mode', { exact: true }).click();
 }
+
+test('wheel imports preserve custom VHS covers and leave ordinary artwork unchanged', async ({ page }) => {
+    const cover = 'https://posters.test/custom-game.png';
+    const backup = {
+        version: 1,
+        movies: [
+            { id: 'custom-cover', name: 'Imported game', vhsCoverImage: ` ${cover} ` },
+            { id: 'ordinary-cover', name: 'Imported movie' },
+            { id: 'invalid-cover', name: 'Invalid cover value', vhsCoverImage: 42 }
+        ],
+        preferences: { wheelStyle: 'vhs' }
+    };
+    const restore = async () => {
+        await page.locator('#settings-open').click();
+        await page.locator('#tab-btn-data').click();
+        await page.locator('#backup-text').fill(JSON.stringify(backup));
+        await page.locator('#backup-restore').click();
+        await page.locator('#settings-modal-close').click();
+    };
+    await restore();
+
+    const customPoster = page.locator('.vhs-tape[data-movie-id="custom-cover"] .vhs-poster');
+    await expect(customPoster).toHaveAttribute('src', cover);
+    for (const id of ['ordinary-cover', 'invalid-cover']) {
+        await expect(page.locator(`.vhs-tape[data-movie-id="${id}"] .vhs-poster`))
+            .toHaveAttribute('src', 'https://posters.test/cover.png');
+    }
+
+    await page.reload();
+    await expect(customPoster).toHaveAttribute('src', cover);
+    await page.locator('#settings-open').click();
+    await page.locator('#tab-btn-data').click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#backup-export').click();
+    const download = await downloadPromise;
+    const exported = JSON.parse(await readFile(await download.path(), 'utf8'));
+    expect(exported.movies[0].vhsCoverImage).toBe(cover);
+    expect(exported.movies[1]).not.toHaveProperty('vhsCoverImage');
+    expect(exported.movies[2]).not.toHaveProperty('vhsCoverImage');
+    await page.locator('#settings-modal-close').click();
+
+    await page.evaluate(async () => {
+        const { appState } = await import('/js/state.js');
+        const { showWinnerPopup } = await import('/js/ui.js');
+        showWinnerPopup(appState.movies[0], { spinMode: 'one-spin', isRestore: true });
+    });
+    await expect(page.locator('#win-modal-runtime')).toHaveText('100 min');
+    await expect(page.locator('.tape-viewer__poster')).toHaveAttribute('src', cover);
+    await page.locator('#win-modal-close').click();
+    await expect(page.locator('#win-modal')).toBeHidden();
+    await page.evaluate(async () => {
+        const { appState } = await import('/js/state.js');
+        const { showWinnerPopup } = await import('/js/ui.js');
+        showWinnerPopup(appState.movies[1], { spinMode: 'one-spin', isRestore: true });
+    });
+    await expect(page.locator('.tape-viewer__poster')).toHaveAttribute('src', 'https://posters.test/cover.png');
+    await page.locator('#win-modal-close').click();
+    await expect(page.locator('#win-modal')).toBeHidden();
+
+    backup.movies[0].vhsCoverImage = 'https://posters.test/updated-game.png';
+    await restore();
+    await expect(customPoster).toHaveAttribute('src', backup.movies[0].vhsCoverImage);
+    delete backup.movies[0].vhsCoverImage;
+    await restore();
+    await expect(customPoster).toHaveAttribute('src', 'https://posters.test/cover.png');
+});
 
 async function importLargeList(page, count = 1001) {
     const csv = 'Date,Name,Year,Letterboxd URI\n' + Array.from({ length: count }, (_, i) =>

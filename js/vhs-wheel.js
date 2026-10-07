@@ -252,6 +252,7 @@ function makeTape(movie, index, interactive = true) {
     const tape = document.createElement(interactive ? 'button' : 'div');
     tape.className = 'vhs-tape';
     tape.dataset.movieId = movie.id;
+    tape.dataset.vhsCoverImage = movie.vhsCoverImage || '';
     if (interactive) {
         tape.type = 'button';
         tape.setAttribute('aria-label', `Inspect ${movie.name}${movie.year ? ` (${movie.year})` : ''}`);
@@ -291,8 +292,9 @@ function makeTape(movie, index, interactive = true) {
         poster.src = posterUrl;
     };
 
-    if (movie.poster) {
-        applyPoster(movie.poster);
+    const posterUrl = movie.vhsCoverImage || movie.poster;
+    if (posterUrl) {
+        applyPoster(posterUrl);
     } else {
         fetchMovieMetadata(movie).then(result => {
             if (result.data?.poster) applyPoster(result.data.poster);
@@ -316,7 +318,7 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
     scene.closest('.wheel-stage').classList.toggle('has-vhs', visible);
     document.getElementById('wheel').hidden = visible;
     if (!visible) return false;
-    const key = movies.map(movie => `${movie.id}:${movie.name}:${movie.year}`).join('|');
+    const key = movies.map(movie => `${movie.id}:${movie.name}:${movie.year}:${movie.vhsCoverImage || ''}`).join('|');
     if (key !== renderedKey) {
         renderedKey = key;
         const tapes = scene.querySelector('.vhs-tapes');
@@ -343,6 +345,10 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
         movies.forEach((movie, index) => {
             const midpoint = (index + 0.5) * 2 * Math.PI / movies.length;
             let tape = existingTapes.get(String(movie.id));
+            if (tape && tape.dataset.vhsCoverImage !== (movie.vhsCoverImage || '')) {
+                tape.remove();
+                tape = null;
+            }
             if (!tape) {
                 tape = makeTape(movie, index);
                 tapes.append(tape);

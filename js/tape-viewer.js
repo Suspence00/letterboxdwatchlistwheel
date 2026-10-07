@@ -15,6 +15,7 @@ export function createTapeViewer(container, movie) {
     let poster = null;
 
     function update(updatedMovie, posterUrl) {
+        posterUrl = updatedMovie.vhsCoverImage || posterUrl;
         const name = updatedMovie.name || 'Untitled';
         root.setAttribute('aria-label', `${name} VHS cover`);
         root.querySelector('strong').textContent = name;
