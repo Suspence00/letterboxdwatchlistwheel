@@ -14,6 +14,9 @@ export function getConfettiPalette() {
     if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-holiday')) {
         return ['#d1495b', '#2ea44f', '#f0c75e', '#f7e1a1', '#9b2f2f', '#4c956c'];
     }
+    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-friendslop')) {
+        return ['#f97316', '#5865f2', '#10b981', '#eab308', '#f43f5e', '#8b5cf6', '#06b6d4'];
+    }
     return ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
 }
 

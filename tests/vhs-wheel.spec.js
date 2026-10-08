@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function oneSpin(page) {
-    await page.getByText('1 Spin Mode', { exact: true }).click();
+    await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
 }
 
 test('wheel imports preserve custom VHS covers and leave ordinary artwork unchanged', async ({ page }) => {

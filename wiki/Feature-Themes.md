@@ -1,6 +1,6 @@
 # Feature: Visual Themes
 
-The **Letterboxd Watchlist Wheel** features a collection of 13 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
+The **Letterboxd Watchlist Wheel** features a collection of 14 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
 
 ---
 
@@ -37,59 +37,65 @@ Themes can be configured in the **Settings Modal**:
 * **Palette**: Refined Cupertino hues—vibrant red (`#ff453a`), amber orange (`#ff9f0a`), radiant yellow (`#ffd60a`), spring green (`#32d74b`), teal (`#64d2ff`), and system indigo (`#5e5ce6`).
 * **Key Visuals**: Translucent glassmorphism cards with multi-pass backdrop blur (`backdrop-filter: blur(20px) saturate(180%)`), subtle border rims (`rgba(255, 255, 255, 0.08)`), pill-shaped action buttons, and dark slate gradients.
 
-#### 4. Retro 95
+#### 4. Gaming Friendslop
+* **Aesthetic**: Sleek modern co-op gaming lobby styling inspired by weekend voice calls, multiplayer lobbies, and friendslop party games.
+* **Typography**: Crisp modern sans-serif typography (`Inter, system-ui, -apple-system, sans-serif`) with subtle depth drop-shadows.
+* **Palette**: Lethal hazmat orange (`#f97316`), Discord blurple / squad blue (`#5865f2`), co-op revive emerald (`#10b981`), scrap loot gold (`#eab308`), party coral pink (`#f43f5e`), drop pod violet (`#8b5cf6`), and oxygen cyan (`#06b6d4`).
+* **Key Visuals**: Refined dark slate glassmorphism cards with multi-pass blur, tactile gamepad-inspired button gradients with top specular highlights, a live animated Co-Op Voice Lobby HUD widget in the bottom-right corner featuring online voice pulse and P1–P4 squad chips, and subtle ambient floating controller, headset, and dice emblems.
+
+#### 5. Retro 95
 * **Aesthetic**: Nostalgic 1990s desktop operating system styling.
 * **Typography**: Authentic system sans-serif typography (`"Segoe UI", Arial, Tahoma, "MS Sans Serif"`).
 * **Palette**: Desktop teal (`#008080`), classic metallic chassis gray (`#c0c0c0`), active titlebar blue (`#000080`), dark maroon (`#800000`), and classic olive (`#808000`).
 * **Key Visuals**: Distinct 3D beveled borders with crisp light/dark drop-shadow lines, retro titlebars, classic form inputs, and a floating **"Tip of the Day"** dialog window with vintage lightbulb icon and helpful movie selection tips.
 
-#### 5. Forest Camp
+#### 6. Forest Camp
 * **Aesthetic**: Cozy wilderness campsite on a crisp autumn evening.
 * **Typography**: Warm literary Georgia serif with ember glow text shadow.
 * **Palette**: Deep pine green (`#2e5a44`), campfire amber (`#e58f24`), flame red (`#e25822`), bark wood brown (`#8b5a2b`), mossy green (`#607d3b`), and birch silver (`#d2d7d3`).
-* **Key Visuals**: Animated campfire flame with glowing wood logs in the corner, warm woodland card gradients, and pine needle silhouette borders.
+* **Key Visuals**: Seamless transparent header layout matching the deep woodland background, animated campfire flame with glowing wood logs in the corner, warm woodland card gradients, and pine needle silhouette borders.
 
 ---
 
 ### Seasonal & Regional Themes
 
-#### 6. Christmas (Holiday)
+#### 7. Christmas (Holiday)
 * **Aesthetic**: Warm holiday cheer with evergreen boughs, crimson ribbons, and festive celebration.
 * **Palette**: Traditional berry crimson (`#c93737`), pine green (`#1f7a4d`), star gold (`#f0c75e`), and winter sky blue (`#7ab6d9`).
 * **Key Visuals**: Gentle CSS falling snowflake particles, decorated holiday garland accents, and warm golden card borders.
 
-#### 7. Hanukkah
+#### 8. Hanukkah
 * **Aesthetic**: Refined festival of lights celebration with deep twilight and candlelight illumination.
 * **Palette**: Royal sapphire blues (`#1d4ed8`, `#3b82f6`, `#1e40af`) paired with radiant menorah candle gold (`#facc15`, `#fde68a`).
 * **Key Visuals**: Glowing menorah candlelight accents, soft golden illumination, and celestial gradient backdrops.
 
-#### 8. Alaska
+#### 9. Alaska
 * **Aesthetic**: Crisp subarctic wilderness beneath glowing auroras and the northern night sky.
 * **Palette**: Deep flag blue (`#1e3a8a`), polaris gold (`#ffd700`), sky glacial blue (`#0ea5e9`), aurora purple (`#c084fc`), aurora green (`#4ade80`), and snow white (`#f1f5f9`).
 * **Key Visuals**: The Big Dipper constellation mapped across the header banner, Polaris (North Star) shining in gold, shimmering aurora borealis gradient washes, and a gentle animated polar bear wanderer.
 
-#### 9. Chinese New Year (CNY)
+#### 10. Chinese New Year (CNY)
 * **Aesthetic**: Joyful Lunar New Year celebration of prosperity, luck, and tradition.
 * **Palette**: Festive red (`#D8261C`), imperial gold (`#F9C74F`), ruby crimson (`#C70039`), and deep plum maroon (`#581845`).
 * **Key Visuals**: Swaying ceremonial lanterns with decorative hanging tassels, golden text drop shadows, and rich crimson gradient backgrounds.
 
-#### 10. St. Patrick's Day
+#### 11. St. Patrick's Day
 * **Aesthetic**: High-spirited Celtic celebration of luck and emerald landscapes.
 * **Palette**: Deep Irish emerald (`#008000`, `#004d00`), kelly green (`#00aa00`), goldenrod (`#daa520`), and shimmering gold (`#ffd700`).
 * **Key Visuals**: Seven-color rainbow arc, a floating animated pot of gold, shamrock clovers, and gold-trimmed cards.
 
-#### 11. 4th of July (America)
+#### 12. 4th of July (America)
 * **Aesthetic**: Patriotic summer evening celebration of Independence Day.
 * **Palette**: Old Glory red (`#D2143A`), star white (`#EAF2F8`), and Old Glory deep navy blue (`#123380`, `#1b45b4`).
 * **Key Visuals**: Animated CSS firework bursts featuring multi-color star bursts, heart bursts, and expanding concentric sparkle rings over a deep midnight sky.
 
-#### 12. Spooky Halloween
+#### 13. Spooky Halloween
 * **Aesthetic**: Atmospheric haunted twilight perfect for horror marathons.
 * **Typography**: Dramatic Georgia serif with eerie lime green glow.
 * **Palette**: Pumpkin orange (`#FF7518`), midnight indigo (`#4B0082`), slime green (`#39FF14`), blood red (`#8B0000`), and ghostly bone (`#E0DCD3`).
 * **Key Visuals**: Silhouetted bats gliding across the screen, corner spiderwebs, and jack-o'-lantern warm ember accents.
 
-#### 13. Birthday Party
+#### 14. Birthday Party
 * **Aesthetic**: Prestigious, milestone celebration with deep obsidian slate, warm champagne amber glow, and rich royal blue & gold accents.
 * **Palette**: Royal celebration blue (`#2563eb`), champagne gold (`#f59e0b`), emerald festivity (`#059669`), classic crimson (`#dc2626`), cobalt blue (`#0284c7`), and warm amber (`#d97706`).
 * **Key Visuals**: A lavish swarm of CSS celebration balloons (dense corner bouquets and multi-depth rising balloon streams across the entire viewport in gold, royal blue, emerald, and silver), a glowing celebration candle flame, brushed gold card borders, and bold celebratory confetti bursts.

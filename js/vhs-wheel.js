@@ -33,6 +33,8 @@ export function getCurrentSpinMode() {
 }
 
 export function useVhsForMovies(movies) {
+    const isSpinchinkoSpin = Boolean(activeMode && getCurrentSpinMode() === 'wheelchinko');
+    if (isSpinchinkoSpin) return movies.length > 0 && movies.length <= 10;
     return isVhsEnabled() && movies.length > 0 && movies.length <= getVhsCapacity();
 }
 
@@ -306,7 +308,8 @@ function makeTape(movie, index, interactive = true) {
 /** Only the rotor transform changes per frame; posters and cuboids are reused. */
 export function renderVhsWheel(movies, angle, { spinning = false, winnerId = null } = {}) {
     if (!scene) return false;
-    if (getCurrentSpinMode() === 'wheelchinko') {
+    const isSpinchinkoSpin = Boolean(activeMode && getCurrentSpinMode() === 'wheelchinko');
+    if (getCurrentSpinMode() === 'wheelchinko' && !isSpinchinkoSpin) {
         scene.hidden = true;
         inspector.hidden = true;
         scene.closest('.wheel-stage')?.classList.remove('has-vhs');

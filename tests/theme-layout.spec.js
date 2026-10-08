@@ -4,7 +4,7 @@ test('Theme controls retain usable dimensions and settings fit a narrow screen',
     await page.goto('/');
     await page.click('#settings-open');
     const themes = await page.locator('.theme-card').evaluateAll(cards => cards.map(card => card.dataset.theme));
-    expect(themes).toHaveLength(13);
+    expect(themes).toHaveLength(14);
     const metrics = [];
     for (const theme of themes) {
         await page.locator(`.theme-card[data-theme="${theme}"]`).click();

@@ -8,7 +8,7 @@ import { createTapeViewer } from '../tape-viewer.js';
 import { addMovieToRadarr, isRadarrConfigured } from '../radarr.js';
 import { sendDiscordNotification } from '../discord.js';
 import { triggerConfetti } from './confetti.js';
-import { isVhsEnabled, clearVhsReveal } from '../vhs-wheel.js';
+import { isVhsEnabled, clearVhsReveal, getCurrentSpinMode } from '../vhs-wheel.js';
 import { closeSpinTheater } from '../spin-theater.js';
 import { getStoredWeight } from '../utils.js';
 import { getWinnerId } from '../wheel.js';
@@ -93,7 +93,8 @@ function setWinnerModalLoadingState(movie, spinMode) {
     }
 
     // Decide whether to use the 3D tape viewer or the flat poster
-    const useTapeViewer = isVhsEnabled() && elements.winModalTapeViewer && movie;
+    const isSpinchinko = spinMode === 'wheelchinko' || getCurrentSpinMode?.() === 'wheelchinko';
+    const useTapeViewer = (isVhsEnabled() || isSpinchinko) && elements.winModalTapeViewer && movie;
 
     if (useTapeViewer) {
         // Hide flat poster, show tape viewer

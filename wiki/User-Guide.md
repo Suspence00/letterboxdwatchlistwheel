@@ -134,7 +134,7 @@ When spinning large watchlists in 3D VHS mode:
 Access global configuration anytime by clicking the gear icon (**Settings**) in the header. Settings are organized into 6 dedicated tabs:
 
 ### Tab 1: Options
-* **Visual Theme:** Select from 13 handcrafted preview cards including *Classic*, *Fantasy & Runic*, *Modern*, *Christmas*, *Hanukkah*, *Alaska*, *Chinese New Year*, *St. Patrick's Day*, *4th of July*, *Retro 95*, *Spooky Halloween*, *Forest Camp*, and *Birthday Party*.
+* **Visual Theme:** Select from 14 handcrafted preview cards including *Classic*, *Fantasy & Runic*, *Modern*, *Gaming Friendslop*, *Christmas*, *Hanukkah*, *Alaska*, *Chinese New Year*, *St. Patrick's Day*, *4th of July*, *Retro 95*, *Spooky Halloween*, *Forest Camp*, and *Birthday Party*.
 * **Show Seasonal Decorations:** Toggle themed corner artwork and festive accents without changing palette colors.
 * **Wheel Style:** Switch between *3D VHS Tapes* and *Classic Wheel*.
 * **Lineup Capacity:** Set carousel density to *10*, *24*, *50*, or *100* tapes.

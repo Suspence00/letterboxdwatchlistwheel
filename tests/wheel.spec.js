@@ -162,12 +162,37 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await page.evaluate(() => document.body.classList.remove('decorations-disabled'));
     await expect(page.locator('.birthday-decorations')).toBeVisible();
 
+    // Switch to friendslop theme
+    await themeSelect.selectOption('friendslop');
+    await expect(page.locator('body')).toHaveClass(/theme-friendslop/);
+    await expect(firstColorInput).toHaveValue('#f97316');
+    await expect(page.locator('.friendslop-decorations')).toBeVisible();
+    await expect(page.locator('.friendslop-lobby-hud')).toBeVisible();
+
+    // Verify disabling decorations hides friendslop decorations
+    await page.evaluate(() => document.body.classList.add('decorations-disabled'));
+    await expect(page.locator('.friendslop-decorations')).toBeHidden();
+    await page.evaluate(() => document.body.classList.remove('decorations-disabled'));
+    await expect(page.locator('.friendslop-decorations')).toBeVisible();
+
+    const friendslopConfetti = await page.evaluate(async () => {
+      const { getConfettiPalette } = await import('./js/ui/confetti.js');
+      return getConfettiPalette();
+    });
+    expect(friendslopConfetti).toContain('#f97316');
+    expect(friendslopConfetti).toContain('#5865f2');
+
+    // Switch to forest theme and verify header background is transparent
+    await themeSelect.selectOption('forest');
+    await expect(page.locator('body')).toHaveClass(/theme-forest/);
+    const headerBg = await page.locator('.app-header').evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(headerBg).toBe('rgba(0, 0, 0, 0)');
+
     const confettiColors = await page.evaluate(async () => {
       const { getConfettiPalette } = await import('./js/ui/confetti.js');
       return getConfettiPalette();
     });
-    expect(confettiColors).toContain('#2563eb');
-    expect(confettiColors).toContain('#f59e0b');
+    expect(confettiColors).toContain('#ff8600');
   });
 
   test('Boost System: Dropdowns & Tags', async ({ page }) => {

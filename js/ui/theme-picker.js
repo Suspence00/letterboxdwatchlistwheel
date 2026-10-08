@@ -15,20 +15,21 @@ export function initThemePicker(options) {
             default: '#101827', modern: '#17181c', fantasy: '#211a19', holiday: '#10251e',
             hanukkah: '#101d42', alaska: '#071b3d', cny: '#3a0c12', 'st-patricks': '#0e2c1d',
             america: '#101d46', 'retro-95': '#008080', spooky: '#160b25', forest: '#10251b',
-            birthday: '#0f141c'
+            birthday: '#0f141c', friendslop: '#101116'
         }[theme.id] || '#101827';
         const text = { default: '#f5f7fb', modern: '#f5f5f7', fantasy: '#f5e6c8', holiday: '#f4f7f2',
             hanukkah: '#eff6ff', alaska: '#e8f2ff', cny: '#F9C74F', 'st-patricks': '#effff3',
             america: '#f5f8ff', 'retro-95': '#000000', spooky: '#f4ecff', forest: '#f0f5e9',
-            birthday: '#f8fafc'
+            birthday: '#f8fafc', friendslop: '#f1f5f9'
         }[theme.id] || '#f5f5f5';
         const button = { default: '#ff8600', modern: '#0071e3', fantasy: '#c8963e', holiday: '#d1495b',
             hanukkah: '#2563eb', alaska: '#f0b429', cny: '#D8261C', 'st-patricks': '#008000',
             america: '#D2143A', 'retro-95': '#c0c0c0', spooky: '#FF7518', forest: '#e58f24',
-            birthday: '#f59e0b'
+            birthday: '#f59e0b', friendslop: '#f97316'
         }[theme.id] || palette[0] || '#ff8600';
         const font = { default: 'Inter, sans-serif', modern: 'Inter, sans-serif', fantasy: 'Cinzel, serif',
-            spooky: 'Georgia, serif', forest: 'Georgia, serif', 'retro-95': 'Arial, sans-serif'
+            spooky: 'Georgia, serif', forest: 'Georgia, serif', 'retro-95': 'Arial, sans-serif',
+            friendslop: 'Inter, sans-serif'
         }[theme.id] || 'Inter, sans-serif';
         return { background, text, button, font };
     };

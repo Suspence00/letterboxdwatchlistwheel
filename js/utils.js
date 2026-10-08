@@ -198,10 +198,29 @@ export const birthdayPalette = [
     '#3b82f6'  // Electric Sapphire
 ];
 
+export const friendslopPalette = [
+    '#f97316', // Lethal Hazmat Orange
+    '#5865f2', // Discord Blurple / Squad Blue
+    '#10b981', // Co-op Revive Emerald
+    '#eab308', // Scrap Loot Gold
+    '#f43f5e', // Party Coral Pink
+    '#8b5cf6', // Drop Pod Violet
+    '#06b6d4', // Oxygen / Shield Cyan
+    '#fb923c', // Extraction Amber
+    '#a855f7', // High Roller Purple
+    '#14b8a6', // Energy Drink Teal
+    '#e11d48', // Healthpack Crimson
+    '#84cc16', // Ammo Pack Lime
+    '#3b82f6', // Electric Cobalt
+    '#ec4899', // Bubblegum Party Pink
+    '#64748b'  // Tactical Steel Slate
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
     { id: 'modern', name: 'Modern', palette: modernPalette },
+    { id: 'friendslop', name: 'Gaming Friendslop', palette: friendslopPalette },
     { id: 'holiday', name: 'Christmas', palette: holidayPalette },
     { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },
     { id: 'alaska', name: 'Alaska', palette: alaskaPalette },

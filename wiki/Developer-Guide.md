@@ -39,6 +39,7 @@ letterboxdwatchlistwheel/
 │       ├── cyber-theme.css         # Retro terminal theme styles
 │       ├── fantasy-theme.css       # Runic parchment & ancient gold fantasy theme
 │       ├── forest-theme.css        # Earthy camp & moss pine theme styles
+│       ├── friendslop-theme.css    # Sleek modern co-op gaming night lobby theme
 │       ├── holiday-theme.css       # Festive Christmas & Hanukkah theme styles
 │       ├── modern-theme.css        # Sleek glassmorphism minimalist theme styles
 │       ├── retro-95-theme.css      # Vintage desktop operating system theme styles

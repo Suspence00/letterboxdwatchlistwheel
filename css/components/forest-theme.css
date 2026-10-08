@@ -54,7 +54,7 @@ body.theme-forest .settings-group legend {
 }
 
 body.theme-forest .app-header {
-    background: linear-gradient(180deg, rgba(27, 61, 42, 0.72), transparent);
+    background: transparent;
     border-bottom: 1px solid rgba(229, 143, 36, 0.24);
 }
 

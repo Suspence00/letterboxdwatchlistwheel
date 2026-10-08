@@ -269,6 +269,7 @@ export function drawWheel(movies = null, segments = null) {
 
     if (wheelchinkoStage) wheelchinkoStage.hidden = true;
     if (pointer) pointer.hidden = false;
+    if (isWheelchinko && vhsControls) vhsControls.hidden = true;
 
     const eligible = getFilteredSelectedMovies();
     let selectedMovies;
@@ -859,8 +860,10 @@ async function runLastStandingMode(selectedMovies) {
     ui.updateKnockoutRemainingBox(eliminationPool);
     ui.updateKnockoutResultText('start', eliminationPool.length);
 
-    const vhsCap = getVhsCapacity();
-    if (isVhsEnabled() && eliminationPool.length > vhsCap) {
+    const vhs = useVhsForMovies(selectedMovies);
+    const isSpinchinko = getCurrentSpinMode() === 'wheelchinko';
+    const vhsCap = isSpinchinko ? 10 : getVhsCapacity();
+    if (!isSpinchinko && isVhsEnabled() && eliminationPool.length > vhsCap) {
         const batchSize = Math.max(1, Math.ceil((eliminationPool.length - vhsCap) / 45));
         while (eliminationPool.length > vhsCap) {
             for (let index = 0; index < batchSize && eliminationPool.length > vhsCap; index += 1) {
@@ -915,7 +918,7 @@ async function runLastStandingMode(selectedMovies) {
         ui.updateOdds?.(eliminationPool);
 
         playKnockoutSound();
-        if (isVhsEnabled()) {
+        if (vhs) {
             await animateVhsKnockout(eliminatedMovie, eliminationOrder);
         }
         eliminationOrder++;
@@ -936,7 +939,7 @@ async function runLastStandingMode(selectedMovies) {
         const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const revealDelay = isReducedMotion
             ? 150
-            : (isVhsEnabled()
+            : (vhs
                 ? (isFinalShowdown ? Math.max(500, baseRevealDelay - 200) : Math.max(200, baseRevealDelay - 450))
                 : baseRevealDelay);
         await delay(revealDelay);

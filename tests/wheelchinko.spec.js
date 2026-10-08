@@ -224,9 +224,14 @@ test.describe('Wheelchinko Mode', () => {
     await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Wheel \(10 Finalists\)/);
     await page.click('#wheelchinko-drop-btn');
 
-    // Winner modal should appear from the wheel spin
+    // Verify the spin wheel is the 3D VHS cassette wheel
+    await expect(page.locator('.vhs-scene')).toBeVisible();
+    await expect(page.locator('.vhs-tape')).toHaveCount(10);
+
+    // Winner modal should appear from the wheel spin with 3D tape viewer
     await expect(page.locator('#win-modal')).toBeVisible({ timeout: 20000 });
     await expect(page.locator('#win-modal-title')).toContainText('The movie selected was');
+    await expect(page.locator('#win-modal-tape-viewer')).toBeVisible();
   });
 
   test('Wheelchinko multi-puck selector works and automatically locks to 1 puck at final 10', async ({ page }) => {

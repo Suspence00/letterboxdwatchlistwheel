@@ -1,0 +1,352 @@
+/* Gaming Friendslop Theme - Sleek Modern Co-op Gaming Night Aesthetic */
+
+.friendslop-decorations {
+    display: none;
+    height: 100%;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 0;
+}
+
+body.theme-friendslop .friendslop-decorations {
+    display: block;
+}
+
+body.decorations-disabled .friendslop-decorations {
+    display: none !important;
+}
+
+body.theme-friendslop {
+    --accent: #f97316;
+    --accent-strong: #5865f2;
+    --background: #101116;
+    --card-bg: rgba(20, 21, 29, 0.88);
+    --focus-ring: #f97316;
+    --muted: #94a3b8;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --text: #f1f5f9;
+    background:
+        radial-gradient(circle at 14% 14%, rgba(249, 115, 22, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 86% 18%, rgba(88, 101, 242, 0.09) 0%, transparent 42%),
+        radial-gradient(circle at 50% 92%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+        #101116;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Header */
+body.theme-friendslop .app-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(249, 115, 22, 0.22);
+}
+
+body.theme-friendslop .app-header h1 {
+    color: #f1f5f9;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 16px rgba(249, 115, 22, 0.25), 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.theme-friendslop .app-header p {
+    color: #94a3b8;
+}
+
+/* Glassmorphism Cards & Panels */
+body.theme-friendslop .card,
+body.theme-friendslop .win-modal__content,
+body.theme-friendslop .settings-modal__content,
+body.theme-friendslop .data-transfer,
+body.theme-friendslop .import-section--hero,
+body.theme-friendslop .settings-panel {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.theme-friendslop .card h2,
+body.theme-friendslop .settings-group legend {
+    color: #f97316;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Buttons */
+body.theme-friendslop .btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #f1f5f9;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.18s ease;
+}
+
+body.theme-friendslop .btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.theme-friendslop .btn.btn--primary,
+body.theme-friendslop .btn.primary {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+body.theme-friendslop .btn.btn--primary:hover,
+body.theme-friendslop .btn.primary:hover {
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    box-shadow: 0 6px 22px rgba(249, 115, 22, 0.5);
+    transform: translateY(-1px);
+}
+
+/* Form Inputs */
+body.theme-friendslop .text-input,
+body.theme-friendslop .import-input {
+    background: rgba(15, 16, 23, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #f1f5f9;
+}
+
+body.theme-friendslop .text-input:focus,
+body.theme-friendslop .import-input:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.25);
+    outline: none;
+}
+
+/* Odds & Links */
+body.theme-friendslop .movie-odds--secondary,
+body.theme-friendslop .movie-link:hover {
+    color: #f97316;
+}
+
+body.theme-friendslop .seasonal-accent {
+    display: none !important;
+}
+
+/* Spin Mode Cards */
+body.theme-friendslop .spin-mode-card {
+    background: rgba(18, 19, 27, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+body.theme-friendslop .spin-mode-option input[type="radio"]:checked + .spin-mode-card {
+    background: rgba(28, 30, 42, 0.85);
+    border-color: #f97316;
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.22);
+}
+
+/* Movie List Items */
+body.theme-friendslop .movie-list li {
+    background: rgba(22, 23, 31, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+body.theme-friendslop .movie-list li:hover {
+    background: rgba(30, 32, 44, 0.8);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Booster Tags */
+body.theme-friendslop .booster-tag {
+    background: rgba(249, 115, 22, 0.14);
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    color: #fdba74;
+}
+
+/* Wheel Pointer */
+body.theme-friendslop .wheel-stage .pointer::after {
+    border-right-color: #f97316;
+    filter: drop-shadow(-2px 0 6px rgba(249, 115, 22, 0.45));
+}
+
+/* Ambient Co-op Voice Lobby HUD Widget */
+.friendslop-lobby-hud {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(20, 22, 30, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    bottom: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    position: fixed;
+    right: 24px;
+    z-index: 5;
+}
+
+.friendslop-lobby-header {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+}
+
+.friendslop-voice-pulse {
+    animation: friendslop-pulse 2s ease-in-out infinite;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    display: inline-block;
+    height: 8px;
+    width: 8px;
+}
+
+.friendslop-lobby-title {
+    color: #f1f5f9;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.friendslop-lobby-badge {
+    background: rgba(88, 101, 242, 0.2);
+    border: 1px solid rgba(88, 101, 242, 0.35);
+    border-radius: 999px;
+    color: #818cf8;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+}
+
+.friendslop-squad-row {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+}
+
+.friendslop-player-chip {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #cbd5e1;
+    display: inline-flex;
+    font-size: 0.65rem;
+    font-weight: 600;
+    gap: 4px;
+    padding: 2px 6px;
+}
+
+.friendslop-player-chip.player--1 {
+    border-color: rgba(249, 115, 22, 0.35);
+    color: #fdba74;
+}
+
+.friendslop-player-chip.player--2 {
+    border-color: rgba(88, 101, 242, 0.35);
+    color: #a5b4fc;
+}
+
+.friendslop-player-chip.player--3 {
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #6ee7b7;
+}
+
+.friendslop-player-chip.player--4 {
+    border-color: rgba(244, 63, 94, 0.35);
+    color: #fda4af;
+}
+
+.friendslop-player-dot {
+    border-radius: 50%;
+    display: inline-block;
+    height: 5px;
+    width: 5px;
+}
+
+.player--1 .friendslop-player-dot { background: #f97316; }
+.player--2 .friendslop-player-dot { background: #5865f2; }
+.player--3 .friendslop-player-dot { background: #10b981; }
+.player--4 .friendslop-player-dot { background: #f43f5e; }
+
+/* Ambient Floating Icons */
+.friendslop-floating-item {
+    color: rgba(255, 255, 255, 0.12);
+    position: fixed;
+    z-index: 0;
+}
+
+.friendslop-item-1 {
+    animation: friendslop-float-slow 8s ease-in-out infinite;
+    bottom: 80px;
+    left: 40px;
+}
+
+.friendslop-item-2 {
+    animation: friendslop-float-rev 10s ease-in-out infinite;
+    right: 50px;
+    top: 90px;
+}
+
+.friendslop-item-3 {
+    animation: friendslop-float-slow 9s ease-in-out infinite 2s;
+    left: 25px;
+    top: 45%;
+}
+
+/* Animations & Responsive */
+@keyframes friendslop-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.45;
+        transform: scale(0.85);
+    }
+}
+
+@keyframes friendslop-float-slow {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-12px) rotate(4deg);
+    }
+}
+
+@keyframes friendslop-float-rev {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(12px) rotate(-4deg);
+    }
+}
+
+@media (max-width: 600px) {
+    .friendslop-lobby-hud {
+        bottom: 12px;
+        padding: 6px 10px;
+        right: 12px;
+    }
+    .friendslop-floating-item {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .friendslop-voice-pulse,
+    .friendslop-floating-item {
+        animation: none !important;
+    }
+}
