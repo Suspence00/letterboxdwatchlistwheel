@@ -107,7 +107,7 @@ letterboxdwatchlistwheel/
 
 ### 1. 3D VHS Cassette Engine (`js/vhs-wheel.js`, `js/tape-viewer.js`)
 * **Perspective Carousel:** Replaces flat slices with tangible 3D cassette tape elements featuring authentic perspective skewing, dynamic sleeve spine labels, and wear textures.
-* **Lineup Sampling Algorithm:** Employs uniform sampling without replacement via a partial Fisher-Yates shuffle to select a curated batch (10, 24, 50, or 100 tapes) from the eligible pool.
+* **Lineup Sampling Algorithm:** Employs uniform sampling without replacement via a partial Fisher-Yates shuffle to select a curated batch (10, 24, 50, 100, or 250 tapes) from the eligible pool.
 * **Tape Pinning:** Tapes pinned by users are retained across redraws via a `pinnedIds` Set.
 * **Batch Caching:** Lineups are keyed against active capacity and eligible IDs, ensuring deterministic stability between spins.
 

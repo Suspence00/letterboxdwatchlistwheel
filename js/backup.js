@@ -121,7 +121,7 @@ function buildBackupPayload() {
         history: Array.isArray(appState.history) ? appState.history : [],
         preferences: {
             wheelStyle: appState.preferences?.wheelStyle === 'classic' ? 'classic' : 'vhs',
-            vhsCapacity: Math.max(4, Math.min(100, Number(appState.preferences?.vhsCapacity) || 10)),
+            vhsCapacity: Math.max(4, Math.min(250, Number(appState.preferences?.vhsCapacity) || 250)),
             vhsShowLabels: appState.preferences?.vhsShowLabels !== false,
             hideFinalistsBox: Boolean(appState.preferences?.hideFinalistsBox),
             showFinalistsFromStart: Boolean(appState.preferences?.showFinalistsFromStart),
@@ -389,7 +389,7 @@ function getIdentity(movie, fallbackIndex) {
 function normalizePreferences(preferences = {}) {
     return {
         wheelStyle: preferences?.wheelStyle === 'classic' ? 'classic' : 'vhs',
-        vhsCapacity: Math.max(4, Math.min(100, Number(preferences?.vhsCapacity) || 10)),
+        vhsCapacity: Math.max(4, Math.min(250, Number(preferences?.vhsCapacity) || 250)),
         vhsShowLabels: preferences?.vhsShowLabels !== false,
         hideFinalistsBox: Boolean(preferences?.hideFinalistsBox),
         showFinalistsFromStart: Boolean(preferences?.showFinalistsFromStart),

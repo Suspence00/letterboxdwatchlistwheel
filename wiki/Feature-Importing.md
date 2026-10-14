@@ -23,11 +23,11 @@ You can paste any of the following into the **Letterboxd URL or profile name** f
 
 ### Multi-Page Pagination
 
-Letterboxd divides lists and watchlists into pages of up to 100 films each (e.g. `/page/1/`, `/page/2/`, etc.).
+Letterboxd divides lists into 100 films per page, watchlists into 28 films per page, and member films into 72 films per page (e.g. `/page/1/`, `/page/2/`, etc.).
 
-* **Automated Multi-Page Scraper**: When you import a list with more than 100 titles, the proxy automatically increments page numbers, fetches consecutive pages, and aggregates all rows into a single collection.
-* **Large Catalog Support**: The scraper safely handles lists up to 50 pages (up to 5,000 films).
-* **Live Progress Reporting**: As pages are retrieved, the status bar displays live feedback (e.g., `Fetching page 3 from Letterboxd (200 movies loaded)…`), keeping you informed during large imports.
+* **Automated Multi-Page Scraper**: When you import a watchlist or list that spans multiple pages, the proxy automatically recognizes the page size (28 for watchlists, 100 for lists, 72 for film catalogs), increments page numbers, fetches consecutive pages, and aggregates all rows into a single collection.
+* **Large Catalog Support**: The scraper safely handles large catalogs (up to 200 pages for watchlists and 50 pages for lists, supporting over 5,000 films).
+* **Live Progress Reporting**: As pages are retrieved, the status bar displays live feedback (e.g., `Fetching page 3 from Letterboxd (56 movies loaded)…`), keeping you informed during large imports.
 * **Workspace Guard**: If you switch boards while an import is actively fetching pages, the operation safely cancels to prevent cross-board state corruption.
 
 ---

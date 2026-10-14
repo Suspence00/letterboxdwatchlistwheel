@@ -144,26 +144,26 @@ test('spin focuses the wheel, matches the pointer to the winner, and restores th
     expect(Math.abs(await page.evaluate(() => window.scrollY) - scroll)).toBeLessThan(4);
 });
 
-test('a 1001-movie list draws ten unique tapes and keeps pins across redraws', async ({ page }) => {
+test('a 1001-movie list draws unique tapes and keeps pins across redraws', async ({ page }) => {
     await importLargeList(page);
     await oneSpin(page);
-    await expect(page.locator('#vhs-lineup-note')).toContainText('10 tapes from 1,001');
+    await expect(page.locator('#vhs-lineup-note')).toContainText('250 tapes from 1,001');
     const before = await page.locator('.vhs-tapes .vhs-tape').evaluateAll(tapes => tapes.map(tape => tape.dataset.movieId));
-    expect(new Set(before).size).toBe(10);
+    expect(new Set(before).size).toBe(250);
     await page.locator('.vhs-tapes .vhs-tape').first().click();
     await page.locator('#vhs-pin').click();
     await page.locator('#vhs-shuffle').click();
     const after = await page.locator('.vhs-tapes .vhs-tape').evaluateAll(tapes => tapes.map(tape => tape.dataset.movieId));
     expect(after).toContain(before[0]);
     expect(after).not.toEqual(before);
-    expect(new Set(after).size).toBe(10);
+    expect(new Set(after).size).toBe(250);
     const state = await page.evaluate(async () => {
         const { appState } = await import('/js/state.js');
         const { getSelectionOdds } = await import('/js/wheel.js');
         return { selected: appState.selectedIds.size, odds: [...getSelectionOdds().values()] };
     });
     expect(state.selected).toBe(1001);
-    expect(state.odds).toHaveLength(10);
+    expect(state.odds).toHaveLength(250);
     expect(state.odds.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
     await page.locator('#movie-search').fill('Movie 1000');
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(1);
@@ -173,6 +173,9 @@ test('a 1001-movie list draws ten unique tapes and keeps pins across redraws', a
 test('large knockout reaches a VHS finale and records one champion', async ({ page }) => {
     test.setTimeout(45000);
     await importLargeList(page);
+    await page.locator('#settings-open').click();
+    await page.locator('#settings-vhs-capacity').selectOption('10');
+    await page.locator('#settings-modal-close').click();
     await expect(page.locator('.vhs-scene')).toBeHidden();
     await page.locator('#spin-button').click();
     await expect(page.locator('.spin-theater .vhs-scene')).toBeVisible({ timeout: 15000 });
@@ -321,7 +324,7 @@ test('mobile winner dialog with poster fits within viewport and has reachable cl
     await expect(page.locator('#win-modal')).toBeHidden();
 });
 
-test('supports selectable tape capacities up to 100 tapes and persists setting', async ({ page }) => {
+test('supports selectable tape capacities up to 250 tapes and persists setting', async ({ page }) => {
     await importLargeList(page);
     await oneSpin(page);
     await page.locator('#settings-open').click();
@@ -331,17 +334,17 @@ test('supports selectable tape capacities up to 100 tapes and persists setting',
     await expect(page.locator('#vhs-lineup-note')).toContainText('50 tapes from 1,001');
 
     await page.locator('#settings-open').click();
-    await page.locator('#settings-vhs-capacity').selectOption('100');
+    await page.locator('#settings-vhs-capacity').selectOption('250');
     await page.locator('#settings-modal-close').click();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(100);
-    await expect(page.locator('#vhs-lineup-note')).toContainText('100 tapes from 1,001');
+    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(250);
+    await expect(page.locator('#vhs-lineup-note')).toContainText('250 tapes from 1,001');
 
     await page.reload();
     await oneSpin(page);
     await page.locator('#settings-open').click();
-    await expect(page.locator('#settings-vhs-capacity')).toHaveValue('100');
+    await expect(page.locator('#settings-vhs-capacity')).toHaveValue('250');
     await page.locator('#settings-modal-close').click();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(100);
+    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(250);
 });
 
 test('theater mode remains completely stable with zero scrollbars or layout shift during spin', async ({ page }) => {

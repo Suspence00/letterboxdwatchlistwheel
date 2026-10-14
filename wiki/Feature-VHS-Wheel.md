@@ -38,16 +38,17 @@ The 3D rotor dynamically adjusts its geometry based on your preferred tape capac
 
 | Capacity Tier | Rotor Layout | Best Suited For |
 | :---: | :---: | :---: |
-| **10 Tapes** *(Default)* | Standard full-size cassettes (`scale: 1.00`) | Intimate shortlist selections, group deliberation, and standard watchlists. |
+| **10 Tapes** | Standard full-size cassettes (`scale: 1.00`) | Intimate shortlist selections, group deliberation, and small watchlists. |
 | **24 Tapes** | Compact scaled cassettes (`scale: 0.85`) | Medium watchlist samplers and extended knockout tournaments. |
 | **50 Tapes** | Dense radial arrangement (`scale: 0.65`) | Large watchlists, marathon tournaments, and broad genre sweeps. |
-| **100 Tapes** | High-density showcase (`scale: 0.45`) | Massive library samplers and high-capacity knockout arena games. |
+| **100 Tapes** | High-density showcase (`scale: 0.45`) | Extensive catalog samplers and high-capacity knockout arena games. |
+| **250 Tapes** *(Default)* | Maximum-capacity radial array (`scale: 0.05`) | Massive watchlists, full library displays, and large knockout finales. |
 
 ### Adjusting Capacity
 
-You can configure lineup capacity in two locations:
-* **Settings Modal**: Navigate to **Settings → Options → VHS Lineup Capacity** (`#settings-vhs-capacity`) and choose between 10, 24, 50, or 100 tapes.
-* **Stage Controls**: When multiple tapes are loaded, the capacity dropdown on the stage (`#vhs-capacity-select`) allows instant on-the-fly switching.
+You can configure lineup capacity in settings:
+* **Settings Modal**: Navigate to **Settings → Options → VHS Lineup Capacity** (`#settings-vhs-capacity`) and choose between 10, 24, 50, 100, or 250 tapes.
+* **Stage Controls**: When multiple tapes are loaded, the capacity dropdown on the stage allows instant on-the-fly switching.
 
 ---
 

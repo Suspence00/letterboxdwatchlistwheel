@@ -20,7 +20,7 @@ Populating your wheel with movies is simple and flexible. The application suppor
 1. Navigate to the **"1. Bring in your Letterboxd picks"** section at the top of the board.
 2. Enter your Letterboxd username, a public watchlist URL (e.g., `https://letterboxd.com/username/watchlist/`), or any public curated list URL (e.g., `https://letterboxd.com/username/list/spooky-season/`).
 3. Click **Import to the wheel** (or press Enter).
-4. The built-in proxy automatically navigates through multiple Letterboxd pages (100 movies per page), combining all titles into your current board.
+4. The built-in proxy automatically navigates through multiple Letterboxd pages (28 movies per page for watchlists, 100 per page for curated lists), combining all titles into your current board.
 5. If movies already exist on your board, you will be prompted to either **Replace Existing List** or **Add New Movies Only**.
 
 > [!NOTE]
@@ -123,8 +123,8 @@ Click **Theater Mode** (or launch a Knockout game) to open the full-screen cinem
 
 ### "Draw Another 10" (VHS Lineup Shuffle)
 When spinning large watchlists in 3D VHS mode:
-* The carousel displays a curated batch based on your configured capacity (10, 24, 50, or 100 tapes).
-* Click **Draw another 10** to reshuffle a fresh random sample of eligible movies into the carousel without replacement.
+* The carousel displays a curated batch based on your configured capacity (10, 24, 50, 100, or 250 tapes; defaults to 250).
+* Click **Draw another 250** (or your selected capacity) to reshuffle a fresh random sample of eligible movies into the carousel without replacement.
 * Pinned tapes are automatically retained across redraws so your priority picks remain front and center.
 
 ---
@@ -137,7 +137,7 @@ Access global configuration anytime by clicking the gear icon (**Settings**) in 
 * **Visual Theme:** Select from 14 handcrafted preview cards including *Classic*, *Fantasy & Runic*, *Modern*, *Gaming Friendslop*, *Christmas*, *Hanukkah*, *Alaska*, *Chinese New Year*, *St. Patrick's Day*, *4th of July*, *Retro 95*, *Spooky Halloween*, *Forest Camp*, and *Birthday Party*.
 * **Show Seasonal Decorations:** Toggle themed corner artwork and festive accents without changing palette colors.
 * **Wheel Style:** Switch between *3D VHS Tapes* and *Classic Wheel*.
-* **Lineup Capacity:** Set carousel density to *10*, *24*, *50*, or *100* tapes.
+* **Lineup Capacity:** Set carousel density to *10*, *24*, *50*, *100*, or *250* tapes (default: 250).
 * **Show Bottom Rental Labels:** Toggle visibility of cassette bottom spine labels.
 * **Final Contenders Display:** Choose whether to show the Contenders box from the start of a game or hide it entirely.
 

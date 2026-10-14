@@ -5,7 +5,7 @@ import {
     setTheaterStatus, prepareEliminationStackSlot, commitEliminationStackSlot, addTapeToEliminationStack, setSpinTheaterCallbacks
 } from './spin-theater.js';
 
-export const DEFAULT_VHS_CAPACITY = 10;
+export const DEFAULT_VHS_CAPACITY = 250;
 export const VHS_CAPACITY = DEFAULT_VHS_CAPACITY;
 let batchIds = [];
 let eligibleKey = '';
@@ -141,8 +141,9 @@ export function initVhsWheel(handlers) {
     });
     const handleCapacityChange = event => {
         if (callbacks.isBusy()) return;
-        const capacity = Math.max(4, Math.min(100, Number(event.target.value) || DEFAULT_VHS_CAPACITY));
+        const capacity = Math.max(4, Math.min(250, Number(event.target.value) || DEFAULT_VHS_CAPACITY));
         appState.preferences.vhsCapacity = capacity;
+        appState.preferences.vhsCapacityVersion = 2;
         saveState();
         syncCapacityInputs(capacity);
         getVhsLineup(callbacks.getEligible(), getCurrentSpinMode(), true);

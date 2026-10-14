@@ -499,6 +499,101 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(page.locator('#movie-list').getByText('The Witch', { exact: true })).toBeVisible();
   });
 
+  test('Letterboxd Watchlist multi-page import fetches all pages using 28-item page size', async ({ page }) => {
+    const requestedPages = [];
+
+    await page.route('**/letterboxd-proxy.cwbcode.workers.dev/**', async route => {
+      const requestUrl = decodeURIComponent(route.request().url());
+      const pageMatch = requestUrl.match(/\/page\/(\d+)\//);
+      const pageNum = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+      requestedPages.push(pageNum);
+
+      if (pageNum === 1) {
+        const rows = Array.from({ length: 28 }, (_, index) =>
+          `${index + 1},"Watchlist Movie ${index + 1}",2025,"https://letterboxd.com/film/wl-${index + 1}/"`
+        ).join('\n');
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/csv',
+          body: `Position,Name,Year,URL\n${rows}`
+        });
+      } else if (pageNum === 2) {
+        const rows = Array.from({ length: 28 }, (_, index) =>
+          `${index + 29},"Watchlist Movie ${index + 29}",2025,"https://letterboxd.com/film/wl-${index + 29}/"`
+        ).join('\n');
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/csv',
+          body: `Position,Name,Year,URL\n${rows}`
+        });
+      } else if (pageNum === 3) {
+        // Final page with 14 movies (< 28)
+        const rows = Array.from({ length: 14 }, (_, index) =>
+          `${index + 57},"Watchlist Movie ${index + 57}",2025,"https://letterboxd.com/film/wl-${index + 57}/"`
+        ).join('\n');
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/csv',
+          body: `Position,Name,Year,URL\n${rows}`
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/csv',
+          body: 'Position,Name,Year,URL\n'
+        });
+      }
+    });
+
+    await page.fill('#letterboxd-proxy-input', 'https://letterboxd.com/deejus/watchlist/');
+    await page.click('#letterboxd-proxy-open');
+
+    await expect(page.locator('#letterboxd-proxy-status')).toContainText('Imported 70 movies successfully!');
+    await expect(page.locator('#movie-list li')).toHaveCount(70);
+    await expect(page.locator('#movie-list').getByText('Watchlist Movie 1', { exact: true })).toBeVisible();
+    await expect(page.locator('#movie-list').getByText('Watchlist Movie 70', { exact: true })).toBeVisible();
+
+    // Verify it requested pages 1, 2, and 3, and did not request page 4 because page 3 had < 28 items
+    expect(requestedPages).toEqual([1, 2, 3]);
+  });
+
+  test('Letterboxd Watchlist multi-page sync fetches all pages and syncs updates', async ({ page }) => {
+    let page2Movies = 10;
+
+    await page.route('**/letterboxd-proxy.cwbcode.workers.dev/**', async route => {
+      const requestUrl = decodeURIComponent(route.request().url());
+      const pageMatch = requestUrl.match(/\/page\/(\d+)\//);
+      const pageNum = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+
+      if (pageNum === 1) {
+        const rows = Array.from({ length: 28 }, (_, index) =>
+          `${index + 1},"Sync WL Movie ${index + 1}",2025,"https://letterboxd.com/film/sync-wl-${index + 1}/"`
+        ).join('\n');
+        await route.fulfill({ status: 200, contentType: 'text/csv', body: `Position,Name,Year,URL\n${rows}` });
+      } else if (pageNum === 2) {
+        const rows = Array.from({ length: page2Movies }, (_, index) =>
+          `${index + 29},"Sync WL Movie ${index + 29}",2025,"https://letterboxd.com/film/sync-wl-${index + 29}/"`
+        ).join('\n');
+        await route.fulfill({ status: 200, contentType: 'text/csv', body: `Position,Name,Year,URL\n${rows}` });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'text/csv', body: 'Position,Name,Year,URL\n' });
+      }
+    });
+
+    // 1. Initial import of 28 + 10 = 38 movies (page 2 has 10)
+    await page.fill('#letterboxd-proxy-input', 'https://letterboxd.com/deejus/watchlist/');
+    await page.click('#letterboxd-proxy-open');
+    await expect(page.locator('#movie-list li')).toHaveCount(38);
+
+    // 2. Expand import card and click sync with page 2 now having 15 movies
+    page2Movies = 15;
+    await page.click('#import-toggle');
+    await page.click('#import-sync-btn');
+
+    await expect(page.locator('#letterboxd-proxy-status')).toContainText('Added');
+    await expect(page.locator('#movie-list li')).toHaveCount(43);
+  });
+
   test('Board switch restores board-specific winner, controls, and integrations', async ({ page }) => {
     await page.evaluate(() => {
       const boardA = 'board-a';

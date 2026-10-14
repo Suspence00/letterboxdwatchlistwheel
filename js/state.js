@@ -30,7 +30,7 @@ export const appState = {
     knockoutResults: new Map(),
     preferences: {
         wheelStyle: 'vhs',
-        vhsCapacity: 10,
+        vhsCapacity: 250,
         vhsShowLabels: true,
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
@@ -197,9 +197,14 @@ function loadWorkspaceData(id) {
         if (loaded.preferences && typeof loaded.preferences === 'object') {
             const overrides = loaded.preferences.themeColorOverrides;
             const safeOverrides = overrides && typeof overrides === 'object' && !Array.isArray(overrides) ? overrides : {};
+            const loadedCap = Number(loaded.preferences.vhsCapacity);
+            const vhsCapacity = (loaded.preferences.vhsCapacityVersion >= 2 || (loadedCap && loadedCap !== 10))
+                ? Math.max(4, Math.min(250, loadedCap))
+                : 250;
             appState.preferences = {
                 wheelStyle: loaded.preferences.wheelStyle === 'classic' ? 'classic' : 'vhs',
-                vhsCapacity: Math.max(4, Math.min(100, Number(loaded.preferences.vhsCapacity) || 10)),
+                vhsCapacity,
+                vhsCapacityVersion: loaded.preferences.vhsCapacityVersion || 2,
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
@@ -212,6 +217,8 @@ function loadWorkspaceData(id) {
             };
         } else {
             appState.preferences = {
+                wheelStyle: 'vhs',
+                vhsCapacity: 250,
                 hideFinalistsBox: false,
                 showFinalistsFromStart: false,
                 theme: 'default',
@@ -247,6 +254,8 @@ export function resetState() {
     };
     // Keep user preferences or reset? Resetting is safer for clean slate
     appState.preferences = {
+        wheelStyle: 'vhs',
+        vhsCapacity: 250,
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
         theme: 'default',

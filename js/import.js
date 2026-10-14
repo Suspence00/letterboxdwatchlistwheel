@@ -195,6 +195,77 @@ function promptForImportModeOrExecute(listUrl, normalizedInput) {
     }
 }
 
+/**
+ * Resolves pagination parameters based on Letterboxd URL type.
+ * Watchlists display 28 films per page, film catalogs display 72, and lists display 100.
+ * @param {string} url
+ * @returns {{ expectedPageSize: number, maxPages: number, isWatchlist: boolean, isFilms: boolean }}
+ */
+export function getLetterboxdPaginationConfig(url) {
+    const isWatchlist = /\/watchlist(?:\/|$)/i.test(url);
+    const isFilms = /\/films(?:\/|$)/i.test(url);
+    const expectedPageSize = isWatchlist ? 28 : (isFilms ? 72 : 100);
+    const maxPages = isWatchlist ? 200 : 50;
+    return { expectedPageSize, maxPages, isWatchlist, isFilms };
+}
+
+/**
+ * Fetches all pages for a Letterboxd list or watchlist via the proxy worker.
+ * @param {string} cleanBaseUrl
+ * @param {string} workspaceId
+ * @param {((page: number, loadedCount: number) => void)} [onProgress]
+ * @returns {Promise<{ headerRow: string[] | null, combinedRows: string[][] }>}
+ */
+async function fetchLetterboxdRows(cleanBaseUrl, workspaceId, onProgress) {
+    const { expectedPageSize, maxPages } = getLetterboxdPaginationConfig(cleanBaseUrl);
+    let page = 1;
+    let combinedRows = [];
+    let headerRow = null;
+
+    while (true) {
+        const pageUrl = page === 1 ? cleanBaseUrl : `${cleanBaseUrl}page/${page}/`;
+        const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(pageUrl)}&t=${Date.now()}`;
+
+        if (onProgress && page > 1) {
+            onProgress(page, combinedRows.length);
+        }
+
+        const res = await fetch(proxyUrl);
+        assertWorkspaceUnchanged(workspaceId);
+        if (!res.ok) {
+            throw new Error(`Worker returned ${res.status}`);
+        }
+
+        const csvText = await res.text();
+        assertWorkspaceUnchanged(workspaceId);
+        console.log(`Page ${page} proxy content length:`, csvText.length);
+
+        const rows = parseCSV(csvText, ',').filter(
+            (row) => row.length && row.some((cell) => cell.trim() !== '')
+        );
+
+        if (rows.length <= 1) {
+            break;
+        }
+
+        if (!headerRow) {
+            headerRow = rows[0];
+        }
+
+        const dataRows = rows.slice(1);
+        combinedRows.push(...dataRows);
+
+        if (dataRows.length < expectedPageSize) {
+            break;
+        }
+
+        page++;
+        if (page > maxPages) break; // Safety limit
+    }
+
+    return { headerRow, combinedRows };
+}
+
 async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode) {
     const status = elements.letterboxdProxyStatus;
     if (!status) return;
@@ -205,51 +276,14 @@ async function executeLetterboxdProxyImport(listUrl, normalizedInput, appendMode
 
     const cleanBaseUrl = listUrl.replace(/\/page\/\d+\/?$/i, '').replace(/\/+$/, '') + '/';
 
-    let page = 1;
-    let combinedRows = [];
-    let headerRow = null;
-
     try {
-        while (true) {
-            const pageUrl = page === 1 ? cleanBaseUrl : `${cleanBaseUrl}page/${page}/`;
-            const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(pageUrl)}&t=${Date.now()}`;
-
-            if (page > 1) {
-                status.textContent = `Fetching page ${page} from Letterboxd (${combinedRows.length} movies loaded)…`;
+        const { headerRow, combinedRows } = await fetchLetterboxdRows(
+            cleanBaseUrl,
+            workspaceId,
+            (page, loadedCount) => {
+                status.textContent = `Fetching page ${page} from Letterboxd (${loadedCount} movies loaded)…`;
             }
-
-            const res = await fetch(proxyUrl);
-            assertWorkspaceUnchanged(workspaceId);
-            if (!res.ok) {
-                throw new Error(`Worker returned ${res.status}`);
-            }
-
-            const csvText = await res.text();
-            assertWorkspaceUnchanged(workspaceId);
-            console.log(`Page ${page} proxy content length:`, csvText.length);
-
-            const rows = parseCSV(csvText, ',').filter(
-                (row) => row.length && row.some((cell) => cell.trim() !== '')
-            );
-
-            if (rows.length <= 1) {
-                break;
-            }
-
-            if (!headerRow) {
-                headerRow = rows[0];
-            }
-
-            const dataRows = rows.slice(1);
-            combinedRows.push(...dataRows);
-
-            if (dataRows.length < 100) {
-                break;
-            }
-
-            page++;
-            if (page > 50) break; // Safety limit
-        }
+        );
 
         if (combinedRows.length === 0) {
             status.textContent = 'The imported CSV appears to be empty.';
@@ -417,48 +451,15 @@ async function executeLetterboxdProxySync(listUrl) {
     const workspaceId = appState.activeWorkspaceId;
     const cleanBaseUrl = listUrl.replace(/\/page\/\d+\/?$/i, '').replace(/\/+$/, '') + '/';
 
-    let page = 1;
-    let combinedRows = [];
-    let headerRow = null;
-
-    while (true) {
-        const pageUrl = page === 1 ? cleanBaseUrl : `${cleanBaseUrl}page/${page}/`;
-        const proxyUrl = `https://letterboxd-proxy.cwbcode.workers.dev/?url=${encodeURIComponent(pageUrl)}&t=${Date.now()}`;
-
-        if (status && page > 1) {
-            status.textContent = `Syncing page ${page} from Letterboxd (${combinedRows.length} movies loaded)…`;
+    const { headerRow, combinedRows } = await fetchLetterboxdRows(
+        cleanBaseUrl,
+        workspaceId,
+        (page, loadedCount) => {
+            if (status) {
+                status.textContent = `Syncing page ${page} from Letterboxd (${loadedCount} movies loaded)…`;
+            }
         }
-
-        const res = await fetch(proxyUrl);
-        assertWorkspaceUnchanged(workspaceId);
-        if (!res.ok) {
-            throw new Error(`Worker returned ${res.status}`);
-        }
-
-        const csvText = await res.text();
-        assertWorkspaceUnchanged(workspaceId);
-        const rows = parseCSV(csvText, ',').filter(
-            (row) => row.length && row.some((cell) => cell.trim() !== '')
-        );
-
-        if (rows.length <= 1) {
-            break;
-        }
-
-        if (!headerRow) {
-            headerRow = rows[0];
-        }
-
-        const dataRows = rows.slice(1);
-        combinedRows.push(...dataRows);
-
-        if (dataRows.length < 100) {
-            break;
-        }
-
-        page++;
-        if (page > 50) break;
-    }
+    );
 
     if (combinedRows.length === 0) {
         throw new Error('The imported CSV appears to be empty.');
