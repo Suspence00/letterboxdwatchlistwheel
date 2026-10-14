@@ -778,6 +778,46 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     expect(wheelAfter.width).toBeCloseTo(wheelBefore.width, 1);
   });
 
+  test('Classic wheel draws movie titles for large watchlists (130+ movies)', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#settings-open').click();
+    await page.locator('#wheel-style').selectOption('classic');
+    await page.locator('#settings-modal-close').click();
+    await expect(page.locator('#wheel')).toBeVisible();
+
+    const filledTexts = await page.evaluate(async () => {
+      const { appState } = await import('./js/state.js');
+      const { drawWheel } = await import('./js/wheel.js');
+
+      appState.movies = Array.from({ length: 130 }, (_, index) => ({
+        id: `movie-${index + 1}`,
+        name: `Movie Title ${index + 1}`,
+        year: '2024',
+        uri: '',
+        date: '',
+        weight: 1,
+        color: '#ff8600',
+        initialIndex: index
+      }));
+      appState.selectedIds = new Set(appState.movies.map(m => m.id));
+
+      const texts = [];
+      const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function(text, ...args) {
+        texts.push(text);
+        return originalFillText.apply(this, [text, ...args]);
+      };
+
+      drawWheel();
+      CanvasRenderingContext2D.prototype.fillText = originalFillText;
+      return texts;
+    });
+
+    expect(filledTexts.length).toBeGreaterThanOrEqual(130);
+    expect(filledTexts).toContain('Movie Title 1');
+    expect(filledTexts).toContain('Movie Title 130');
+  });
+
 });
 
 

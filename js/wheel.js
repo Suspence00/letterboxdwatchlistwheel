@@ -89,7 +89,7 @@ const MOVIE_KNOCKOUT_SPEEDS = [
 ];
 
 const BASE_CANVAS_SIZE = 1080;
-const LABEL_ANGLE_THRESHOLD = 0.06; // radians (approx 3.4 degrees)
+const LABEL_ANGLE_THRESHOLD = 0.02; // radians (approx 1.15 degrees, supports up to 300+ slices)
 
 let canvas = null;
 let ctx = null;
@@ -353,7 +353,7 @@ export function drawWheel(movies = null, segments = null) {
             ctx.rotate(startAngle + angleSpan / 2);
             ctx.textAlign = 'right';
             const maxArcLength = Math.max(radius * 0.7 * angleSpan, 18);
-            wrapText(ctx, movie.name, radius - 40, maxArcLength, movie.id);
+            wrapText(ctx, movie.name, radius - 40, maxArcLength, movie.id, angleSpan);
             ctx.restore();
         }
     });
@@ -421,27 +421,28 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function wrapText(context, text, maxWidth, maxArcLength, movieId) {
+function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1) {
     if (!text) return;
 
     let layout = null;
     if (movieId && textLayoutCache.has(movieId)) {
         layout = textLayoutCache.get(movieId);
     } else {
-        const maxFontSize = 24;
-        const minFontSize = 13;
+        const isNarrow = angleSpan < 0.065;
+        const maxFontSize = isNarrow ? 14 : 24;
+        const minFontSize = isNarrow ? 10 : 13;
 
         let fontSize = maxFontSize;
-        let tempLayout = layoutText(context, text, maxWidth, fontSize);
+        let tempLayout = layoutText(context, text, maxWidth, fontSize, isNarrow);
 
         while (fontSize > minFontSize && !textLayoutFits(tempLayout, maxArcLength)) {
             fontSize -= 1;
-            tempLayout = layoutText(context, text, maxWidth, fontSize);
+            tempLayout = layoutText(context, text, maxWidth, fontSize, isNarrow);
         }
 
         if (!textLayoutFits(tempLayout, maxArcLength)) {
             fontSize = minFontSize;
-            tempLayout = layoutText(context, text, maxWidth, fontSize);
+            tempLayout = layoutText(context, text, maxWidth, fontSize, isNarrow);
         }
 
         layout = {
@@ -464,7 +465,7 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId) {
 
     if (!isSpinning) {
         context.strokeStyle = '#000000';
-        context.lineWidth = 3;
+        context.lineWidth = Math.min(3, Math.max(1.5, layout.fontSize * 0.18));
         context.lineJoin = 'round';
         layout.lines.forEach((line, index) => {
             const y = -totalHeight / 2 + index * layout.lineHeight;
@@ -479,9 +480,21 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId) {
     }
 }
 
-function layoutText(context, text, maxWidth, fontSize) {
+function layoutText(context, text, maxWidth, fontSize, singleLineOnly = false) {
     context.font = `600 ${fontSize}px Inter, sans-serif`;
     const lineHeight = fontSize * 1.2;
+
+    if (singleLineOnly) {
+        if (context.measureText(text).width <= maxWidth) {
+            return { lines: [text], lineHeight, blockHeight: lineHeight };
+        }
+        let truncated = text;
+        while (truncated.length > 1 && context.measureText(truncated + '…').width > maxWidth) {
+            truncated = truncated.slice(0, -1);
+        }
+        return { lines: [truncated.trim() + '…'], lineHeight, blockHeight: lineHeight };
+    }
+
     const words = text.split(' ').filter((word) => word.length);
 
     if (!words.length) {
