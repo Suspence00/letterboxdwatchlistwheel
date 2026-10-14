@@ -24,7 +24,7 @@ let isRapidRunning = false;
 let rapidTimer = null;
 let dom = {};
 
-let spinchinko = { wheelType: 'one-spin', qualifiers: [], contenders: [], slotMovies: [], isDropping: false };
+let spinchinko = { wheelType: 'knockout', qualifiers: [], contenders: [], slotMovies: [], isDropping: false };
 let tourney = { active: false, contenders: [], eliminatedInWave: new Set() };
 
 export function initWheelchinkoUI(domElements, callbacks = {}) {

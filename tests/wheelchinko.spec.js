@@ -65,7 +65,7 @@ test.describe('Wheelchinko Mode', () => {
     await expect(page.locator('#wheelchinko-style-spinchinko')).toHaveClass(/is-active/);
     await expect(page.locator('#wheelchinko-spinchinko-bar')).toBeVisible();
     await expect(page.locator('#wheelchinko-drop-btn')).toHaveText('Drop 10 Golden Pucks');
-    await expect(page.locator('#spinchinko-type-one-spin')).toHaveClass(/is-active/);
+    await expect(page.locator('#spinchinko-type-knockout')).toHaveClass(/is-active/);
   });
 
   test('Manual aim and drop resolves a winning movie and shows winner modal', async ({ page }) => {
@@ -209,19 +209,20 @@ test.describe('Wheelchinko Mode', () => {
     // Drop 10 golden pucks
     await page.click('#wheelchinko-drop-btn');
 
-    // Wait for the drop to complete and qualifiers to be selected
+    // Wait for the drop to complete and qualifiers to be selected (defaults to Knockout Mode)
     await expect(page.locator('.wheelchinko-slot.is-qualified')).toHaveCount(10, { timeout: 15000 });
-    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Wheel \(10 Finalists\)/);
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Knockout Wheel \(10 Finalists\)/);
     await expect(page.locator('#wheelchinko-spinchinko-redrop-btn')).toBeVisible();
 
-    // Test wheel mode toggle to Knockout
-    await page.click('#spinchinko-type-knockout');
-    await expect(page.locator('#spinchinko-type-knockout')).toHaveClass(/is-active/);
-    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Knockout Wheel \(10 Finalists\)/);
-
-    // Switch back to 1 Spin Mode and launch wheel spin
+    // Test wheel mode toggle to 1 Spin Mode
     await page.click('#spinchinko-type-one-spin');
+    await expect(page.locator('#spinchinko-type-one-spin')).toHaveClass(/is-active/);
     await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Wheel \(10 Finalists\)/);
+
+    // Switch back to Knockout Mode and launch wheel spin
+    await page.click('#spinchinko-type-knockout');
+    await expect(page.locator('#wheelchinko-drop-btn')).toHaveText(/Spin Knockout Wheel \(10 Finalists\)/);
+    await page.click('#spinchinko-type-one-spin');
     await page.click('#wheelchinko-drop-btn');
 
     // Verify the spin wheel is the 3D VHS cassette wheel
