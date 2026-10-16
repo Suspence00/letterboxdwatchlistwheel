@@ -7,7 +7,7 @@
  */
 export function initThemePicker(options) {
     const { themes, select, container, decorationsToggle, appState, applyTheme, saveState } = options;
-    if (!container) return { sync: () => {} };
+    if (!container) return { sync: () => {}, syncDecorations: () => {} };
 
     const themeMeta = (theme) => {
         const palette = theme.palette || [];
@@ -34,17 +34,37 @@ export function initThemePicker(options) {
         return { background, text, button, font };
     };
 
-    container.innerHTML = '';
-    container.setAttribute('role', 'radiogroup');
-    container.setAttribute('aria-label', 'Visual theme');
+    container.innerHTML = `
+        <details class="theme-picker__browser">
+            <summary class="theme-picker__summary">
+                <span class="theme-picker__current-preview" aria-hidden="true"></span>
+                <span class="theme-picker__current"><span class="theme-picker__label">Visual theme</span><strong class="theme-picker__current-name"></strong></span>
+                <span class="theme-picker__action">Browse <span aria-hidden="true">⌄</span></span>
+            </summary>
+            <div class="theme-picker__content">
+                <input type="search" class="text-input theme-picker__search" aria-label="Search themes" placeholder="Search themes…" autocomplete="off">
+                <div class="theme-picker__filters" role="group" aria-label="Theme categories"></div>
+                <div class="theme-picker__gallery" role="radiogroup" aria-label="Visual theme"></div>
+                <p class="theme-picker__status" role="status"></p>
+            </div>
+        </details>`;
+    // Keep the select as the existing change-event bridge and unenhanced fallback.
+    if (select) select.closest('.settings-row').hidden = true;
+    const browser = container.querySelector('details');
+    const summary = container.querySelector('summary');
+    const search = container.querySelector('input');
+    const filters = container.querySelector('.theme-picker__filters');
+    const gallery = container.querySelector('.theme-picker__gallery');
+    const status = container.querySelector('.theme-picker__status');
     const seasonal = new Set(['holiday', 'hanukkah', 'cny', 'st-patricks', 'america', 'spooky', 'birthday']);
-    const groups = new Map([['Everyday', []], ['Seasonal', []]]);
+    let category = 'All';
     themes.forEach(theme => {
         const meta = themeMeta(theme);
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'theme-card';
         card.dataset.theme = theme.id;
+        card.dataset.category = seasonal.has(theme.id) ? 'Seasonal' : 'Everyday';
         card.setAttribute('role', 'radio');
         card.setAttribute('aria-label', theme.name);
         card.innerHTML = `<span class="theme-card__preview" aria-hidden="true" style="--theme-preview-bg:${meta.background};--theme-preview-text:${meta.text};--theme-preview-button:${meta.button};--theme-preview-font:${meta.font}"><span class="theme-card__preview-title">Aa</span><span class="theme-card__preview-button"></span><span class="theme-card__wheel-swatches"></span></span><span class="theme-card__name"></span>`;
@@ -63,27 +83,57 @@ export function initThemePicker(options) {
                 applyTheme(theme.id);
             }
         });
-        groups.get(seasonal.has(theme.id) ? 'Seasonal' : 'Everyday').push(card);
-    });
-    groups.forEach((groupCards, label) => {
-        const group = document.createElement('section');
-        group.className = 'theme-picker__group';
-        const heading = document.createElement('h3');
-        heading.className = 'theme-picker__group-title';
-        heading.textContent = label;
-        group.append(heading, ...groupCards);
-        container.append(group);
+        gallery.append(card);
     });
 
-    const cards = () => [...container.querySelectorAll('.theme-card')];
-    const sync = (themeId) => cards().forEach(card => {
-        const selected = card.dataset.theme === themeId;
-        card.setAttribute('aria-checked', String(selected));
-        card.tabIndex = selected ? 0 : -1;
+    const cards = [...gallery.querySelectorAll('.theme-card')];
+    const visibleCards = () => cards.filter(card => !card.hidden);
+    const syncTabStops = () => {
+        const visible = visibleCards();
+        const target = visible.find(card => card.getAttribute('aria-checked') === 'true') || visible[0];
+        cards.forEach(card => { card.tabIndex = card === target ? 0 : -1; });
+    };
+    const filterCards = () => {
+        const query = search.value.trim().toLocaleLowerCase();
+        cards.forEach(card => {
+            card.hidden = (category !== 'All' && card.dataset.category !== category)
+                || !card.getAttribute('aria-label').toLocaleLowerCase().includes(query);
+        });
+        filters.querySelectorAll('button').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.textContent === category));
+        });
+        const count = visibleCards().length;
+        status.textContent = count ? `${count} of ${cards.length} themes` : 'No themes found. Try another search or category.';
+        gallery.scrollTop = 0;
+        syncTabStops();
+    };
+    ['All', 'Everyday', 'Seasonal'].forEach(label => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'theme-picker__filter';
+        button.textContent = label;
+        button.addEventListener('click', () => {
+            category = label;
+            filterCards();
+        });
+        filters.append(button);
     });
-    container.addEventListener('keydown', event => {
+    search.addEventListener('input', filterCards);
+    const sync = (themeId) => {
+        cards.forEach(card => {
+            card.setAttribute('aria-checked', String(card.dataset.theme === themeId));
+        });
+        const theme = themes.find(theme => theme.id === themeId) || themes[0];
+        container.querySelector('.theme-picker__current-name').textContent = theme.name;
+        const stops = theme.palette?.length ? [...theme.palette, theme.palette[0]] : ['#ff8600', '#ff8600'];
+        container.querySelector('.theme-picker__current-preview').style.background =
+            `conic-gradient(${stops.join(', ')})`;
+        syncTabStops();
+    };
+    gallery.addEventListener('keydown', event => {
         if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-        const list = cards();
+        const list = visibleCards();
+        if (!list.length) return;
         const current = Math.max(0, list.indexOf(document.activeElement));
         let next = current;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % list.length;
@@ -92,8 +142,19 @@ export function initThemePicker(options) {
         if (event.key === 'End') next = list.length - 1;
         event.preventDefault();
         list[next].focus();
-        if (event.key.startsWith('Arrow') || event.key === 'Home' || event.key === 'End') {
-            list[next].click();
+        list[next].click();
+    });
+    container.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && browser.open) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (document.activeElement === search && search.value) {
+                search.value = '';
+                filterCards();
+                return;
+            }
+            browser.open = false;
+            summary.focus();
         }
     });
     const syncDecorations = () => {
@@ -109,6 +170,7 @@ export function initThemePicker(options) {
             saveState();
         });
     }
+    filterCards();
     sync(appState.preferences?.theme || 'default');
     return { sync, syncDecorations };
 }

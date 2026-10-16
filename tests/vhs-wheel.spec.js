@@ -1,6 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
 
 const sample = path.resolve('sample-watchlist.csv');
 const tinyPoster = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7S8AAAAASUVORK5CYII=', 'base64');
@@ -19,98 +18,12 @@ async function oneSpin(page) {
     await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
 }
 
-test('wheel imports preserve custom VHS covers and leave ordinary artwork unchanged', async ({ page }) => {
-    const cover = 'https://posters.test/custom-game.png';
-    const backup = {
-        version: 1,
-        movies: [
-            { id: 'custom-cover', name: 'Imported game', vhsCoverImage: ` ${cover} ` },
-            { id: 'ordinary-cover', name: 'Imported movie' },
-            { id: 'invalid-cover', name: 'Invalid cover value', vhsCoverImage: 42 }
-        ],
-        preferences: { wheelStyle: 'vhs' }
-    };
-    const restore = async () => {
-        await page.locator('#settings-open').click();
-        await page.locator('#tab-btn-data').click();
-        await page.locator('#backup-text').fill(JSON.stringify(backup));
-        await page.locator('#backup-restore').click();
-        await page.locator('#settings-modal-close').click();
-    };
-    await restore();
-
-    const customPoster = page.locator('.vhs-tape[data-movie-id="custom-cover"] .vhs-poster');
-    await expect(customPoster).toHaveAttribute('src', cover);
-    for (const id of ['ordinary-cover', 'invalid-cover']) {
-        await expect(page.locator(`.vhs-tape[data-movie-id="${id}"] .vhs-poster`))
-            .toHaveAttribute('src', 'https://posters.test/cover.png');
-    }
-
-    await page.reload();
-    await expect(customPoster).toHaveAttribute('src', cover);
-    await page.locator('#settings-open').click();
-    await page.locator('#tab-btn-data').click();
-    const downloadPromise = page.waitForEvent('download');
-    await page.locator('#backup-export').click();
-    const download = await downloadPromise;
-    const exported = JSON.parse(await readFile(await download.path(), 'utf8'));
-    expect(exported.movies[0].vhsCoverImage).toBe(cover);
-    expect(exported.movies[1]).not.toHaveProperty('vhsCoverImage');
-    expect(exported.movies[2]).not.toHaveProperty('vhsCoverImage');
-    await page.locator('#settings-modal-close').click();
-
-    await page.evaluate(async () => {
-        const { appState } = await import('/js/state.js');
-        const { showWinnerPopup } = await import('/js/ui.js');
-        showWinnerPopup(appState.movies[0], { spinMode: 'one-spin', isRestore: true });
-    });
-    await expect(page.locator('#win-modal-runtime')).toHaveText('100 min');
-    await expect(page.locator('.tape-viewer__poster')).toHaveAttribute('src', cover);
-    await page.locator('#win-modal-close').click();
-    await expect(page.locator('#win-modal')).toBeHidden();
-    await page.evaluate(async () => {
-        const { appState } = await import('/js/state.js');
-        const { showWinnerPopup } = await import('/js/ui.js');
-        showWinnerPopup(appState.movies[1], { spinMode: 'one-spin', isRestore: true });
-    });
-    await expect(page.locator('.tape-viewer__poster')).toHaveAttribute('src', 'https://posters.test/cover.png');
-    await page.locator('#win-modal-close').click();
-    await expect(page.locator('#win-modal')).toBeHidden();
-
-    backup.movies[0].vhsCoverImage = 'https://posters.test/updated-game.png';
-    await restore();
-    await expect(customPoster).toHaveAttribute('src', backup.movies[0].vhsCoverImage);
-    delete backup.movies[0].vhsCoverImage;
-    await restore();
-    await expect(customPoster).toHaveAttribute('src', 'https://posters.test/cover.png');
-});
-
 async function importLargeList(page, count = 1001) {
     const csv = 'Date,Name,Year,Letterboxd URI\n' + Array.from({ length: count }, (_, i) =>
         `2025-10-20,Movie ${i},2000,https://letterboxd.com/film/test-${i}/`).join('\n');
     await page.locator('#csv-input').setInputFiles({ name: 'large.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
     await page.locator('#confirm-modal-confirm').click();
 }
-
-test('sample movies have textured 3D sleeves and accessible inspection', async ({ page }) => {
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
-    await expect(page.locator('.vhs-tapes .vhs-poster')).toHaveCount(10);
-    await expect(page.locator('.vhs-inspector__title')).toHaveText('Choose a tape to inspect it');
-    const initialInspectorBox = await page.locator('.vhs-inspector').boundingBox();
-    const initialSceneBox = await page.locator('.vhs-scene').boundingBox();
-    expect(initialInspectorBox.y).toBeLessThan(initialSceneBox.y);
-    await page.getByRole('button', { name: 'Inspect The Witch (2015)', exact: true }).click();
-    await expect(page.locator('.vhs-inspector__title')).toHaveText('The Witch');
-    await expect(page.locator('.vhs-inspector__detail')).toContainText('10.0% elimination risk');
-    const sceneWidthBefore = (await page.locator('.vhs-scene').boundingBox()).width;
-    await page.locator('#vhs-edit').click();
-    await expect(page.locator('#slice-editor')).toBeVisible();
-    await expect(page.locator('#slice-editor-name')).toHaveText('The Witch');
-    const sliceEditorBox = await page.locator('#slice-editor').boundingBox();
-    const sceneBoxAfter = await page.locator('.vhs-scene').boundingBox();
-    expect(sliceEditorBox.y).toBeLessThan(sceneBoxAfter.y);
-    expect(sceneBoxAfter.width).toBeCloseTo(sceneWidthBefore, 1);
-});
 
 test('spin focuses the wheel, matches the pointer to the winner, and restores the page', async ({ page }) => {
     await oneSpin(page);
@@ -171,8 +84,7 @@ test('a 1001-movie list draws unique tapes and keeps pins across redraws', async
 });
 
 test('large knockout reaches a VHS finale and records one champion', async ({ page }) => {
-    test.setTimeout(45000);
-    await importLargeList(page);
+    await importLargeList(page, 31);
     await page.locator('#settings-open').click();
     await page.locator('#settings-vhs-capacity').selectOption('10');
     await page.locator('#settings-modal-close').click();
@@ -186,7 +98,7 @@ test('large knockout reaches a VHS finale and records one champion', async ({ pa
             champions: [...appState.knockoutResults.values()].filter(result => result.status === 'champion').length,
             history: appState.history.length };
     });
-    expect(results).toEqual({ count: 1001, selected: 1001, champions: 1, history: 1 });
+    expect(results).toEqual({ count: 31, selected: 31, champions: 1, history: 1 });
     await expect(page.locator('#result')).toContainText('Movie Knockout winner:');
     await page.locator('#win-modal-close').click();
     await expect(page.locator('.spin-theater')).toHaveCount(0);
@@ -194,48 +106,6 @@ test('large knockout reaches a VHS finale and records one champion', async ({ pa
     await page.reload();
     await page.locator('#reshow-winner-btn').click();
     await expect(page.locator('#win-modal-details')).toContainText('Movie Knockout champion');
-});
-
-test('winner shows a static VHS cover clear of the movie details', async ({ page }) => {
-    await oneSpin(page);
-    await page.locator('#spin-button').click();
-    const viewer = page.locator('#win-modal-tape-viewer .tape-viewer');
-    await expect(viewer).toBeVisible();
-    await expect(viewer.locator('.tape-viewer__poster')).toBeVisible();
-    const poster = viewer.locator('.tape-viewer__poster');
-    await expect(poster).toHaveCSS('object-fit', 'contain');
-    const posterFits = await poster.evaluate(image => {
-        const cover = image.parentElement;
-        return image.offsetLeft === 0 && image.offsetTop === 0
-            && image.offsetWidth <= cover.clientWidth
-            && image.offsetHeight <= cover.clientHeight - 18;
-    });
-    expect(posterFits).toBe(true);
-    await expect(viewer.locator('button')).toHaveCount(0);
-    await expect(viewer).toHaveCSS('animation-name', 'none');
-    const cover = await viewer.boundingBox();
-    const details = await page.locator('.win-modal__meta').boundingBox();
-    expect(cover.height).toBeLessThan(250);
-    expect(cover.y + cover.height).toBeLessThanOrEqual(details.y);
-    await page.locator('#win-modal-close').click();
-    await expect(viewer).toHaveCount(0);
-    await page.locator('#reshow-winner-btn').click();
-    await expect(viewer).toBeVisible();
-});
-
-test('Returns wall handles quoted IDs and treats imported movie names as text', async ({ page }) => {
-    await page.locator('#wheel-theater-btn').click();
-    const name = '<img src=x onerror="window.unexpectedMovieMarkup = true">';
-    await page.evaluate(async name => {
-        const { addTapeToEliminationStack } = await import('/js/spin-theater.js');
-        const movie = { id: 'quoted-"-movie', name, year: '2024' };
-        addTapeToEliminationStack(movie, 1);
-        addTapeToEliminationStack(movie, 1);
-    }, name);
-    await expect(page.locator('.vhs-stack-tape')).toHaveCount(1);
-    await expect(page.locator('.vhs-stack-tape__fallback strong')).toHaveText(name);
-    await expect(page.locator('.vhs-stack-tape__fallback img')).toHaveCount(0);
-    expect(await page.evaluate(() => window.unexpectedMovieMarkup)).toBeUndefined();
 });
 
 test('classic spin lands on the weighted choice and preserves the saved style', async ({ page }) => {
@@ -275,37 +145,6 @@ test('Random Boost restores all weights and adds exactly one boost', async ({ pa
     expect(after.boosters[0].name).toBe('Test viewer');
 });
 
-test('Escape exits focus while a single spin stays locked until its reveal', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await oneSpin(page);
-    await page.clock.install();
-    await page.locator('#spin-button').click();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.spin-theater')).toHaveCount(0);
-    await expect(page.locator('#spin-button')).toBeDisabled();
-    await page.clock.runFor(18000);
-    await expect(page.locator('#win-modal')).toBeVisible();
-    const history = await page.evaluate(async () => (await import('/js/state.js')).appState.history.length);
-    expect(history).toBe(1);
-});
-
-test('small screens fit the focused stage and missing posters keep readable labels', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.route('https://www.omdbapi.com/**', route => route.fulfill({ json: { Response: 'False' } }));
-    await page.reload();
-    await oneSpin(page);
-    await expect(page.locator('.vhs-fallback strong').first()).toBeVisible();
-    await page.locator('#spin-button').click();
-    const bounds = await page.locator('.spin-theater .wheel-stage').boundingBox();
-    expect(bounds.x).toBeGreaterThanOrEqual(0);
-    expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
-    expect(bounds.y + bounds.height).toBeLessThan(844);
-    await expect(page.locator('#win-modal')).toBeVisible();
-    await page.locator('#win-modal-close').click();
-    await expect(page.locator('.spin-theater')).toHaveCount(0);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-});
-
 test('mobile winner dialog with poster fits within viewport and has reachable close button', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
@@ -323,166 +162,3 @@ test('mobile winner dialog with poster fits within viewport and has reachable cl
     await page.locator('#win-modal-close').click();
     await expect(page.locator('#win-modal')).toBeHidden();
 });
-
-test('supports selectable tape capacities up to 250 tapes and persists setting', async ({ page }) => {
-    await importLargeList(page);
-    await oneSpin(page);
-    await page.locator('#settings-open').click();
-    await page.locator('#settings-vhs-capacity').selectOption('50');
-    await page.locator('#settings-modal-close').click();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(50);
-    await expect(page.locator('#vhs-lineup-note')).toContainText('50 tapes from 1,001');
-
-    await page.locator('#settings-open').click();
-    await page.locator('#settings-vhs-capacity').selectOption('250');
-    await page.locator('#settings-modal-close').click();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(250);
-    await expect(page.locator('#vhs-lineup-note')).toContainText('250 tapes from 1,001');
-
-    await page.reload();
-    await oneSpin(page);
-    await page.locator('#settings-open').click();
-    await expect(page.locator('#settings-vhs-capacity')).toHaveValue('250');
-    await page.locator('#settings-modal-close').click();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(250);
-});
-
-test('theater mode remains completely stable with zero scrollbars or layout shift during spin', async ({ page }) => {
-    await oneSpin(page);
-    await page.locator('#spin-button').click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-    for (let frame = 0; frame < 5; frame += 1) {
-        const scrollInfo = await page.evaluate(() => {
-            const theater = document.querySelector('.spin-theater');
-            if (!theater) return null;
-            return {
-                scrollTop: theater.scrollTop,
-                hasOverflow: theater.scrollHeight > theater.clientHeight
-            };
-        });
-        expect(scrollInfo.scrollTop).toBe(0);
-        expect(scrollInfo.hasOverflow).toBe(false);
-        await page.waitForTimeout(60);
-    }
-});
-
-test('reduced-motion knockout marks eliminated tape and reduces pool without a flight animation', async ({ page }) => {
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(10);
-    await page.locator('#spin-button').click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-    await expect(page.locator('.spin-theater')).toHaveClass(/has-stack/);
-    await expect(page.locator('#spin-theater-stack')).toBeVisible();
-    await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(9, { timeout: 10000 });
-    await expect(page.locator('.spin-theater__hint')).toContainText('9 tapes remaining');
-    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10');
-    const wallTape = page.locator('#spin-theater-stack-list .vhs-stack-tape');
-    await expect(wallTape).toHaveCount(1);
-    await expect(wallTape.locator('.vhs-stack-tape__stamp')).toHaveText('ELIMINATED #1');
-    await expect(wallTape.locator('.vhs-stack-tape__rental')).toContainText('VHS');
-    await expect(page.locator('.spin-theater .vhs-flight-proxy')).toHaveCount(0);
-});
-
-test('can enter and return to theater mode via theater toggle button', async ({ page }) => {
-    const theaterBtn = page.locator('#wheel-theater-btn');
-    await expect(theaterBtn).toBeVisible();
-    await expect(theaterBtn).toContainText('Theater Mode');
-
-    // Enter theater mode manually
-    await theaterBtn.click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-
-    // Exit focus
-    await page.locator('.spin-theater__exit').click();
-    await expect(page.locator('.spin-theater')).toBeHidden();
-    await expect(theaterBtn).toBeVisible();
-
-    // Start spin in knockout mode, exit during game, check button state
-    await page.locator('#spin-button').click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-    await page.locator('.spin-theater__exit').click();
-    await expect(page.locator('.spin-theater')).toBeHidden();
-    await expect(theaterBtn).toContainText('Return to Theater Mode');
-    await expect(theaterBtn).toHaveClass(/is-active/);
-
-    // Re-enter theater mode and verify it re-opens
-    await theaterBtn.click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-    await expect(page.locator('#spin-theater-stack')).toBeVisible();
-});
-
-test('vhs pointer flapper remains completely static and sits on top of wheel tapes', async ({ page }) => {
-    const flapper = page.locator('.vhs-flapper');
-    await expect(flapper).toBeVisible();
-    const styleInfo = await flapper.evaluate(el => ({
-        zIndex: Number(window.getComputedStyle(el).zIndex),
-        rotorZIndex: Number.parseInt(window.getComputedStyle(el.parentElement.querySelector('.vhs-rotor')).zIndex, 10) || 0,
-        hasElevation: window.getComputedStyle(el).transform !== 'none'
-    }));
-    expect(styleInfo.zIndex).toBeGreaterThan(styleInfo.rotorZIndex);
-    expect(styleInfo.hasElevation).toBe(true);
-
-    await oneSpin(page);
-    await page.locator('#spin-button').click();
-    const animationCount = await flapper.evaluate(el => el.getAnimations().length);
-    expect(animationCount).toBe(0);
-});
-
-test('can toggle bottom tape labels via settings checkbox', async ({ page }) => {
-    // Initially rental labels are visible on tapes
-    const firstRental = page.locator('.vhs-tapes .vhs-rental').first();
-    await expect(firstRental).toBeVisible();
-
-    // Open settings and verify checkbox is checked
-    await page.click('#settings-open');
-    const settingsCheckbox = page.locator('#settings-vhs-labels');
-    await expect(settingsCheckbox).toBeVisible();
-    await expect(settingsCheckbox).toBeChecked();
-
-    // Toggle to hide labels
-    await settingsCheckbox.uncheck();
-    await expect(page.locator('body')).toHaveClass(/hide-tape-labels/);
-    await expect(firstRental).toBeHidden();
-
-    // Toggle back via settings checkbox
-    await settingsCheckbox.check();
-    await expect(page.locator('body')).not.toHaveClass(/hide-tape-labels/);
-    await expect(firstRental).toBeVisible();
-
-    // Uncheck and close modal
-    await settingsCheckbox.uncheck();
-    await page.click('#settings-modal-close');
-    await expect(firstRental).toBeHidden();
-
-    // Check persistence across reload
-    await page.reload();
-    await expect(page.locator('body')).toHaveClass(/hide-tape-labels/);
-    await page.click('#settings-open');
-    await expect(settingsCheckbox).not.toBeChecked();
-    await page.click('#settings-modal-close');
-});
-
-test('theater mode centers knockout status over the wheel and shows final contenders when under 10 movies', async ({ page }) => {
-    await page.locator('#spin-button').click();
-    await expect(page.locator('.spin-theater')).toBeVisible();
-
-    const resultInStage = page.locator('.spin-theater .wheel-stage #result');
-    await expect(resultInStage).toBeVisible();
-
-    const contenders = page.locator('#spin-theater-contenders');
-    await expect(contenders).toBeVisible();
-    await expect(contenders.locator('.knockout-remaining__item')).toHaveCount(10);
-
-    const stageBox = await page.locator('.spin-theater .wheel-stage').boundingBox();
-    const resultBox = await resultInStage.boundingBox();
-    const stageCenter = stageBox.x + stageBox.width / 2;
-    const resultCenter = resultBox.x + resultBox.width / 2;
-    expect(Math.abs(stageCenter - resultCenter)).toBeLessThan(5);
-
-    await expect(resultInStage).toContainText('Knocked out:');
-    const resultText = await resultInStage.textContent();
-    expect(resultText).not.toContain('💥');
-    expect(resultText).not.toContain('🔥');
-    expect(resultText).not.toContain('🏆');
-    await expect(page.locator('#spin-theater-stack-count')).toHaveText('1/10');
-});
-

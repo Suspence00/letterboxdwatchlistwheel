@@ -38,6 +38,10 @@
     padding: 1rem;
 }
 
+#confirm-modal {
+    z-index: 2100;
+}
+
 .win-modal__content {
     background: #15202b;
     border: 1px solid rgba(255, 255, 255, 0.1);

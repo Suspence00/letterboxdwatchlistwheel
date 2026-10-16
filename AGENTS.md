@@ -29,8 +29,14 @@ This is a browser-only application built with HTML, CSS, and native ES modules. 
 | **History Modal** | `js/ui/history-modal.js` | Winner history log rendering and clearing. |
 | **Generic Modals & Dialogs** | `js/ui/modals.js` | Reusable confirm modal, prompt modal, fairness audit report. |
 | **Confetti Animation** | `js/ui/confetti.js` | Canvas-free lightweight CSS/DOM confetti particle burst. |
+| **Theme Picker** | `js/ui/theme-picker.js` | Compact `<details>` visual theme browser, search/filter, and decorations toggle. |
+| **Wheelchinko UI & Modes** | `js/ui/wheelchinko-ui.js` | Wheelchinko coordinator (Random 10, Elimination Battle Royale, Spinchinko). |
+| **Wheelchinko Physics** | `js/wheelchinko.js` | 2D Plinko pegboard physics engine, multi-puck simulation, and slot chutes. |
 | **Canvas Wheel Physics** | `js/wheel.js` | 2D Canvas rendering, slice geometry, physics simulation, easing. |
-| **3D VHS Wheel** | `js/vhs-wheel.js` | 3D cassette tape lineup, animations, cassette shaders. |
+| **3D VHS Wheel** | `js/vhs-wheel.js` | 3D cassette tape lineup (up to 250 capacity), animations, cassette shaders. |
+| **Spin Theater** | `js/spin-theater.js` | Focused full-window theater stage and eliminated tape stack. |
+| **Tape Viewer** | `js/tape-viewer.js` | 3D/static VHS sleeve renderer for the winner modal. |
+| **Movie Metadata** | `js/movie-metadata.js` | OMDb poster/runtime/synopsis lookup and caching. |
 | **Import & Scraping** | `js/import.js` | CSV parsing, Letterboxd web scraping via CORS proxy, sync. |
 | **Audio & Wheel.FM** | `js/audio.js` | Web Audio synthesizer effects and Wheel.FM radio player. |
 | **State Persistence** | `js/state.js` | `localStorage` state management, migrations, debounced persistence. |

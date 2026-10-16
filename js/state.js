@@ -183,6 +183,7 @@ function loadWorkspaceData(id) {
 
         appState.winnerId = loaded.winnerId || null;
         appState.winnerSpinMode = loaded.winnerSpinMode || null;
+        appState.knockoutResults.clear();
 
         if (loaded.filterState) {
             Object.assign(appState.filter, loaded.filterState);
@@ -197,6 +198,8 @@ function loadWorkspaceData(id) {
         if (loaded.preferences && typeof loaded.preferences === 'object') {
             const overrides = loaded.preferences.themeColorOverrides;
             const safeOverrides = overrides && typeof overrides === 'object' && !Array.isArray(overrides) ? overrides : {};
+            const boosterColors = loaded.preferences.boosterColors;
+            const safeBoosterColors = boosterColors && typeof boosterColors === 'object' && !Array.isArray(boosterColors) ? boosterColors : {};
             const loadedCap = Number(loaded.preferences.vhsCapacity);
             const vhsCapacity = (loaded.preferences.vhsCapacityVersion >= 2 || (loadedCap && loadedCap !== 10))
                 ? Math.max(4, Math.min(250, loadedCap))
@@ -209,6 +212,7 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
                 theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
                 themeColorOverrides: safeOverrides,
+                boosterColors: safeBoosterColors,
                 decorationsEnabled: loaded.preferences.decorationsEnabled !== false,
                 discordWebhookUrl: loaded.preferences.discordWebhookUrl || '',
                 radarr: loaded.preferences.radarr || null,
@@ -223,6 +227,7 @@ function loadWorkspaceData(id) {
                 showFinalistsFromStart: false,
                 theme: 'default',
                 themeColorOverrides: {},
+                boosterColors: {},
                 decorationsEnabled: true,
                 importAppendMode: false,
                 vhsShowLabels: true
@@ -246,6 +251,10 @@ function loadWorkspaceData(id) {
 export function resetState() {
     appState.movies = [];
     appState.selectedIds.clear();
+    appState.history = [];
+    appState.winnerId = null;
+    appState.winnerSpinMode = null;
+    appState.knockoutResults.clear();
     appState.filter = {
         query: '',
         normalizedQuery: '',
@@ -260,6 +269,7 @@ export function resetState() {
         showFinalistsFromStart: false,
         theme: 'default',
         themeColorOverrides: {},
+        boosterColors: {},
         decorationsEnabled: true,
         importAppendMode: false,
         vhsShowLabels: true
@@ -331,6 +341,7 @@ export function deleteWorkspace(id) {
         appState.activeWorkspaceId = nextId;
         loadWorkspaceData(nextId);
         saveWorkspacesIndex();
+        window.dispatchEvent(new CustomEvent('letterboxd:workspacechange', { detail: { workspaceId: nextId } }));
     } else {
         saveWorkspacesIndex();
     }

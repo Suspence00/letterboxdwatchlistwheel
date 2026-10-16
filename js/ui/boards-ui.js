@@ -30,6 +30,9 @@ export function initBoardsUI(domElements = {}, callbacks = {}) {
     const newBoardName = domElements.newBoardName || document.getElementById('new-board-name');
     const tabBtnBoards = domElements.tabBtnBoards || document.getElementById('tab-btn-boards');
 
+    renderWorkspaceSwitcher(workspaceSelect);
+    renderBoardsList(domElements.boardsList);
+
     if (tabBtnBoards) {
         tabBtnBoards.addEventListener('click', () => {
             renderWorkspaceSwitcher();
@@ -148,12 +151,17 @@ export function renderBoardsList(boardsList = (typeof document !== 'undefined' ?
             deleteBtn.title = ws.id === appState.activeWorkspaceId ? 'Cannot delete active board' : 'Cannot delete last board';
         }
         deleteBtn.addEventListener('click', () => {
-            if (confirm(`Delete board "${ws.name}"? This cannot be undone.`)) {
-                if (deleteWorkspace(ws.id)) {
-                    renderWorkspaceSwitcher();
-                    renderBoardsList();
+            showConfirmModal({
+                title: 'Delete Board',
+                message: `Delete board "${escapeHtml(ws.name)}"? This cannot be undone.`,
+                confirmText: 'Delete',
+                onConfirm: () => {
+                    if (deleteWorkspace(ws.id)) {
+                        renderWorkspaceSwitcher();
+                        renderBoardsList();
+                    }
                 }
-            }
+            });
         });
 
         actions.appendChild(renameBtn);

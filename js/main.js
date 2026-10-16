@@ -535,11 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Intercept form submission to close modal (UI logic handles the adding)
     if (elements.customEntryForm) {
         elements.customEntryForm.addEventListener('submit', () => {
-            if (elements.customEntryInput && elements.customEntryInput.value.trim()) {
-                closeCustomModal();
-                // Clear input is handled by UI likely, but safe to do here if needed
-                // elements.customEntryInput.value = ''; 
-            }
+            closeCustomModal();
         });
     }
 

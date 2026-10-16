@@ -24,8 +24,10 @@ let isRapidRunning = false;
 let rapidTimer = null;
 let dom = {};
 
-let spinchinko = { wheelType: 'knockout', qualifiers: [], contenders: [], slotMovies: [], isDropping: false };
-let tourney = { active: false, contenders: [], eliminatedInWave: new Set() };
+let spinchinko = { wheelType: 'knockout', qualifiers: [], contenders: [], slotMovies: [], isDropping: false, eligibleKey: '' };
+let tourney = { active: false, contenders: [], eliminatedInWave: new Set(), eligibleKey: '' };
+let lineupEligibleKey = '';
+let lastWorkspaceId = null;
 
 export function initWheelchinkoUI(domElements, callbacks = {}) {
     uiCallbacks = callbacks;
@@ -44,6 +46,7 @@ export function initWheelchinkoUI(domElements, callbacks = {}) {
     };
 
     if (dom.canvas) initWheelchinkoCanvas(dom.canvas, { onSettled: handlePuckSettled, onBatchComplete: handleBatchComplete });
+    window.addEventListener('letterboxd:workspacechange', syncWheelchinko);
 
     const setAimFromClientX = (clientX, targetRect) => {
         if (getIsDropping() || activeStyle === 'elimination' || activeStyle === 'spinchinko') return;
@@ -58,12 +61,10 @@ export function initWheelchinkoUI(domElements, callbacks = {}) {
     }
 
     const canvasWrap = document.getElementById('wheelchinko-canvas-wrap');
-    if (canvasWrap) {
-        canvasWrap.addEventListener('click', (e) => {
-            const rect = canvasWrap.getBoundingClientRect();
-            if (e.clientY - rect.top <= rect.height * 0.65) setAimFromClientX(e.clientX, rect);
-        });
-    }
+    canvasWrap?.addEventListener('click', (e) => {
+        const rect = canvasWrap.getBoundingClientRect();
+        if (e.clientY - rect.top <= rect.height * 0.65) setAimFromClientX(e.clientX, rect);
+    });
 
     dom.dropBtn?.addEventListener('click', () => triggerDrop());
     dom.randomBtn?.addEventListener('click', () => triggerRandomDrop());
@@ -72,33 +73,25 @@ export function initWheelchinkoUI(domElements, callbacks = {}) {
     dom.spinchinkoRedropBtn?.addEventListener('click', () => { if (!getIsDropping() && !spinchinko.isDropping) startSpinchinkoDrop(); });
     document.getElementById('wheelchinko-theater-btn')?.addEventListener('click', () => openSpinTheater('wheelchinko'));
 
-    dom.spinchinkoWheelTypeBtns?.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const type = btn.dataset.wheelType;
-            if (type && type !== spinchinko.wheelType) {
-                spinchinko.wheelType = type;
-                dom.spinchinkoWheelTypeBtns.forEach(b => b.classList.toggle('is-active', b.dataset.wheelType === type));
-                updateSpinchinkoStatusUI();
-                uiCallbacks.updateSpinButtonLabel?.();
-            }
-        });
-    });
+    dom.spinchinkoWheelTypeBtns?.forEach(btn => btn.addEventListener('click', () => {
+        const type = btn.dataset.wheelType;
+        if (type && type !== spinchinko.wheelType) {
+            spinchinko.wheelType = type;
+            dom.spinchinkoWheelTypeBtns.forEach(b => b.classList.toggle('is-active', b.dataset.wheelType === type));
+            updateSpinchinkoStatusUI(); uiCallbacks.updateSpinButtonLabel?.();
+        }
+    }));
 
-    dom.puckButtons?.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.disabled || isRapidRunning) return;
-            const count = parseInt(btn.dataset.count, 10);
-            if (count >= 1 && count <= 5) { multiPuckCount = count; updateTourneyStatusUI(); }
-        });
-    });
+    dom.puckButtons?.forEach(btn => btn.addEventListener('click', () => {
+        if (btn.disabled || isRapidRunning) return;
+        const count = parseInt(btn.dataset.count, 10);
+        if (count >= 1 && count <= 5) { multiPuckCount = count; updateTourneyStatusUI(); }
+    }));
 
-    document.querySelectorAll('.wheelchinko-style-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (getIsDropping() || isRapidRunning || spinchinko.isDropping) { stopRapidElimination(); cancelDrop(); }
-            const nextStyle = btn.dataset.style;
-            if (nextStyle && nextStyle !== activeStyle) setWheelchinkoStyle(nextStyle);
-        });
-    });
+    document.querySelectorAll('.wheelchinko-style-btn').forEach(btn => btn.addEventListener('click', () => {
+        if (getIsDropping() || isRapidRunning || spinchinko.isDropping) { stopRapidElimination(); cancelDrop(); }
+        if (btn.dataset.style && btn.dataset.style !== activeStyle) setWheelchinkoStyle(btn.dataset.style);
+    }));
 }
 
 export function setWheelchinkoStyle(style) {
@@ -115,23 +108,31 @@ export function setWheelchinkoStyle(style) {
 export function getWheelchinkoStyle() { return activeStyle; }
 export function getIsRapidEliminating() { return isRapidRunning; }
 export function getActivePuckCount() {
-    if (activeStyle !== 'elimination') return 1;
-    return tourney.contenders.length <= 10 ? 1 : Math.min(multiPuckCount, Math.max(1, currentLineup.length - 1));
+    return activeStyle !== 'elimination' ? 1 : (tourney.contenders.length <= 10 ? 1 : Math.min(multiPuckCount, Math.max(1, currentLineup.length - 1)));
 }
 
 function getEligibleMovies() {
-    if (typeof uiCallbacks.getEligibleMovies === 'function') return uiCallbacks.getEligibleMovies();
-    return appState.movies.filter(m => appState.selectedIds.has(m.id));
+    return typeof uiCallbacks.getEligibleMovies === 'function' ? uiCallbacks.getEligibleMovies() : appState.movies.filter(m => appState.selectedIds.has(m.id));
 }
 
 export function syncWheelchinko() {
-    const eligible = getEligibleMovies();
+    const eligible = getEligibleMovies(), eligibleKey = eligible.map(m => m.id).join('\u001f');
+    if (lastWorkspaceId !== appState.activeWorkspaceId) {
+        stopRapidElimination();
+        cancelDrop();
+        hideTooltip();
+        lockButtons(false);
+        lastWorkspaceId = appState.activeWorkspaceId; currentLineup = []; lineupEligibleKey = '';
+        Object.assign(spinchinko, { contenders: [], qualifiers: [], slotMovies: [], isDropping: false, eligibleKey: '' });
+        Object.assign(tourney, { active: false, contenders: [], eligibleKey: '' });
+        tourney.eliminatedInWave.clear();
+    }
     const stage = document.getElementById('wheelchinko-stage');
     if (!stage || stage.hidden) return;
 
     let slotMovies = [];
-    const isElim = activeStyle === 'elimination';
-    const isSpin = activeStyle === 'spinchinko';
+    const isElim = activeStyle === 'elimination', isSpin = activeStyle === 'spinchinko';
+    const byId = new Map(eligible.map(m => [m.id, m]));
 
     if (dom.redrawBtn) dom.redrawBtn.hidden = isElim || isSpin || eligible.length <= DEFAULT_LINEUP_CAPACITY;
     [dom.resetTourneyBtn, dom.tourneyStatus].forEach(el => { if (el) el.hidden = !isElim; });
@@ -139,20 +140,25 @@ export function syncWheelchinko() {
     if (dom.spinchinkoBar) dom.spinchinkoBar.hidden = !isSpin;
 
     if (activeStyle === 'lineup') {
-        if (!currentLineup.length || currentLineup.some(m => !eligible.some(e => e.id === m.id))) {
-            currentLineup = sampleLineup(eligible, DEFAULT_LINEUP_CAPACITY);
-        }
+        if (!currentLineup.length || lineupEligibleKey !== eligibleKey || currentLineup.some(m => !byId.has(m.id))) {
+            currentLineup = sampleLineup(eligible, DEFAULT_LINEUP_CAPACITY); lineupEligibleKey = eligibleKey;
+        } else currentLineup = currentLineup.map(m => byId.get(m.id) || m);
         slotMovies = [...currentLineup];
         if (dom.dropBtn) { dom.dropBtn.hidden = false; dom.dropBtn.textContent = 'Drop Puck'; dom.dropBtn.disabled = false; }
     } else if (isSpin) {
-        if (!spinchinko.contenders.length || spinchinko.contenders.some(m => !eligible.some(e => e.id === m.id))) {
-            setupSpinchinkoContenders(eligible);
+        if (!spinchinko.contenders.length || spinchinko.eligibleKey !== eligibleKey || spinchinko.contenders.some(m => !byId.has(m.id))) {
+            setupSpinchinkoContenders(eligible, eligibleKey);
+        } else {
+            spinchinko.contenders = spinchinko.contenders.map(m => byId.get(m.id) || m);
+            spinchinko.slotMovies = getEndgameSlotMovies(spinchinko.contenders);
         }
         slotMovies = [...spinchinko.slotMovies];
         updateSpinchinkoStatusUI();
     } else {
-        if (!tourney.contenders.length || (!tourney.active && tourney.contenders.some(m => !eligible.some(e => e.id === m.id)))) {
-            setupTournament(eligible);
+        if (!tourney.contenders.length || (!getIsDropping() && !isRapidRunning && tourney.eligibleKey !== eligibleKey) || tourney.contenders.some(m => !byId.has(m.id))) {
+            setupTournament(eligible, eligibleKey);
+        } else {
+            tourney.contenders = tourney.contenders.map(m => byId.get(m.id) || m);
         }
         currentLineup = getEndgameSlotMovies(tourney.contenders);
         slotMovies = [...currentLineup];
@@ -172,19 +178,17 @@ export function syncWheelchinko() {
 }
 
 function resetSpinchinko() { spinchinko.qualifiers = []; spinchinko.isDropping = false; setupSpinchinkoContenders(getEligibleMovies()); }
-function setupSpinchinkoContenders(movies) {
+function setupSpinchinkoContenders(movies, eligibleKey = movies.map(m => m.id).join('\u001f')) {
     spinchinko.contenders = sampleLineup(movies, Math.min(MAX_BATTLE_ROYALE_CAPACITY, movies.length));
     spinchinko.slotMovies = getEndgameSlotMovies(spinchinko.contenders);
-    spinchinko.qualifiers = []; spinchinko.isDropping = false;
+    spinchinko.qualifiers = []; spinchinko.isDropping = false; spinchinko.eligibleKey = eligibleKey;
 }
 
 export function getSpinchinkoButtonLabel() {
     const targetCount = Math.min(10, spinchinko.contenders.length || getEligibleMovies().length);
     if (getIsDropping() || spinchinko.isDropping) return 'Dropping Golden Pucks...';
     if (spinchinko.qualifiers.length >= targetCount && targetCount > 0) {
-        return spinchinko.wheelType === 'knockout'
-            ? `Spin Knockout Wheel (${spinchinko.qualifiers.length} Finalists)`
-            : `Spin Wheel (${spinchinko.qualifiers.length} Finalists)`;
+        return spinchinko.wheelType === 'knockout' ? `Spin Knockout Wheel (${spinchinko.qualifiers.length} Finalists)` : `Spin Wheel (${spinchinko.qualifiers.length} Finalists)`;
     }
     return 'Drop 10 Golden Pucks';
 }
@@ -204,8 +208,8 @@ function updateSpinchinkoStatusUI() {
     }
 }
 
-function setupTournament(movies) {
-    tourney.active = false;
+function setupTournament(movies, eligibleKey = movies.map(m => m.id).join('\u001f')) {
+    tourney.active = false; tourney.eligibleKey = eligibleKey;
     tourney.contenders = sampleLineup(movies, Math.min(MAX_BATTLE_ROYALE_CAPACITY, movies.length));
     tourney.eliminatedInWave.clear();
     currentLineup = getEndgameSlotMovies(tourney.contenders);
@@ -248,7 +252,9 @@ function getEndgameSlotMovies(contenders) {
 }
 
 function redrawLineup() {
-    currentLineup = sampleLineup(getEligibleMovies(), DEFAULT_LINEUP_CAPACITY);
+    const eligible = getEligibleMovies();
+    currentLineup = sampleLineup(eligible, DEFAULT_LINEUP_CAPACITY);
+    lineupEligibleKey = eligible.map(m => m.id).join('\u001f');
     syncWheelchinko();
 }
 
@@ -261,7 +267,9 @@ function showTooltip(card, movie) {
     const stage = document.getElementById('wheelchinko-stage');
     if (!dom.tooltip || !stage) return;
     const cr = card.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-    dom.tooltip.innerHTML = `<strong class="wheelchinko-tooltip-title">${movie.name}</strong><span class="wheelchinko-tooltip-meta">${movie.year || ''}${movie.weight > 1 ? ` · ${movie.weight}x weight` : ''}</span>`;
+    const titleEl = Object.assign(document.createElement('strong'), { className: 'wheelchinko-tooltip-title', textContent: movie.name || '' });
+    const metaEl = Object.assign(document.createElement('span'), { className: 'wheelchinko-tooltip-meta', textContent: `${movie.year || ''}${movie.weight > 1 ? ` · ${movie.weight}x weight` : ''}` });
+    dom.tooltip.replaceChildren(titleEl, metaEl);
     dom.tooltip.hidden = false;
     dom.tooltip.style.left = `${cr.left - sr.left + cr.width / 2}px`;
     dom.tooltip.style.top = `${cr.top - sr.top}px`;
@@ -285,8 +293,11 @@ function renderSlotCards(movies) {
         card.dataset.movieId = movie.id;
         card.title = `${movie.name}${movie.year ? ` (${movie.year})` : ''}`;
         if (vhs) card.style.setProperty('--sleeve-color', movie.color || `hsl(${(index * 37) % 360}, 70%, 50%)`);
-        card.innerHTML = `<div class="wheelchinko-slot-poster-wrap"><span class="wheelchinko-slot-num">${index + 1}</span><img class="wheelchinko-slot-poster" alt="${movie.name}" loading="lazy"><div class="wheelchinko-slot-poster-fallback" aria-hidden="true"><span class="wheelchinko-slot-fallback-title">${movie.name}</span></div>${movie.weight > 1 ? `<span class="wheelchinko-slot-weight">${movie.weight}x</span>` : ''}</div>`;
-        const img = card.querySelector('.wheelchinko-slot-poster');
+        card.innerHTML = `<div class="wheelchinko-slot-poster-wrap"><span class="wheelchinko-slot-num">${index + 1}</span><img class="wheelchinko-slot-poster" loading="lazy"><div class="wheelchinko-slot-poster-fallback" aria-hidden="true"><span class="wheelchinko-slot-fallback-title"></span></div></div>`;
+        const wrap = card.querySelector('.wheelchinko-slot-poster-wrap'), img = card.querySelector('.wheelchinko-slot-poster');
+        if (img) img.alt = movie.name || '';
+        card.querySelector('.wheelchinko-slot-fallback-title').textContent = movie.name || '';
+        if (movie.weight > 1 && wrap) wrap.append(Object.assign(document.createElement('span'), { className: 'wheelchinko-slot-weight', textContent: `${movie.weight}x` }));
         const applyPoster = (url) => { if (url && img) { img.onload = () => card.classList.add('has-poster'); img.src = url; } };
         if (movie.poster) applyPoster(movie.poster);
         else fetchMovieMetadata(movie).then(res => { if (res?.data?.poster) applyPoster(res.data.poster); }).catch(() => {});
@@ -419,19 +430,16 @@ function handlePuckSettled(winningSlot) {
         tourney.eliminatedInWave.add(targetIndex);
         const eliminatedMovie = currentLineup[targetIndex] || movie;
         playKnockoutSound();
-        document.querySelectorAll(`.wheelchinko-slot[data-slot-index="${targetIndex}"], .wheelchinko-slot[data-movie-id="${eliminatedMovie?.id}"]`).forEach(c => c.classList.add('is-eliminated'));
+        const escapedId = eliminatedMovie?.id ? CSS.escape(String(eliminatedMovie.id)) : '';
+        const selector = escapedId ? `.wheelchinko-slot[data-slot-index="${targetIndex}"], .wheelchinko-slot[data-movie-id="${escapedId}"]` : `.wheelchinko-slot[data-slot-index="${targetIndex}"]`;
+        document.querySelectorAll(selector).forEach(c => c.classList.add('is-eliminated'));
         const result = document.getElementById('result');
-        if (result && eliminatedMovie) {
-            result.className = 'result'; result.textContent = `Eliminated: ${eliminatedMovie.name}`;
-        }
+        if (result && eliminatedMovie) { result.className = 'result'; result.textContent = `Eliminated: ${eliminatedMovie.name}`; }
     } else if (activeStyle === 'spinchinko') {
         const targetCount = Math.min(10, spinchinko.contenders.length);
-        const qSlots = new Set(spinchinko.qualifiers.map(q => q.slotIndex));
-        const qIds = new Set(spinchinko.qualifiers.map(q => q.movie.id));
+        const qSlots = new Set(spinchinko.qualifiers.map(q => q.slotIndex)), qIds = new Set(spinchinko.qualifiers.map(q => q.movie.id));
         const isUnavailable = i => qSlots.has(i) || qIds.has(spinchinko.slotMovies[i]?.id);
-        const targetIndex = isUnavailable(winningSlot.index)
-            ? findClosestAvailableSlot(winningSlot.index, spinchinko.slotMovies.length, isUnavailable)
-            : winningSlot.index;
+        const targetIndex = isUnavailable(winningSlot.index) ? findClosestAvailableSlot(winningSlot.index, spinchinko.slotMovies.length, isUnavailable) : winningSlot.index;
         const candidate = spinchinko.slotMovies[targetIndex] || movie;
         if (candidate && !qIds.has(candidate.id) && spinchinko.qualifiers.length < targetCount) {
             spinchinko.qualifiers.push({ slotIndex: targetIndex, movie: candidate });
@@ -442,8 +450,7 @@ function handlePuckSettled(winningSlot) {
     } else {
         lockButtons(false);
         document.querySelectorAll('.wheelchinko-slot').forEach(el => el.classList.remove('is-winner'));
-        const matchedCard = document.querySelector(`.wheelchinko-slot[data-slot-index="${winningSlot.index}"]`);
-        if (matchedCard) matchedCard.classList.add('is-winner');
+        document.querySelector(`.wheelchinko-slot[data-slot-index="${winningSlot.index}"]`)?.classList.add('is-winner');
         handleWinnerLanding(movie);
     }
 }
@@ -452,8 +459,7 @@ function handleBatchComplete() {
     lockButtons(false);
     if (activeStyle === 'spinchinko') {
         spinchinko.isDropping = false;
-        const targetCount = Math.min(10, spinchinko.contenders.length);
-        const qIds = new Set(spinchinko.qualifiers.map(q => q.movie.id));
+        const targetCount = Math.min(10, spinchinko.contenders.length), qIds = new Set(spinchinko.qualifiers.map(q => q.movie.id));
         for (let i = 0; i < spinchinko.slotMovies.length && spinchinko.qualifiers.length < targetCount; i += 1) {
             const m = spinchinko.slotMovies[i];
             if (m && !qIds.has(m.id)) {
@@ -461,8 +467,7 @@ function handleBatchComplete() {
                 document.querySelector(`.wheelchinko-slot[data-slot-index="${i}"]`)?.classList.add('is-qualified');
             }
         }
-        updateSpinchinkoStatusUI();
-        uiCallbacks.updateSpinButtonLabel?.();
+        updateSpinchinkoStatusUI(); uiCallbacks.updateSpinButtonLabel?.();
         return;
     }
 

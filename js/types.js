@@ -27,7 +27,7 @@
  * @property {Array<MovieBooster|string>} [boosters] Contributions; strings are legacy entries
  */
 
-/** @typedef {'knockout'|'one-spin'|'random-boost'} SpinMode */
+/** @typedef {'knockout'|'one-spin'|'random-boost'|'wheelchinko'} SpinMode */
 
 /**
  * @typedef {Object} HistoryEntry
@@ -63,12 +63,15 @@
  * @typedef {Object} Preferences
  * @property {string} [theme]
  * @property {Object<string, string>} [themeColorOverrides]
+ * @property {Object<string, string>} [boosterColors]
  * @property {boolean} [decorationsEnabled]
  * @property {'vhs'|'classic'} [wheelStyle]
  * @property {number} [vhsCapacity]
+ * @property {number} [vhsCapacityVersion]
  * @property {boolean} [vhsShowLabels]
  * @property {boolean} [hideFinalistsBox]
  * @property {boolean} [showFinalistsFromStart]
+ * @property {boolean} [importAppendMode]
  * @property {string} [discordWebhookUrl]
  * @property {RadarrPreferences} [radarr]
  */

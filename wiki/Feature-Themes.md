@@ -9,9 +9,9 @@ The **Letterboxd Watchlist Wheel** features a collection of 14 rich, handcrafted
 Themes can be configured in the **Settings Modal**:
 
 1. Click the **Settings ⚙️** button in the header or navigation bar.
-2. Select the **Themes** tab to view the accessible theme preview cards.
-3. Browse between **Everyday** and **Seasonal** categories.
-4. Click any theme card to preview and apply it immediately. Full keyboard navigation (<kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd>) is supported.
+2. In the **Options** tab, the compact **Visual theme** row shows your current theme and its wheel palette. Click **Browse** to expand the preview gallery.
+3. Search by theme name or filter by **All**, **Everyday**, or **Seasonal**. The gallery scrolls within a fixed height so the list stays compact as more themes are added.
+4. Click any theme card to apply it immediately; a checkmark identifies the active theme. Keyboard navigation (<kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd>) moves through the visible results. Click the current-theme row again or press <kbd>Escape</kbd> inside the picker to collapse the gallery.
 5. Use the **Enable ambient theme decorations** checkbox (`decorationsEnabled` preference) to toggle theme-specific background animations, particles, and floating elements on or off.
 
 ---

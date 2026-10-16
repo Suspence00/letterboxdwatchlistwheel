@@ -45,6 +45,7 @@ import {
     handleSliceSelection
 } from './ui/slice-editor.js';
 import { initBoardsUI } from './ui/boards-ui.js';
+import { showConfirmModal } from './ui/modals.js';
 import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/movie-list.js';
 import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 import {
@@ -145,13 +146,18 @@ export function initUI(domElements) {
 
     if (elements.resetWeightsBtn) {
         elements.resetWeightsBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all weights to 1x?')) {
-                appState.movies.forEach((movie) => {
-                    movie.weight = 1;
-                });
-                updateMovieList();
-                resetSliceEditor();
-            }
+            showConfirmModal({
+                title: 'Reset All Weights',
+                message: 'Are you sure you want to reset all weights to 1x?',
+                confirmText: 'Reset Weights',
+                onConfirm: () => {
+                    appState.movies.forEach((movie) => {
+                        movie.weight = 1;
+                    });
+                    updateMovieList();
+                    resetSliceEditor();
+                }
+            });
         });
     }
 
@@ -234,40 +240,6 @@ export function initUI(domElements) {
         });
     }
 
-    if (elements.searchInput) {
-        elements.searchInput.addEventListener(
-            'input',
-            debounce((event) => {
-                const query = event.target.value.trim();
-                appState.filter.query = query;
-                appState.filter.normalizedQuery = query.toLowerCase();
-                updateMovieList();
-            }, 300)
-        );
-    }
-
-    if (elements.sortSelect) {
-        elements.sortSelect.addEventListener('change', (event) => {
-            appState.filter.sortMode = event.target.value;
-            updateMovieList();
-        });
-    }
-
-    if (elements.showCustomsToggle) {
-        elements.showCustomsToggle.addEventListener('change', (event) => {
-            appState.filter.showCustoms = event.target.checked;
-            updateMovieList();
-        });
-    }
-
-    if (elements.spinModeRadios) {
-        elements.spinModeRadios.forEach((radio) => {
-            radio.addEventListener('change', () => {
-                updateMovieList();
-            });
-        });
-    }
-
     if (elements.selectionToggleBtn) {
         elements.selectionToggleBtn.addEventListener('click', () => {
             const isCollapsed = elements.selectionCard.classList.contains('card--collapsed');
@@ -282,36 +254,10 @@ export function initUI(domElements) {
         });
     }
 
-    const closeCustomModal = () => {
-        if (!elements.customEntryModal) return;
-        elements.customEntryModal.classList.remove('show');
-        setTimeout(() => { elements.customEntryModal.hidden = true; }, 200);
-    };
-
     if (elements.customEntryForm) {
         elements.customEntryForm.addEventListener('submit', (event) => {
             event.preventDefault();
             addCustomEntry();
-            closeCustomModal();
-        });
-    }
-
-    if (elements.openCustomModalBtn) {
-        elements.openCustomModalBtn.addEventListener('click', () => {
-            if (!elements.customEntryModal) return;
-            elements.customEntryModal.hidden = false;
-            requestAnimationFrame(() => elements.customEntryModal.classList.add('show'));
-            if (elements.customEntryInput) elements.customEntryInput.focus();
-        });
-    }
-
-    if (elements.customModalCloseBtn) {
-        elements.customModalCloseBtn.addEventListener('click', closeCustomModal);
-    }
-
-    if (elements.customEntryModal) {
-        elements.customEntryModal.addEventListener('click', (event) => {
-            if (event.target === elements.customEntryModal) closeCustomModal();
         });
     }
 

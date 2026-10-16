@@ -152,22 +152,28 @@ Run the automated syntax and module line-budget check:
 node health_check.js
 ```
 
-* **Syntax Verification:** Parses all 28 JavaScript modules under `js/` and `js/ui/` using Node's native syntax checker (`--check`). Ensures there are no syntax errors or illegal duplicate exports.
+* **Syntax Verification:** Parses all JavaScript modules under `js/` and `js/ui/` using Node's native syntax checker (`--check`). Ensures there are no syntax errors or illegal duplicate exports.
 * **Line Budget Audit:** Verifies modules against the advisory 500-line budget to prevent code fragmentation or bloated files.
 
 ### 2. Playwright End-to-End Tests
-Interactive behaviors, import flows, wheel physics, and modal interactions are validated via Playwright:
+Keep browser coverage focused on core user flows and consequential regressions. Run only the affected spec or named test for ordinary changes; reserve the full suite for changes spanning several features.
 
 ```bash
-# Run all end-to-end tests
-npx playwright test
-
-# Run a specific test suite
+# Run the affected feature's tests
 npx playwright test tests/wheel.spec.js
+
+# Run a single regression
+npx playwright test -g "Import is cancelled"
+
+# Run the complete essential suite when warranted
+npm test
 ```
 
-* Tests automatically spin up a local static server and mock covered external API calls (such as the Letterboxd proxy and metadata scrapers).
+* The essential suite covers import/append/sync, preservation of board data, safe backup restore, boosts, winner selection in each main game mode, large-list sampling, keyboard settings, and mobile winner dismissal.
+* Tests automatically start a local static server. `tests/fixtures.js` mocks metadata and blocks external requests by default; import and poster fixtures override it where needed. Each test already gets isolated browser storage, so clearing storage and reloading during setup is unnecessary.
 * Fixtures such as `sample-watchlist.csv` are used to simulate real-world import and curation cycles.
+* Avoid separate tests for decorative colors, exact pixel alignment, button copy, or repeated animation/physics variants. Prefer one representative outcome per flow and keep regression checks for security, data loss, or broken selection behavior.
+* The default reporter is concise. Request an HTML report explicitly with `--reporter=html` when investigating a failure.
 
 ---
 
@@ -177,5 +183,5 @@ npx playwright test tests/wheel.spec.js
 2. Adhere to the **User Style & Aesthetic Guidelines**: never introduce dark blue cyber/terminal/neon glow "AI slop" styling. Choose sleek modern minimalist or fantasy-themed styling.
 3. Keep individual JavaScript modules modular and lean (< 500 lines target).
 4. Run `node health_check.js` to verify syntax and inspect line budgets.
-5. Run `npx playwright test` to ensure all tests pass.
+5. Run the affected Playwright spec or named test. Run the complete suite only when the change spans several features.
 6. Submit a pull request with a concise overview of changes.

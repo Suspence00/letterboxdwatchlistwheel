@@ -14,7 +14,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: 'dot',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -46,7 +46,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'python -m http.server 8282 --bind 127.0.0.1',
+    command: `node -e "import('node:http').then(({createServer})=>import('node:fs/promises').then(fs=>import('node:path').then(path=>{const m={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.csv':'text/csv'};createServer(async(q,s)=>{try{const u=new URL(q.url,'http://localhost'),f=path.join(process.cwd(),decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));s.setHeader('Content-Type',m[path.extname(f)]||'application/octet-stream');s.end(await fs.readFile(f));}catch{s.statusCode=404;s.end();}}).listen(8282,'127.0.0.1');})))"`,
     url: 'http://127.0.0.1:8282',
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore',
