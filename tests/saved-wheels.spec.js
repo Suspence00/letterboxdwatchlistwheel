@@ -1,0 +1,66 @@
+import { test, expect } from './fixtures.js';
+import path from 'node:path';
+
+for (const width of [1280, 375]) {
+    test(`Saved wheels can be created, searched, opened, renamed, and restored at ${width}px`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        const picker = page.getByRole('combobox', { name: 'Saved wheels', exact: true });
+        await expect(picker).toBeVisible();
+        await page.locator('input[type="file"]').first().setInputFiles(path.resolve('sample-watchlist.csv'));
+        await expect(page.locator('#movie-list li').first()).toBeVisible();
+        const movieCount = await page.locator('#movie-list li').count();
+        const originalId = await picker.inputValue();
+        await page.getByRole('button', { name: 'Manage wheels', exact: true }).click();
+        await expect(page.getByRole('tab', { name: 'Saved wheels', exact: true })).toHaveAttribute('aria-selected', 'true');
+        const search = page.getByRole('searchbox', { name: 'Search saved wheels' });
+        await expect(search).toBeFocused();
+        await page.getByRole('textbox', { name: 'New wheel name' }).fill('Horror night');
+        await page.getByRole('button', { name: 'Create wheel', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Current wheel: Horror night', exact: true })).toBeFocused();
+        await expect(page.locator('#movie-list li.empty')).toBeVisible();
+        await expect(page.locator('#movie-list li:not(.empty)')).toHaveCount(0);
+        const newId = await picker.inputValue();
+        expect(newId).not.toBe(originalId);
+        await search.fill('no matching wheel');
+        await expect(page.locator('#boards-list li')).toHaveCount(0);
+        await expect(page.locator('#saved-wheels-status')).toContainText('No wheels found');
+        await search.fill('watchlist');
+        const openOriginal = page.getByRole('button', { name: 'Open wheel: My Watchlist', exact: true });
+        await openOriginal.focus();
+        await openOriginal.press('Enter');
+        await expect(page.getByRole('button', { name: 'Current wheel: My Watchlist', exact: true })).toBeFocused();
+        await expect(picker).toHaveValue(originalId);
+        await expect(page.locator('#movie-list li')).toHaveCount(movieCount);
+        await search.fill('');
+        await page.locator('.board-item.active').getByRole('button', { name: 'Rename', exact: true }).click();
+        await page.getByRole('textbox', { name: 'Wheel name', exact: true }).fill('Movie night');
+        await page.locator('#input-modal-submit').click();
+        await expect(page.locator('#input-modal')).not.toBeVisible();
+        await expect(page.getByRole('button', { name: 'Current wheel: Movie night', exact: true })).toBeVisible();
+        await expect(page.locator('.board-item.active').getByRole('button', { name: 'Delete', exact: true })).toBeDisabled();
+        await page.screenshot({ animations: 'disabled', path: testInfo.outputPath(`saved-wheels-${width}.png`) });
+        const content = page.locator('.settings-tab-content');
+        expect(await content.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        await page.getByRole('button', { name: 'Close settings', exact: true }).click();
+        await picker.selectOption(newId);
+        await expect(page.locator('#movie-list li.empty')).toBeVisible();
+        await expect(page.locator('#movie-list li:not(.empty)')).toHaveCount(0);
+        await picker.selectOption(originalId);
+        await page.reload();
+        await expect(picker).toHaveValue(originalId);
+        await expect(picker.locator('option:checked')).toHaveText('Movie night');
+        await expect(page.locator('#movie-list li')).toHaveCount(movieCount);
+        const bounds = await picker.boundingBox();
+        expect(bounds.x).toBeGreaterThanOrEqual(0);
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+
+        await page.getByRole('button', { name: '+ New wheel' }).click();
+        await expect(page.locator('#input-modal')).toBeVisible();
+        await page.locator('#input-modal-field').fill('Quick wheel');
+        await page.locator('#input-modal-submit').click();
+        await expect(page.locator('#input-modal')).not.toBeVisible();
+        await expect(picker.locator('option:checked')).toHaveText('Quick wheel');
+        await expect(page.locator('#movie-list li.empty')).toBeVisible();
+    });
+}

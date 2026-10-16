@@ -38,7 +38,8 @@
     padding: 1rem;
 }
 
-#confirm-modal {
+#confirm-modal,
+#input-modal {
     z-index: 2100;
 }
 

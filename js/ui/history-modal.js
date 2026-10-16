@@ -11,7 +11,7 @@ export function initHistoryModal(domElements) {
     const clearHistoryBtn = elements.clearHistoryBtn || document.getElementById('clear-history-btn');
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('Clear all spin history for this board? This cannot be undone.')) {
+            if (confirm('Clear all spin history for this wheel? This cannot be undone.')) {
                 clearHistory();
                 renderHistory();
             }

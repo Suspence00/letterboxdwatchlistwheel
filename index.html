@@ -276,6 +276,17 @@
   </header>
 
   <main class="app">
+    <section class="saved-wheels-bar" aria-label="Saved wheels">
+      <div class="saved-wheels-bar__intro">
+        <label for="saved-wheel-select">Saved wheels</label>
+        <p id="saved-wheels-hint">Your movie lists, saved automatically in this browser.</p>
+      </div>
+      <select id="saved-wheel-select" class="text-input text-input--select" aria-describedby="saved-wheels-hint"></select>
+      <div class="saved-wheels-bar__actions">
+        <button type="button" class="btn btn--primary" id="saved-wheels-new">+ New wheel</button>
+        <button type="button" class="btn" id="saved-wheels-manage" aria-haspopup="dialog">Manage wheels</button>
+      </div>
+    </section>
     <section class="card" id="import-card" aria-labelledby="import-heading">
       <div class="card-header">
         <h2 id="import-heading">1. Bring in your Letterboxd picks</h2>
@@ -671,11 +682,11 @@
   <div id="confirm-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" hidden>
     <div class="win-modal__content settings-modal__content" style="padding: 2rem; max-width: 500px; width: 90%;">
       <button type="button" class="win-modal__close" id="confirm-modal-close" aria-label="Close dialog">&times;</button>
-      <h3 id="confirm-modal-title" class="win-modal__title" style="padding-left: 0;">Board Conflict</h3>
+      <h3 id="confirm-modal-title" class="win-modal__title" style="padding-left: 0;">Saved wheel conflict</h3>
       <p id="confirm-modal-message" style="margin-top: 1rem; line-height: 1.5; color: var(--text);"></p>
       <div class="win-modal__actions" style="justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
         <button type="button" class="btn" id="confirm-modal-cancel">Cancel</button>
-        <button type="button" class="btn" id="confirm-modal-secondary">Import into Current Board</button>
+        <button type="button" class="btn" id="confirm-modal-secondary">Import into current wheel</button>
         <button type="button" class="btn btn--primary" id="confirm-modal-confirm">Switch and Update</button>
       </div>
     </div>
@@ -698,7 +709,7 @@
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-radarr"
           id="tab-btn-radarr">Radarr</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-boards"
-          id="tab-btn-boards">Boards</button>
+          id="tab-btn-boards">Saved wheels</button>
         <button type="button" class="settings-tab-btn" role="tab" aria-selected="false" aria-controls="tab-advanced"
           id="tab-btn-advanced">Advanced</button>
       </div>
@@ -914,30 +925,33 @@
           </fieldset>
         </div>
 
-        <!-- Tab 4: Boards Management -->
+        <!-- Saved wheels management -->
         <div id="tab-boards" role="tabpanel" aria-labelledby="tab-btn-boards" class="settings-panel" hidden>
           <div class="data-transfer__grid">
             <div class="data-transfer__card">
-              <h4>Active Board</h4>
-              <p class="helper-text">Select which watchlist board you want to use.</p>
+              <h4><label for="workspace-select">Current wheel</label></h4>
+              <p class="helper-text">Each wheel keeps its own movies, boosts, and spin history. Changes save automatically in this browser.</p>
               <select id="workspace-select" class="text-input text-input--select text-input--compact"
-                aria-label="Switch Workspace">
+                >
                 <!-- Populated by JS -->
               </select>
             </div>
 
             <div class="data-transfer__card">
-              <h4>Create New Board</h4>
+              <h4><label for="new-board-name">New wheel name</label></h4>
+              <p class="helper-text">Start an empty wheel, then import a list or add your own movies.</p>
               <form id="create-board-form" class="board-create-form">
-                <input type="text" id="new-board-name" class="text-input" placeholder="Board Name (e.g. Horror Month)"
+                <input type="text" id="new-board-name" class="text-input" placeholder="e.g. Horror night"
                   required autocomplete="off">
-                <button type="submit" class="btn btn--primary">Create</button>
+                <button type="submit" class="btn btn--primary">Create wheel</button>
               </form>
             </div>
 
             <div class="data-transfer__card data-transfer__card--full">
-              <h4>My Boards</h4>
-              <ul id="boards-list" class="boards-list">
+              <h4 id="saved-wheels-heading">Your saved wheels</h4>
+              <input type="search" id="saved-wheels-search" class="text-input" aria-label="Search saved wheels" placeholder="Find a wheel by name or Letterboxd list">
+              <p id="saved-wheels-status" class="helper-text" role="status"></p>
+              <ul id="boards-list" class="boards-list" aria-labelledby="saved-wheels-heading">
                 <!-- Populated by JS -->
               </ul>
             </div>

@@ -112,7 +112,7 @@ export function loadState() {
         // Create entry
         appState.workspaces = [{
             id: defaultId,
-            name: 'Default Board',
+            name: 'My Watchlist',
             created: Date.now(),
             lastModified: Date.now(),
             letterboxdUrl: ''
@@ -282,7 +282,7 @@ export function createWorkspace(name) {
     const newId = crypto.randomUUID();
     const newWorkspace = {
         id: newId,
-        name: name || 'New Board',
+        name: name || 'New wheel',
         created: Date.now(),
         lastModified: Date.now(),
         letterboxdUrl: ''

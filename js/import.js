@@ -11,7 +11,7 @@ let elements = {};
 
 function assertWorkspaceUnchanged(workspaceId) {
     if (appState.activeWorkspaceId !== workspaceId) {
-        const error = new Error('Import cancelled because the active board changed.');
+        const error = new Error('Import cancelled because the current wheel changed.');
         error.code = 'WORKSPACE_CHANGED';
         throw error;
     }
@@ -130,10 +130,10 @@ async function handleLetterboxdProxyImport(event) {
 
     if (conflictWorkspace) {
         showConfirmModal({
-            title: 'Board Conflict',
-            message: `This Letterboxd URL is already tied to a different board: <strong>${escapeHtml(conflictWorkspace.name)}</strong>.<br><br>Did you mean to update that board instead?`,
-            confirmText: 'Switch & Update That Board',
-            secondaryText: 'Import into Current Board Anyway',
+            title: 'Saved wheel conflict',
+            message: `This Letterboxd URL is already tied to a different saved wheel: <strong>${escapeHtml(conflictWorkspace.name)}</strong>.<br><br>Did you mean to update that wheel instead?`,
+            confirmText: 'Switch & update that wheel',
+            secondaryText: 'Import into current wheel anyway',
             cancelText: 'Cancel Import',
             onConfirm: () => {
                 if (switchWorkspace(conflictWorkspace.id)) {
@@ -172,7 +172,7 @@ function promptForImportModeOrExecute(listUrl, normalizedInput) {
     if (appState.movies.length > 0) {
         showConfirmModal({
             title: 'Import Options',
-            message: `This board already contains ${appState.movies.length} movies. Would you like to replace the existing list or only add new movies?`,
+            message: `This wheel already contains ${appState.movies.length} movies. Would you like to replace the existing list or only add new movies?`,
             confirmText: 'Replace Existing List',
             secondaryText: 'Add New Movies Only',
             cancelText: 'Cancel Import',
@@ -552,7 +552,6 @@ async function executeLetterboxdProxySync(listUrl) {
 
     updateMovieList();
     invalidateWheelCache();
-    setImportCardCollapsed(true);
     saveState();
 
     if (elements.resultEl) elements.resultEl.textContent = '';
@@ -667,7 +666,7 @@ function handleFileUpload(event) {
             if (appState.movies.length > 0) {
                 showConfirmModal({
                     title: 'Import Options',
-                    message: `This board already contains ${appState.movies.length} movies. Would you like to replace the existing list or only add new movies?`,
+                    message: `This wheel already contains ${appState.movies.length} movies. Would you like to replace the existing list or only add new movies?`,
                     confirmText: 'Replace Existing List',
                     secondaryText: 'Add New Movies Only',
                     cancelText: 'Cancel Import',

@@ -250,6 +250,9 @@ test.describe('Letterboxd Watchlist Wheel', () => {
 
     await expect(page.locator('#letterboxd-proxy-status')).toContainText('Added');
     await expect(page.locator('#movie-list li')).toHaveCount(43);
+    await expect(page.locator('#import-body')).toBeVisible();
+    await expect(page.locator('#import-toggle')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#letterboxd-proxy-status')).toBeVisible();
   });
 
   test('Board switch restores board-specific winner, controls, and integrations', async ({ page }) => {
@@ -401,7 +404,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await page.locator('#create-board-form button[type="submit"]').click();
     releaseResponse();
 
-    await expect(page.locator('#letterboxd-proxy-status')).toContainText('active board changed');
+    await expect(page.locator('#letterboxd-proxy-status')).toContainText('current wheel changed');
     await expect(page.locator('#movie-list li.empty')).toBeVisible();
   });
 
