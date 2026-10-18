@@ -216,10 +216,17 @@ export const friendslopPalette = [
     '#64748b'  // Tactical Steel Slate
 ];
 
+// Omni Wheel's warm, muted studio palette.
+export const omniPalette = [
+    '#e98457', '#eecba1', '#586f61', '#b4bba1',
+    '#dcac85', '#a8b7bf', '#ca6d4a', '#d9d5bf'
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
     { id: 'modern', name: 'Modern', palette: modernPalette },
+    { id: 'omni', name: 'Omni', palette: omniPalette },
     { id: 'friendslop', name: 'Gaming Friendslop', palette: friendslopPalette },
     { id: 'holiday', name: 'Christmas', palette: holidayPalette },
     { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },

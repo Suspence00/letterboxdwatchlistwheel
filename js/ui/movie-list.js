@@ -244,6 +244,7 @@ export function updateMovieList() {
     }
 
     const renderContext = {
+        knockoutMode: inverseMode,
         oddsMap,
         winOddsMap,
         weightsEnabled,

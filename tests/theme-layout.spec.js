@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures.js';
+import path from 'node:path';
 
 test('Theme picker supports keyboard navigation, decorations toggle, and backup sync', async ({ page }) => {
     await page.goto('/');
@@ -53,7 +54,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     expect((await page.locator('#theme-picker').boundingBox()).height).toBeLessThan(100);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-collapsed.png') });
     await summary.click();
-    await expect(gallery.getByRole('radio')).toHaveCount(14);
+    await expect(gallery.getByRole('radio')).toHaveCount(15);
     expect((await gallery.boundingBox()).height).toBeLessThanOrEqual(290);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-desktop.png') });
 
@@ -76,7 +77,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     await expect(search).toBeFocused();
     await search.fill('');
     await page.getByRole('button', { name: 'All', exact: true }).click();
-    await expect(gallery.getByRole('radio')).toHaveCount(14);
+    await expect(gallery.getByRole('radio')).toHaveCount(15);
     await birthday.focus();
     await page.keyboard.press('Escape');
     await expect(gallery).not.toBeVisible();
@@ -107,3 +108,78 @@ test('Theme gallery fits a narrow screen and all themes remain reachable', async
         expect(await gallery.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     }
 });
+
+test('Omni persists its palette and restores Classic colors without replacing Modern', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+    await expect(page.locator('#movie-list li')).toHaveCount(10);
+    await page.locator('.movie-color__input').first().fill('#123456');
+    const originalColors = await page.evaluate(async () =>
+        (await import('/js/state.js')).appState.movies.map(movie => movie.color));
+    await page.click('#settings-open');
+    await page.locator('#wheel-style').selectOption('classic');
+    await page.locator('.theme-picker__summary').click();
+    await page.getByRole('button', { name: 'Everyday', exact: true }).click();
+    await page.getByRole('radio', { name: 'Omni', exact: true }).click();
+    await expect(page.locator('body')).toHaveClass(/theme-omni/);
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 249, 245)');
+    await page.reload();
+    await expect(page.locator('body')).toHaveClass(/theme-omni/);
+    await expect(page.locator('#movie-list li')).toHaveCount(10);
+    await expect(page.locator('#wheel')).toBeVisible();
+    const colors = await page.evaluate(async () => {
+        const { appState } = await import('/js/state.js');
+        const { omniPalette } = await import('/js/utils.js');
+        return appState.movies.map(movie => movie.color).every((color, index) => color === omniPalette[index % omniPalette.length]);
+    });
+    expect(colors).toBe(true);
+    await expect.poll(() => page.locator('#wheel').evaluate(canvas =>
+        Array.from(canvas.getContext('2d').getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data)
+    )).toEqual([250, 249, 245, 255]);
+    await page.click('#settings-open');
+    await expect(page.locator('.theme-picker__current-name')).toHaveText('Omni');
+    await page.locator('.theme-picker__summary').click();
+    await page.getByRole('radio', { name: 'Modern', exact: true }).click();
+    await expect(page.locator('body')).toHaveClass(/theme-modern/);
+    await expect(page.locator('body')).not.toHaveClass(/theme-omni/);
+    await page.getByRole('radio', { name: 'Classic', exact: true }).click();
+    expect(await page.evaluate(async () =>
+        (await import('/js/state.js')).appState.movies.map(movie => movie.color))).toEqual(originalColors);
+});
+
+for (const width of [1440, 1100, 768, 375]) {
+    test(`Studio layout keeps the list and wheel usable at ${width}px`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.goto('/');
+        await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+        await expect(page.locator('#movie-list li')).toHaveCount(10);
+        await page.click('#settings-open');
+        await page.locator('#wheel-style').selectOption('classic');
+        await page.locator('.theme-picker__summary').click();
+        await page.getByRole('radio', { name: 'Omni', exact: true }).click();
+        await page.click('#settings-modal-close');
+        const selection = await page.locator('#selection-card').boundingBox();
+        const spin = await page.locator('#spin-card').boundingBox();
+        if (width >= 1100) {
+            expect(Math.abs(selection.y - spin.y)).toBeLessThan(2);
+            expect(selection.x + selection.width).toBeLessThan(spin.x);
+        } else {
+            expect(selection.y + selection.height).toBeLessThan(spin.y);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        const wheel = await page.locator('#wheel').boundingBox();
+        expect(wheel.x).toBeGreaterThanOrEqual(spin.x);
+        expect(wheel.x + wheel.width).toBeLessThanOrEqual(spin.x + spin.width);
+        await page.locator('#movie-search').fill('Witch');
+        await expect(page.locator('#movie-list li')).toHaveCount(1);
+        await page.locator('#movie-search').fill('');
+        await expect(page.locator('#movie-list li')).toHaveCount(10);
+        expect((await page.locator('.movie-summary').first().boundingBox()).width).toBeGreaterThan(150);
+        await page.locator('#wheel-fm-minimize').click();
+        await page.locator('#wheel-fm-minimize').click();
+        await page.locator('#movie-search').blur();
+        await page.screenshot({ fullPage: true, animations: 'disabled', path: testInfo.outputPath(`omni-${width}.png`) });
+        await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
+        await expect(page.locator('#spin-button')).toBeEnabled();
+    });
+}

@@ -17,6 +17,10 @@ The Boost Station provides a structured, gamified solution:
 
 ## 2. Opening the Boost Station & Attributing Boosts
 
+The **Curate your wheel** list uses compact rows: title and year, **Risk** and **Win** percentages in Knockout mode, and a single **Win** percentage in One Spin mode. Full odds descriptions remain available to screen readers and on hover. Use the **1x–5x** selector to adjust weight or the **+** button to attribute a boost. Color swatches and the **↗** Letterboxd link remain beside these controls. Import dates appear on hover over the year instead of repeating on every row.
+
+The header contains **+ Movie**, **Paste list**, and **Random Boost**. **Select all**, **Clear all**, and **Reset weights** sit below search and sort as smaller list actions.
+
 The Boost Station can be opened from multiple locations in the interface:
 * **Curate Header**: Click the **Boost Station** icon button or **☸️ Random Boost** button in Step 2.
 * **Slice Editor**: Click **Boost** directly while editing an individual film.

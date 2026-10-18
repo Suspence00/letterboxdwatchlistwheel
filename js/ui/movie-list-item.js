@@ -11,6 +11,7 @@ import {
 import { applyKnockoutStatusToElement } from './knockout-ui.js';
 import { renderBoosterTags } from './boost-station.js';
 import { promptForInput } from './modals.js';
+import { setMovieOddsLabel } from './movie-odds.js';
 
 export function getSafeHttpUrl(value) {
     if (typeof value !== 'string' || !value.trim()) return '';
@@ -22,22 +23,6 @@ export function getSafeHttpUrl(value) {
     }
 }
 
-function formatOddsPercent(value = 0) {
-    const numeric = Number(value) * 100;
-    const safePercent = Number.isFinite(numeric) ? Math.min(100, Math.max(0, numeric)) : 0;
-    if (safePercent === 0 || safePercent === 100 || safePercent >= 10) {
-        return `${Math.round(safePercent)}%`;
-    }
-    return `${safePercent.toFixed(1)}%`;
-}
-
-function buildMovieOddsLabel(oddsValue = 0, isSelected = false, label = '') {
-    if (!isSelected) {
-        return `${label}: 0% (not selected)`;
-    }
-    return `${label}: ${formatOddsPercent(oddsValue)}`;
-}
-
 /**
  * @param {import('../types.js').Movie} movie
  * @param {number} index
@@ -45,7 +30,7 @@ function buildMovieOddsLabel(oddsValue = 0, isSelected = false, label = '') {
  * @param {{ updateMovieList: () => void, onAppearanceChange: () => void, removeCustomEntry: (id: string|number) => void }} actions
  */
 export function buildMovieListItem(movie, index, context, actions) {
-    const { oddsMap, winOddsMap, weightsEnabled, randomBoostActive, themeLocked, winnerId, weightCopy } = context;
+    const { oddsMap, winOddsMap, weightsEnabled, randomBoostActive, themeLocked, winnerId, weightCopy, knockoutMode } = context;
     const li = document.createElement('li');
     li.dataset.id = movie.id;
     if (winnerId === movie.id) {
@@ -92,6 +77,7 @@ export function buildMovieListItem(movie, index, context, actions) {
     });
 
     const label = document.createElement('label');
+    label.className = 'movie-summary';
     label.setAttribute('for', checkbox.id);
 
     const nameEl = document.createElement('span');
@@ -102,9 +88,9 @@ export function buildMovieListItem(movie, index, context, actions) {
     metaEl.className = 'movie-meta';
     const parts = [];
     if (movie.year) parts.push(movie.year);
-    if (movie.date) parts.push(`Added ${movie.date}`);
-    if (movie.isCustom) parts.push('Custom entry');
+    if (movie.isCustom) parts.push('Custom');
     metaEl.textContent = parts.join(' • ');
+    if (movie.date) metaEl.title = `Added ${movie.date}`;
 
     label.appendChild(nameEl);
     if (parts.length) {
@@ -122,27 +108,30 @@ export function buildMovieListItem(movie, index, context, actions) {
 
     const oddsEl = document.createElement('span');
     oddsEl.className = 'movie-odds movie-odds--risk';
-    oddsEl.classList.toggle('movie-odds--inactive', !isActive);
-    oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, weightCopy.riskLabel);
+    oddsEl.hidden = !knockoutMode;
+    setMovieOddsLabel(oddsEl, oddsValue, isActive, 'Risk', weightCopy.riskLabel);
 
     const winOddsEl = document.createElement('span');
     winOddsEl.className = 'movie-odds movie-odds--win';
-    winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
-    winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, weightCopy.winLabel);
+    setMovieOddsLabel(winOddsEl, winOddsValue, isWinActive, 'Win', weightCopy.winLabel);
 
     oddsGroup.appendChild(oddsEl);
     oddsGroup.appendChild(winOddsEl);
-    label.appendChild(oddsGroup);
+    const rowControls = document.createElement('div');
+    rowControls.className = 'movie-row-controls';
+    rowControls.appendChild(oddsGroup);
 
     const safeMovieUrl = getSafeHttpUrl(movie.uri);
+    let link = null;
     if (safeMovieUrl) {
-        const link = document.createElement('a');
+        link = document.createElement('a');
         link.href = safeMovieUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.className = 'movie-link';
-        link.textContent = 'Open on Letterboxd';
-        label.appendChild(link);
+        link.textContent = '↗';
+        link.title = `Open ${movie.name} on Letterboxd`;
+        link.setAttribute('aria-label', link.title);
     }
 
     li.appendChild(checkbox);
@@ -155,22 +144,20 @@ export function buildMovieListItem(movie, index, context, actions) {
         const weightSelectId = `weight-${index}`;
         const weightLabel = document.createElement('label');
         weightLabel.setAttribute('for', weightSelectId);
-        weightLabel.textContent = weightCopy.weightLabel;
-
+        weightLabel.className = 'visually-hidden';
+        weightLabel.textContent = `${weightCopy.weightLabel} for ${movie.name}`;
         const weightHelp = document.createElement('span');
-        weightHelp.className = 'weight-help';
-        weightHelp.setAttribute('role', 'img');
-        weightHelp.setAttribute('aria-label', weightCopy.weightHelp);
-        weightHelp.title = weightCopy.weightHelp;
-        weightHelp.textContent = '?';
-        weightLabel.appendChild(weightHelp);
+        weightHelp.id = `weight-help-${index}`;
+        weightHelp.className = 'visually-hidden';
+        weightHelp.textContent = weightCopy.weightHelp;
+        weightWrapper.appendChild(weightHelp);
 
         // Boosters Tags
         if (movie.boosters && movie.boosters.length > 0) {
             const boostersList = document.createElement('div');
             boostersList.className = 'movie-boosters-list';
             renderBoosterTags(boostersList, movie);
-            label.appendChild(boostersList);
+            li.appendChild(boostersList);
         }
 
         const controlsDiv = document.createElement('div');
@@ -179,6 +166,8 @@ export function buildMovieListItem(movie, index, context, actions) {
         const weightSelect = document.createElement('select');
         weightSelect.id = weightSelectId;
         weightSelect.className = 'movie-weight__select';
+        weightSelect.title = weightCopy.weightHelp;
+        weightSelect.setAttribute('aria-describedby', weightHelp.id);
         for (let value = 1; value <= 5; value += 1) {
             const option = document.createElement('option');
             option.value = String(value);
@@ -204,6 +193,7 @@ export function buildMovieListItem(movie, index, context, actions) {
         boostBtn.className = 'btn-boost';
         boostBtn.textContent = '+';
         boostBtn.title = 'Add a booster';
+        boostBtn.setAttribute('aria-label', `Boost ${movie.name}`);
         boostBtn.disabled = randomBoostActive;
         boostBtn.addEventListener('click', () => {
             if (randomBoostActive) return;
@@ -227,7 +217,7 @@ export function buildMovieListItem(movie, index, context, actions) {
 
         weightWrapper.appendChild(weightLabel);
         weightWrapper.appendChild(controlsDiv);
-        li.appendChild(weightWrapper);
+        rowControls.appendChild(weightWrapper);
 
         const colorWrapper = document.createElement('div');
         colorWrapper.className = 'movie-color';
@@ -235,13 +225,15 @@ export function buildMovieListItem(movie, index, context, actions) {
         const colorInputId = `color-${index}`;
         const colorLabel = document.createElement('label');
         colorLabel.setAttribute('for', colorInputId);
-        colorLabel.textContent = 'Slice color';
+        colorLabel.className = 'visually-hidden';
+        colorLabel.textContent = `Slice color for ${movie.name}`;
 
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
         colorInput.id = colorInputId;
         colorInput.className = 'movie-color__input';
         colorInput.disabled = themeLocked;
+        colorInput.title = themeLocked ? 'Theme palette — switch to Classic to edit colors' : `Slice color for ${movie.name}`;
         colorInput.value = resolvedColor;
         colorInput.addEventListener('input', (event) => {
             const selectedColor = sanitizeColor(event.target.value, defaultColor);
@@ -252,16 +244,21 @@ export function buildMovieListItem(movie, index, context, actions) {
 
         colorWrapper.appendChild(colorLabel);
         colorWrapper.appendChild(colorInput);
-        li.appendChild(colorWrapper);
+        rowControls.appendChild(colorWrapper);
     }
+
+    if (link) rowControls.appendChild(link);
+    li.appendChild(rowControls);
 
     if (movie.isCustom) {
         const removeButton = document.createElement('button');
         removeButton.type = 'button';
         removeButton.className = 'btn remove-custom';
-        removeButton.textContent = 'Remove';
+        removeButton.textContent = '×';
+        removeButton.title = `Remove ${movie.name}`;
+        removeButton.setAttribute('aria-label', removeButton.title);
         removeButton.addEventListener('click', () => actions.removeCustomEntry(movie.id));
-        li.appendChild(removeButton);
+        rowControls.appendChild(removeButton);
     }
 
     const knockoutStatus = appState.knockoutResults.get(movie.id);

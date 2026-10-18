@@ -1,0 +1,241 @@
+/* Omni Wheel: warm paper, sage surfaces, charcoal controls and terracotta accents. */
+body.theme-omni {
+    --accent: #a95130;
+    --accent-glow: #e7835518;
+    --accent-rgb: 169, 81, 48;
+    --accent-strong: #bd6341;
+    --background: #faf9f5;
+    --border: #e2e4dc;
+    --border-strong: #cbd2c2;
+    --card-bg: #fff;
+    --control-radius: 7px;
+    --focus-ring: #b95931;
+    --muted: #697365;
+    --shadow: #26301e08;
+    --surface: #fff;
+    --surface-2: #faf9f5;
+    --surface-3: #e9ede3;
+    --surface-control: #f4f5ef;
+    --surface-muted: #f4f5ef;
+    --surface-raised: #faf9f5;
+    --text: #242a28;
+    --text-1: #242a28;
+    --text-2: #697365;
+    --text-muted: #697365;
+    --text-primary: #242a28;
+    --text-secondary: #697365;
+    background: var(--background);
+    color: var(--text);
+    color-scheme: light;
+    font-family: 'DM Sans', Inter, system-ui, sans-serif;
+}
+
+body.theme-omni :is(h1, h2, h3, h4) {
+    font-family: Manrope, Inter, system-ui, sans-serif;
+    letter-spacing: -0.035em;
+}
+
+body.theme-omni .app-header h1 {
+    font-size: clamp(2rem, 3vw, 2.7rem);
+    font-weight: 600;
+}
+
+body.theme-omni :is(.card, .win-modal__content, .modal-content, .settings-modal__content,
+    .settings-group, .data-transfer, .slice-editor, .knockout-remaining, .vhs-inspector) {
+    backdrop-filter: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+body.theme-omni :is(.card, .saved-wheels-bar) {
+    border-radius: 10px;
+}
+
+body.theme-omni :is(.card h2, .app-header h1, .win-modal__title, .import-hero-text h3) {
+    -webkit-text-fill-color: currentColor;
+    background: none;
+    color: var(--text);
+    filter: none;
+    text-shadow: none;
+}
+
+body.theme-omni :is(.btn, button.btn) {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    box-shadow: none;
+    color: var(--text);
+    font-weight: 600;
+}
+
+body.theme-omni .btn:hover:not(:disabled) {
+    background: #edf0e6;
+    box-shadow: none;
+}
+
+body.theme-omni :is(.btn.btn--primary, .btn.primary, .import-btn) {
+    background: #242a28;
+    border-color: #242a28;
+    color: #fff;
+}
+
+body.theme-omni :is(.btn.btn--primary, .btn.primary, .import-btn):hover:not(:disabled) {
+    background: #414a43;
+}
+
+body.theme-omni #random-boost-btn {
+    background: #e9ede3;
+    border: 1px solid #d0d8c8;
+    color: #42543c;
+}
+
+body.theme-omni .btn.danger {
+    background: #faeee7;
+    color: #963d28;
+}
+
+body.theme-omni :is(.text-input, .import-input, .movie-weight__select, .vhs-controls select) {
+    background: #faf9f5;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+}
+
+body.theme-omni :is(.movie-weight__select, .text-input, .wheel-fm__playlist-select) option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+body.theme-omni :is(.text-input, .import-input):focus {
+    background: #fff;
+    box-shadow: none;
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+}
+
+body.theme-omni :is(input, textarea)::placeholder {
+    color: #697365;
+    opacity: 1;
+}
+
+body.theme-omni :is(input[type='checkbox'], input[type='range']) {
+    accent-color: #647859;
+}
+
+body.theme-omni :is(.card-header, .settings-tabs, .movie-list li, .history-item) {
+    border-color: var(--border);
+}
+
+body.theme-omni .import-bar {
+    background: var(--surface-muted);
+    border-color: var(--border);
+    border-radius: 7px;
+    box-shadow: none;
+}
+
+body.theme-omni .movie-list li {
+    background: #fafbf7;
+}
+
+body.theme-omni .movie-list li:is(.highlight, .is-champion) {
+    background: #e9ede3;
+    box-shadow: none;
+}
+
+body.theme-omni .knockout-badge {
+    background: #faeee7;
+    color: #963d28;
+}
+
+body.theme-omni .movie-list li.is-champion .knockout-badge {
+    background: #e9ede3;
+    color: #42543c;
+}
+
+body.theme-omni .spin-mode-card {
+    border-color: var(--border);
+    border-radius: 7px;
+}
+
+body.theme-omni .spin-mode-option input:checked + .spin-mode-card {
+    background: #e9ede3;
+    border-color: #94a587;
+    box-shadow: none;
+}
+
+body.theme-omni .spin-mode-option:hover .spin-mode-card {
+    border-color: #94a587;
+}
+
+body.theme-omni :is(.win-modal, .modal-overlay) {
+    backdrop-filter: blur(3px);
+    background: #17221b88;
+}
+
+body.theme-omni .spin-theater {
+    background: #faf9f5;
+    color: var(--text);
+}
+
+body.theme-omni :is(.spin-theater__status, .spin-theater__hint, .spin-theater__stack-title,
+    .spin-theater__contenders .knockout-remaining__name, .result) {
+    color: var(--text);
+}
+
+body.theme-omni :is(.spin-theater__exit, .spin-theater__stack,
+    .spin-theater__contenders .knockout-remaining) {
+    background: #f0f2e9;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+body.theme-omni .wheel-stage canvas {
+    filter: none;
+}
+
+body.theme-omni .pointer {
+    filter: none;
+}
+
+body.theme-omni .pointer::before,
+body.theme-omni .pointer::after {
+    background: #bd6341;
+    box-shadow: none;
+}
+
+body.theme-omni .app-footer {
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    max-width: 1424px;
+    padding-top: 24px;
+    width: 94%;
+}
+
+body.theme-omni .wheel-fm {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: 0 8px 32px #26301e22;
+}
+
+body.theme-omni .wheel-fm__heading {
+    border-color: var(--border);
+}
+
+body.theme-omni .wheel-fm__playlist-select {
+    background: var(--surface-control);
+    border-color: var(--border);
+}
+
+body.theme-omni :is(.wheel-fm__control, .wheel-fm__minimize) {
+    background: var(--surface-control);
+}
+
+body.theme-omni .wheel-fm__control--play {
+    background: #242a28;
+    color: #fff;
+}
+
+body.theme-omni .wheel-fm__control--play:hover {
+    background: #414a43;
+}

@@ -289,3 +289,106 @@
     opacity: 0.8;
     font-size: 0.7rem;
 }
+
+/* Compact curation rows: title first, then odds and small editing controls. */
+.app .movie-list .movie-summary {
+    align-items: baseline;
+    column-gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.app .movie-list .movie-meta {
+    font-size: 0.75rem;
+}
+
+.app .movie-row-controls {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 26px;
+    width: 100%;
+}
+
+.app .movie-odds-group {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-right: auto;
+}
+
+.app .movie-odds {
+    font-size: 0.72rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.app .movie-weight__select {
+    font-size: 0.75rem;
+    height: 30px;
+    min-width: 56px;
+    padding: 3px 5px;
+}
+
+.app .weight-controls {
+    gap: 4px;
+}
+
+.app .movie-row-controls .btn-boost {
+    border-color: var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    height: 28px;
+    width: 28px;
+}
+
+.app .movie-color__input {
+    height: 24px;
+    width: 24px;
+}
+
+.app .movie-row-controls :is(.movie-link, .remove-custom) {
+    align-items: center;
+    display: inline-flex;
+    font-size: 1rem;
+    height: 28px;
+    justify-content: center;
+    margin: 0;
+    min-height: 28px;
+    padding: 0;
+    width: 28px;
+}
+
+.app .movie-list .movie-boosters-list {
+    margin: 0 0 0 26px;
+    width: calc(100% - 26px);
+}
+
+.app .selection-area {
+    gap: 10px;
+}
+
+.selection-batch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+}
+
+.app .selection-batch-actions .btn {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: var(--muted);
+    font-size: 0.75rem;
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 8px;
+}
+
+.app .selection-batch-actions .btn:hover {
+    color: var(--text);
+    text-decoration: underline;
+}

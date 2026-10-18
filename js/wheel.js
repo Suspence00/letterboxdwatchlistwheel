@@ -353,13 +353,13 @@ export function drawWheel(movies = null, segments = null) {
             ctx.rotate(startAngle + angleSpan / 2);
             ctx.textAlign = 'right';
             const maxArcLength = Math.max(radius * 0.7 * angleSpan, 18);
-            wrapText(ctx, movie.name, radius - 40, maxArcLength, movie.id, angleSpan);
+            wrapText(ctx, movie.name, radius - 40, maxArcLength, movie.id, angleSpan, fillColor);
             ctx.restore();
         }
     });
 
     ctx.beginPath();
-    ctx.fillStyle = '#07121f';
+    ctx.fillStyle = appState.preferences.theme === 'omni' ? '#faf9f5' : '#07121f';
     ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
     ctx.fill();
 
@@ -374,11 +374,12 @@ export function drawEmptyWheel() {
     ctx.clearRect(0, 0, BASE_CANVAS_SIZE, BASE_CANVAS_SIZE);
     ctx.save();
     ctx.translate(BASE_CANVAS_SIZE / 2, BASE_CANVAS_SIZE / 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    const isOmni = appState.preferences.theme === 'omni';
+    ctx.fillStyle = isOmni ? '#e9ede3' : 'rgba(255, 255, 255, 0.12)';
     ctx.beginPath();
     ctx.arc(0, 0, BASE_CANVAS_SIZE / 2.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.fillStyle = isOmni ? '#586f61' : 'rgba(255, 255, 255, 0.6)';
     ctx.font = '700 22px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -421,7 +422,7 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1) {
+function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1, fillColor = '#000000') {
     if (!text) return;
 
     let layout = null;
@@ -461,9 +462,15 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1)
     context.textBaseline = 'middle';
 
     context.fillStyle = '#ffffff';
+    const isOmni = appState.preferences.theme === 'omni';
+    if (isOmni) {
+        const rgb = fillColor.slice(1).match(/.{2}/g).map(value => parseInt(value, 16));
+        const brightness = rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114;
+        context.fillStyle = brightness > 145 ? '#28352c' : '#ffffff';
+    }
     const totalHeight = layout.lineHeight * (layout.lines.length - 1);
 
-    if (!isSpinning) {
+    if (!isSpinning && !isOmni) {
         context.strokeStyle = '#000000';
         context.lineWidth = Math.min(3, Math.max(1.5, layout.fontSize * 0.18));
         context.lineJoin = 'round';

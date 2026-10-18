@@ -32,6 +32,8 @@ letterboxdwatchlistwheel/
 │   └── components/                 # Component-specific styles (alphabetized declarations)
 │       ├── theme-foundation.css    # Shared theme tokens and control metrics
 │       ├── theme-picker.css        # Accessible theme card selector styles
+│       ├── studio-layout.css       # Responsive list/wheel columns shared by all themes
+│       ├── omni-theme.css          # Cream, sage, and terracotta light studio theme
 │       ├── alaska-theme.css        # Alaska aurora & polaris theme styles
 │       ├── america-theme.css       # 4th of July celebration theme styles
 │       ├── birthday-theme.css      # Celebratory party balloons & golden candle theme styles

@@ -22,6 +22,7 @@ import {
     getIsSpinning,
     getIsLastStandingInProgress
 } from '../wheel.js';
+import { setMovieOddsLabel } from './movie-odds.js';
 
 // Internal module state
 export let activeSliceId = null;
@@ -109,13 +110,6 @@ function formatOddsPercent(value = 0) {
         return Math.round(safePercent) + '%';
     }
     return safePercent.toFixed(1) + '%';
-}
-
-function buildMovieOddsLabel(oddsValue = 0, isSelected = false, label = '') {
-    if (!isSelected) {
-        return label + ': 0% (not selected)';
-    }
-    return label + ': ' + formatOddsPercent(oddsValue);
 }
 
 function getFilteredSelectedMovies() {
@@ -381,13 +375,12 @@ export function updateDisplayedOdds(selectionOverride = null, oddsOverride = nul
             const isActive = isSelected && hasRisk;
             const isWinActive = isSelected && hasWin;
             const oddsValue = isActive ? oddsMap.get(id) || 0 : 0;
-            oddsEl.textContent = buildMovieOddsLabel(oddsValue, isActive, currentWeightCopy.riskLabel);
-            oddsEl.classList.toggle('movie-odds--inactive', !isActive);
+            oddsEl.hidden = spinMode !== 'knockout';
+            setMovieOddsLabel(oddsEl, oddsValue, isActive, 'Risk', currentWeightCopy.riskLabel);
             const winOddsEl = item.querySelector('.movie-odds--win');
             if (winOddsEl) {
                 const winOddsValue = isWinActive ? winOddsMap.get(id) || 0 : 0;
-                winOddsEl.textContent = buildMovieOddsLabel(winOddsValue, isWinActive, currentWeightCopy.winLabel);
-                winOddsEl.classList.toggle('movie-odds--inactive', !isWinActive);
+                setMovieOddsLabel(winOddsEl, winOddsValue, isWinActive, 'Win', currentWeightCopy.winLabel);
             }
         });
     }

@@ -144,6 +144,11 @@ test.describe('Wheelchinko Mode', () => {
     await page.click('#wheelchinko-drop-btn');
     await expect(page.locator('#wheelchinko-drop-btn')).toHaveText('Start Elimination');
 
+    // Stop prevents the next batch; let in-flight pucks finish before editing contenders.
+    await expect.poll(() => page.evaluate(async () =>
+      (await import('/js/wheelchinko.js')).getIsDropping()
+    )).toBe(false);
+
     // 2. Narrow to 2 movies to verify Final 10 single-puck lock, 10 interleaved slots, and champion resolution
     await page.click('#clear-selection');
     const checkboxes = page.locator('#movie-list input[type="checkbox"]');

@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/main.css?v=2.1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -366,13 +366,10 @@
           <h2 id="selection-heading">2. Curate your wheel</h2>
         </div>
         <div class="card-header__section">
-          <button type="button" class="btn" id="open-custom-modal">Add Custom Movie</button>
-          <button type="button" class="btn" id="open-bulk-modal">Bulk Add</button>
+          <button type="button" class="btn" id="open-custom-modal" aria-label="Add custom movie">+ Movie</button>
+          <button type="button" class="btn" id="open-bulk-modal">Paste list</button>
           <button type="button" class="btn" id="random-boost-btn"
             title="Spin with temporary 1x weights, winner gets +1x boost">☸️ Random Boost</button>
-          <button type="button" class="btn" id="select-all">Select all</button>
-          <button type="button" class="btn" id="clear-selection">Clear all</button>
-          <button type="button" class="btn" id="reset-weights">Reset all weights</button>
         </div>
         <button type="button" class="btn card-toggle" id="selection-toggle" aria-expanded="true"
           aria-controls="selection-body">Collapse Step</button>
@@ -397,6 +394,11 @@
               </select>
             </div>
           </div>
+          <div class="selection-batch-actions" role="group" aria-label="Movie list actions">
+            <button type="button" class="btn" id="select-all">Select all</button>
+            <button type="button" class="btn" id="clear-selection">Clear all</button>
+            <button type="button" class="btn" id="reset-weights">Reset weights</button>
+          </div>
           <div class="movie-list-wrapper">
             <ul id="movie-list" class="movie-list" aria-live="polite"></ul>
           </div>
@@ -406,7 +408,7 @@
 
 
 
-    <section class="card" aria-labelledby="spin-heading">
+    <section class="card" id="spin-card" aria-labelledby="spin-heading">
       <div class="card-header card-header--spin">
         <h2 id="spin-heading">3. Spin the wheel</h2>
         <div class="card-header__section">
@@ -725,6 +727,7 @@
                 <option value="default">Classic</option>
                 <option value="fantasy">Fantasy & Runic</option>
                 <option value="modern">Modern</option>
+                <option value="omni">Omni</option>
                 <option value="friendslop">Gaming Friendslop</option>
                 <option value="holiday">Christmas</option>
                 <option value="hanukkah">Hanukkah</option>

@@ -1,0 +1,254 @@
+/* Omni-inspired workspace. Keep these rules within the page, outside theater mode. */
+.app-header {
+    max-width: 1424px;
+    padding: 1rem 0 1.5rem;
+    text-align: left;
+    width: 94%;
+}
+
+.app-header .header-controls {
+    justify-content: flex-start;
+}
+
+.app-header .settings-toggle {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.app {
+    gap: 22px;
+    max-width: 1424px;
+    padding-bottom: 38px;
+    width: 94%;
+}
+
+.app > * {
+    min-width: 0;
+}
+
+.app .card-header {
+    padding: 20px 22px 16px;
+}
+
+.app .card-header h2 {
+    font-size: 1.2rem;
+}
+
+.app .card-body {
+    padding: 20px 22px;
+}
+
+.app .card-toggle,
+.app .card-header__section .btn {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+}
+
+.app .import-hero-content {
+    align-items: stretch;
+    gap: 12px;
+    max-width: none;
+    text-align: left;
+}
+
+.app .import-hero-text h3 {
+    font-size: 1rem;
+}
+
+.app .import-actions-row {
+    gap: 8px;
+    justify-content: flex-start;
+    margin: 0;
+}
+
+.app .import-input-wrapper {
+    min-width: 0;
+}
+
+.app .status:empty {
+    display: none;
+}
+
+.app .selection-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+
+.app .selection-search,
+.app .selection-sort {
+    min-width: 0;
+}
+
+.app .movie-list-wrapper {
+    border: 0;
+    max-height: 640px;
+    padding: 0;
+}
+
+.app .movie-list {
+    gap: 6px;
+}
+
+.app .movie-list li {
+    gap: 8px;
+    padding: 13px 10px;
+}
+
+.app .movie-list label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.app .movie-list li > label {
+    flex: 1 1 calc(100% - 36px);
+}
+
+.app .movie-weight {
+    margin-left: 0;
+}
+
+.app .movie-color {
+    margin-left: 0;
+}
+
+.app .spin-mode-selector {
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 18px;
+}
+
+.app .spin-mode-card {
+    padding: 13px 10px;
+    text-align: left;
+}
+
+.app .spin-mode-title {
+    font-size: 0.85rem;
+}
+
+.app .spin-mode-desc {
+    font-size: 0.75rem;
+}
+
+.app .wheel-wrapper {
+    margin-top: 5px;
+    padding-bottom: 14px;
+    width: 100%;
+}
+
+.app .wheel-layout {
+    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.app .wheel-layout::after {
+    display: none;
+}
+
+.app .wheel-stage {
+    max-width: 560px;
+    order: 0;
+    transform: none;
+    width: 100%;
+}
+
+.app .wheel-aside {
+    max-width: 560px;
+    order: 1;
+    position: static;
+    width: 100%;
+}
+
+.app .slice-editor {
+    margin: 0;
+    max-width: 560px;
+}
+
+.app #spin-button {
+    font-size: 1rem;
+    height: auto;
+    margin-top: 8px;
+    min-width: 220px;
+    padding: 14px 32px;
+}
+
+@media (min-width: 1100px) {
+    .app {
+        align-items: start;
+        display: grid;
+        grid-template-columns: minmax(350px, 0.85fr) minmax(0, 1.45fr);
+    }
+
+    .app > .saved-wheels-bar,
+    .app > #import-card {
+        grid-column: 1 / -1;
+    }
+
+    .app .import-hero-content {
+        align-items: center;
+        column-gap: 28px;
+        display: grid;
+        grid-template-columns: 0.85fr 1.45fr;
+    }
+
+    .app .import-hero-text {
+        grid-row: span 2;
+    }
+
+    .app .import-actions-row,
+    .app .import-hero-content .status {
+        grid-column: 2;
+    }
+
+    .app #selection-card .card-header__section {
+        gap: 6px;
+        width: 100%;
+    }
+
+    .app #selection-card .card-header {
+        position: relative;
+    }
+
+    .app #selection-heading {
+        padding-right: 120px;
+    }
+
+    .app #selection-toggle {
+        position: absolute;
+        right: 18px;
+        top: 14px;
+    }
+}
+
+@media (max-width: 700px) {
+    .app,
+    .app-header {
+        width: 100%;
+    }
+
+    .app {
+        gap: 16px;
+    }
+
+    .app :is(.card-header, .card-body) {
+        padding: 16px;
+    }
+
+    .app .import-bar {
+        flex-wrap: wrap;
+    }
+
+    .app .import-input-wrapper {
+        flex-basis: 100%;
+    }
+
+    .app .movie-list-wrapper {
+        max-height: 400px;
+    }
+
+    .app .spin-mode-selector {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,6 +1,8 @@
 # Feature: Visual Themes
 
-The **Letterboxd Watchlist Wheel** features a collection of 14 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
+The **Letterboxd Watchlist Wheel** features a collection of 15 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
+
+All themes share a wide studio layout inspired by Omni Wheel: saved wheels and import controls span the top, with the movie list beside the wheel on screens at least 1100px wide. Smaller screens stack the sections in their original reading order. The slice editor and remaining contenders fit within the wheel column; Theater Mode still provides a full-window stage.
 
 ---
 
@@ -19,6 +21,12 @@ Themes can be configured in the **Settings Modal**:
 ## Complete Catalog of Themes
 
 ### Everyday Themes
+
+#### Omni
+* **Aesthetic**: Omni Wheel's light studio design, with warm cream paper, white cards, sage selection states, charcoal buttons, and terracotta accents.
+* **Typography**: Manrope headings and DM Sans body text, with local system font fallbacks.
+* **Palette**: Terracotta (`#e98457`), sand (`#eecba1`), deep sage (`#586f61`), pale sage (`#b4bba1`), clay (`#dcac85`), slate (`#a8b7bf`), rust (`#ca6d4a`), and linen (`#d9d5bf`).
+* **Key Visuals**: Flat wheel slices with contrasting labels and a cream center, fine card borders, and quiet surfaces without ambient decorations. Choose **Omni** under **Everyday** in the theme browser. It is saved per wheel as `omni`; the existing Modern theme remains available separately.
 
 #### 1. Classic (Default)
 * **Aesthetic**: Warm cinema lounge styling with deep obsidian card panels, warm amber highlights, and clean typography.
