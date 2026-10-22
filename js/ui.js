@@ -45,7 +45,7 @@ import {
     handleSliceSelection
 } from './ui/slice-editor.js';
 import { initBoardsUI } from './ui/boards-ui.js';
-import { showConfirmModal } from './ui/modals.js';
+import { initVerificationModal, showConfirmModal } from './ui/modals.js';
 import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/movie-list.js';
 import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 import {
@@ -119,6 +119,7 @@ export function initUI(domElements) {
     initWinnerModal(domElements);
     initBoostStation(domElements, { updateMovieList });
     initHistoryModal(domElements);
+    initVerificationModal(domElements);
     initSliceEditor(domElements);
     initWheelchinkoUI(domElements, {
         triggerConfetti,

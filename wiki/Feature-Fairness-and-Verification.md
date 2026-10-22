@@ -24,6 +24,7 @@ To prove that runtime wheel odds match theoretical expectations, the app include
 2. Select the **Advanced** tab (`#tab-advanced`).
 3. Under **System Audit**, click **🛡️ Verify Fairness** (`#verify-fairness-btn`).
 4. The system executes a full simulation and immediately presents the **Fairness Audit Report Modal** (`#verify-modal`).
+5. Close the report with **×**, **Escape**, or a click outside the dialog to return to Advanced settings.
 
 ### How the Simulation Works
 

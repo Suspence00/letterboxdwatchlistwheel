@@ -2,7 +2,42 @@
  * Dialog and modal components
  */
 
+import { runFairnessAudit } from '../verify.js';
+
 let confirmModalTimeoutId = null;
+
+export function initVerificationModal({ verifyFairnessBtn, verifyModal, verifyCloseBtn, settingsModal }) {
+    if (!verifyFairnessBtn || !verifyModal || !verifyCloseBtn) return;
+    let restoreSettings = false;
+
+    verifyFairnessBtn.addEventListener('click', () => {
+        const auditData = runFairnessAudit();
+        if (!auditData.error && settingsModal) {
+            restoreSettings = !settingsModal.hidden;
+            settingsModal.hidden = true;
+        }
+        showVerificationResults(auditData);
+    });
+
+    const close = () => {
+        if (verifyModal.hidden) return;
+        verifyModal.hidden = true;
+        if (restoreSettings && settingsModal) settingsModal.hidden = false;
+        verifyFairnessBtn.focus();
+    };
+
+    verifyCloseBtn.addEventListener('click', close);
+    verifyModal.addEventListener('click', (event) => {
+        if (event.target === verifyModal) close();
+    });
+    verifyModal.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            close();
+        }
+    });
+}
 
 /**
  * Shows the custom confirmation modal for Board Conflict
@@ -130,10 +165,6 @@ export function showVerificationResults(auditData) {
     }
 
     const modal = document.getElementById('verify-modal');
-    if (modal) {
-        modal.hidden = false;
-    }
-
     const tableBody = document.querySelector('#verify-table tbody');
 
     if (!tableBody) {
@@ -224,5 +255,6 @@ export function showVerificationResults(auditData) {
 
     if (modal) {
         modal.hidden = false;
+        document.getElementById('verify-close')?.focus();
     }
 }
