@@ -497,10 +497,15 @@ body.is-spin-focused {
     padding: 0;
 }
 
+.spin-theater:not(.is-wheelchinko) .spin-theater__stage {
+    container-type: size;
+}
+
 .spin-theater .wheel-stage {
     flex: none;
     height: auto;
-    max-width: none;
+    /* Reserve space for the live result and its gap inside the actual stage. */
+    max-width: min(100%, calc(100cqh - 5.5rem));
     transform: none;
     width: min(calc(100dvh - 140px), calc(100dvw - 2.5rem), 960px);
 }
@@ -842,11 +847,13 @@ body.is-spin-focused {
     align-items: center;
     box-sizing: border-box;
     display: inline-flex;
+    flex-shrink: 0;
     gap: 0.5rem;
     justify-content: center;
     margin: 0 auto 0.5rem;
     max-width: 92%;
     text-align: center;
+    transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
     z-index: 20;
 }
 
@@ -857,7 +864,7 @@ body.is-spin-focused {
     gap: 0.65rem;
     justify-content: flex-start;
     margin: 0 auto 0.5rem;
-    max-width: min(520px, 92vw);
+    max-width: min(520px, 92%);
     overflow: hidden;
     padding: 0.4rem 1rem;
     text-align: left;
@@ -872,7 +879,7 @@ body.is-spin-focused {
 
 .spin-theater .result--knockout .result__name {
     display: block;
-    flex: 1 1 0%;
+    flex: 1 0 6ch;
     min-width: 0;
     overflow: hidden;
     text-align: left;
@@ -881,7 +888,10 @@ body.is-spin-focused {
 }
 
 .spin-theater .result--knockout .result__meta {
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .spin-theater .result--winner {
@@ -897,7 +907,7 @@ body.is-spin-focused {
     gap: 0.65rem;
     justify-content: flex-start;
     margin: 0 auto 0.5rem;
-    max-width: min(520px, 92vw);
+    max-width: min(520px, 92%);
     overflow: hidden;
     padding: 0.4rem 1rem;
     text-align: left;
@@ -911,7 +921,7 @@ body.is-spin-focused {
 
 .spin-theater .result--spinning .result__name {
     display: block;
-    flex: 1 1 0%;
+    flex: 1 0 6ch;
     min-width: 0;
     overflow: hidden;
     text-align: left;
@@ -935,11 +945,20 @@ body.is-spin-focused {
     .spin-theater__contenders {
         display: none !important;
     }
+
+    .spin-theater.has-stack.has-contenders .wheel-stage {
+        width: min(calc(100dvh - 150px), calc(100dvw - 460px), 880px);
+    }
 }
 
 @media (max-width: 768px) {
     .spin-theater__stack {
         display: none;
+    }
+
+    .spin-theater.has-stack .wheel-stage,
+    .spin-theater.has-stack.has-contenders .wheel-stage {
+        width: min(calc(100dvh - 95px), calc(100dvw - 1.5rem), 560px);
     }
 }
 
@@ -948,8 +967,7 @@ body.is-spin-focused {
         padding: 0.5rem 0.75rem;
     }
 
-    .spin-theater .wheel-stage,
-    .spin-theater.has-stack .wheel-stage {
+    .spin-theater .wheel-stage {
         width: min(calc(100dvh - 95px), calc(100vw - 1.5rem), 560px);
     }
 

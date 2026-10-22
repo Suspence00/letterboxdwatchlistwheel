@@ -65,6 +65,7 @@ During intense knockout tournaments, the application can project the wheel onto 
   * **Manual Toggle**: Click the **Theater Mode ⛶** button (`#wheel-theater-btn`) on the wheel stage at any time.
   * When a spin sequence is active and you exit theater mode, the toggle button displays an active badge: **Return to Theater Mode ⛶**.
 * **Visual Presentation**: The theater features a warm, rich cinematic radial backdrop (`radial-gradient(ellipse at 50% 50%, #282b26 0%, #101413 50%, #070b0a 100%)`) that isolates the wheel, returns shelf, and contenders list while dimming distractions.
+* **Viewport Fit**: The wheel leaves room for the live elimination banner above it at normal page zoom, including in shorter windows. Hidden side panels release their space for the wheel.
 * **Accessibility & Page Focus**:
   * All background DOM elements outside the theater are set to `inert` to trap focus safely.
   * An accessible **Exit focus ↗** button (`.spin-theater__exit`) sits in the theater header.
