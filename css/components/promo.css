@@ -1,0 +1,284 @@
+@font-face {
+    font-display: swap;
+    font-family: Manrope;
+    font-style: normal;
+    font-weight: 200 800;
+    src: url("../../media/promo/fonts/Manrope-Variable.ttf") format("truetype");
+}
+
+:root {
+    --promo-accent: #df936f;
+    --promo-background: #181c19;
+    --promo-border: #394139;
+    --promo-muted: #b2b9a8;
+    --promo-primary: #b4bba1;
+    --promo-surface: #222823;
+    --promo-text: #eeefe4;
+    color-scheme: dark;
+    font-family: Manrope, "Segoe UI", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--promo-background);
+    color: var(--promo-text);
+    margin: 0;
+    min-width: 320px;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--promo-accent);
+    outline-offset: 5px;
+}
+
+.promo-shell {
+    margin: 0 auto;
+    max-width: 1680px;
+    padding: 28px 40px 40px;
+}
+
+.promo-header {
+    align-items: center;
+    display: flex;
+    gap: 24px;
+    justify-content: space-between;
+    padding-bottom: 26px;
+}
+
+.promo-brand {
+    align-items: center;
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 700;
+    gap: 12px;
+    letter-spacing: 0.09em;
+}
+
+.brand-mark {
+    color: var(--promo-primary);
+    font-size: 30px;
+    line-height: 1;
+}
+
+.promo-edition {
+    color: var(--promo-muted);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin: 0;
+}
+
+.promo-edition span[aria-hidden] {
+    color: var(--promo-accent);
+    margin: 0 12px;
+}
+
+.promo-player {
+    background: var(--promo-surface);
+    border: 1px solid var(--promo-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.promo-stage {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+#promo-canvas {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.promo-controls {
+    align-items: center;
+    border-top: 1px solid var(--promo-border);
+    display: flex;
+    gap: 22px;
+    min-height: 72px;
+    padding: 14px 24px;
+}
+
+.promo-controls button {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--promo-border);
+    border-radius: 7px;
+    color: var(--promo-text);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 12px;
+    gap: 12px;
+    min-height: 36px;
+    padding: 7px 10px;
+    white-space: nowrap;
+}
+
+.promo-controls button:hover:not(:disabled) {
+    color: var(--promo-accent);
+}
+
+.promo-controls button:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.promo-controls button span {
+    color: var(--promo-accent);
+    font-size: 16px;
+}
+
+.promo-timeline {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    gap: 20px;
+    min-width: 0;
+}
+
+#promo-seek {
+    accent-color: var(--promo-primary);
+    cursor: pointer;
+    flex: 1;
+    height: 22px;
+    margin: 0;
+    min-width: 30px;
+}
+
+#promo-time {
+    color: var(--promo-muted);
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.promo-footer {
+    align-items: center;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    padding: 24px 0;
+}
+
+.promo-footer p {
+    color: var(--promo-muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+.promo-download {
+    align-items: center;
+    display: flex;
+    font-size: 12px;
+    gap: 14px;
+}
+
+.promo-download span:first-child {
+    color: var(--promo-muted);
+    font-size: 10px;
+}
+
+.promo-download span:last-child {
+    color: var(--promo-accent);
+    font-size: 20px;
+}
+
+.promo-download:hover {
+    color: var(--promo-accent);
+}
+
+.promo-transcript {
+    border-top: 1px solid var(--promo-border);
+    color: var(--promo-muted);
+    font-size: 12px;
+    line-height: 1.8;
+    padding-top: 20px;
+}
+
+.promo-transcript summary {
+    cursor: pointer;
+    width: fit-content;
+}
+
+.promo-transcript p {
+    max-width: 750px;
+}
+
+.promo-transcript a {
+    color: var(--promo-accent);
+}
+
+.visually-hidden {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+@media (max-width: 700px) {
+    .promo-shell {
+        padding: 20px 16px;
+    }
+
+    .promo-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding-bottom: 20px;
+    }
+
+    .promo-brand {
+        font-size: 10px;
+    }
+
+    .promo-edition {
+        font-size: 9px;
+        padding-left: 35px;
+    }
+
+    .promo-controls {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .promo-controls button {
+        font-size: 11px;
+        gap: 8px;
+        padding: 7px 8px;
+    }
+
+    .promo-timeline {
+        flex-basis: 100%;
+        order: 1;
+    }
+
+    #promo-sound {
+        margin-left: auto;
+    }
+
+    .promo-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+}

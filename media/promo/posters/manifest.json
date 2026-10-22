@@ -1,0 +1,112 @@
+[
+  {
+    "index": 0,
+    "title": "Arrival",
+    "year": "2016",
+    "file": "00-arrival.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BMTExMzU0ODcxNDheQTJeQWpwZ15BbWU4MDE1OTI4MzAy._V1_QL75_UX380_CR0,16,380,562_.jpg",
+    "imdb": "tt2543164",
+    "width": 320,
+    "height": 473,
+    "bytes": 35196
+  },
+  {
+    "index": 1,
+    "title": "Paprika",
+    "year": "2007",
+    "file": "01-paprika.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BZGJkYjkyMDUtM2U3ZC00NDM3LWI0MzItZjU5MmYwYjg2YmIwXkEyXkFqcGc@._V1_QL75_UX380_CR0,2,380,562_.jpg",
+    "imdb": "tt0851578",
+    "width": 320,
+    "height": 473,
+    "bytes": 57236
+  },
+  {
+    "index": 2,
+    "title": "Parasite",
+    "year": "2019",
+    "file": "02-parasite.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BYjk1Y2U4MjQtY2ZiNS00OWQyLWI3MmYtZWUwNmRjYWRiNWNhXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt6751668",
+    "width": 320,
+    "height": 473,
+    "bytes": 46656
+  },
+  {
+    "index": 3,
+    "title": "The Witch",
+    "year": "2016",
+    "file": "03-the-witch.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BMTUyNzkwMzAxOF5BMl5BanBnXkFtZTgwMzc1OTk1NjE@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt4263482",
+    "width": 320,
+    "height": 473,
+    "bytes": 27356
+  },
+  {
+    "index": 4,
+    "title": "Interstellar",
+    "year": "2014",
+    "file": "04-interstellar.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt0816692",
+    "width": 320,
+    "height": 473,
+    "bytes": 66306
+  },
+  {
+    "index": 5,
+    "title": "Midsommar",
+    "year": "2019",
+    "file": "05-midsommar.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BMzQxNzQzOTQwM15BMl5BanBnXkFtZTgwMDQ2NTcwODM@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt8772262",
+    "width": 320,
+    "height": 473,
+    "bytes": 41658
+  },
+  {
+    "index": 6,
+    "title": "Spirited Away",
+    "year": "2003",
+    "file": "06-spirited-away.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BNTEyNmEwOWUtYzkyOC00ZTQ4LTllZmUtMjk0Y2YwOGUzYjRiXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt0245429",
+    "width": 320,
+    "height": 473,
+    "bytes": 30446
+  },
+  {
+    "index": 7,
+    "title": "Chocolate",
+    "year": "2008",
+    "file": "07-chocolate.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BNzkwOTlkYjQtMWJhOC00OGIxLTg5MDAtYjc5MjM3ZDQyYTkwXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt1183252",
+    "width": 320,
+    "height": 473,
+    "bytes": 47744
+  },
+  {
+    "index": 8,
+    "title": "Blade Runner 2049",
+    "year": "2017",
+    "file": "08-blade-runner-2049.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt1856101",
+    "width": 320,
+    "height": 473,
+    "bytes": 43616
+  },
+  {
+    "index": 9,
+    "title": "Sinners",
+    "year": "2025",
+    "file": "09-sinners.webp",
+    "source": "https://m.media-amazon.com/images/M/MV5BNjIwZWY4ZDEtMmIxZS00NDA4LTg4ZGMtMzUwZTYyNzgxMzk5XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "imdb": "tt31193180",
+    "width": 320,
+    "height": 473,
+    "bytes": 46678
+  }
+]

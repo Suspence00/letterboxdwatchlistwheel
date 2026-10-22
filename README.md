@@ -4,7 +4,7 @@ Give your Letterboxd watchlist a dramatic spin (or pegboard drop!) to decide wha
 
 ## Live demo
 
-[https://wheel.sensei.lol](https://wheel.sensei.lol)
+[https://wheel.sensei.lol](https://wheel.sensei.lol) · [30s Promo](https://wheel.sensei.lol/promo.html)
 
 ## What it does
 

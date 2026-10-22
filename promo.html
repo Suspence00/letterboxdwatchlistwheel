@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A cinematic motion graphic for the Letterboxd Watchlist Wheel. Less scrolling. More movie night.">
+    <meta property="og:type" content="video.other">
+    <meta property="og:title" content="The Wheel — A motion picture">
+    <meta property="og:description" content="A 30-second motion graphic for the Letterboxd Watchlist Wheel: 3D VHS box art, Classic Slices, One Spin, Knockout, and Wheelchinko.">
+    <meta property="og:url" content="https://wheel.sensei.lol/promo.html">
+    <meta property="og:image" content="https://wheel.sensei.lol/media/promo/wheel-promo-poster.jpg">
+    <meta property="og:image:width" content="1920">
+    <meta property="og:image:height" content="1080">
+    <meta property="og:video" content="https://wheel.sensei.lol/media/promo/wheel-promo-omni-dark.mp4">
+    <meta property="og:video:type" content="video/mp4">
+    <meta property="og:video:width" content="1920">
+    <meta property="og:video:height" content="1080">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="The Wheel — A motion picture">
+    <meta name="twitter:description" content="Less scrolling. More movie night. Watch the 30-second promo for Letterboxd Watchlist Wheel.">
+    <meta name="twitter:image" content="https://wheel.sensei.lol/media/promo/wheel-promo-poster.jpg">
+    <title>The Wheel — A motion picture</title>
+    <link rel="icon" href="favicon/favicon.ico">
+    <link rel="stylesheet" href="css/components/promo.css">
+</head>
+<body>
+    <main class="promo-shell">
+        <header class="promo-header">
+            <a class="promo-brand" href="index.html"><span class="brand-mark" aria-hidden="true">✳</span> LETTERBOXD WATCHLIST WHEEL</a>
+            <p class="promo-edition">MOTION PICTURE 01 <span aria-hidden="true">/</span> <span id="promo-duration">30 SECONDS</span></p>
+        </header>
+
+        <section class="promo-player" aria-label="Animated wheel promo">
+            <h1 class="visually-hidden">Movie night. Decided.</h1>
+            <div class="promo-stage">
+                <canvas id="promo-canvas" width="1920" height="1080" role="img" aria-label="Animated promo: box art and classic slices, One Spin, Knockout, and Wheelchinko. A text transcript follows the player."></canvas>
+            </div>
+            <div class="promo-controls" role="group" aria-label="Promo playback">
+                <button id="promo-play" type="button" aria-label="Play promo" disabled>Play <span aria-hidden="true">▶</span></button>
+                <button id="promo-replay" type="button" disabled>Replay <span aria-hidden="true">↺</span></button>
+                <div class="promo-timeline">
+                    <label class="visually-hidden" for="promo-seek">Playback position</label>
+                    <input id="promo-seek" type="range" min="0" max="30" step="0.01" value="0" aria-valuetext="0 of 30 seconds" disabled>
+                    <output id="promo-time" for="promo-seek">00:00 / 00:30</output>
+                </div>
+                <button id="promo-sound" type="button" aria-pressed="false" disabled>Sound off <span aria-hidden="true">♪</span></button>
+            </div>
+            <audio id="promo-audio" data-src="media/promo/wheel-promo.m4a" preload="auto" hidden></audio>
+        </section>
+
+        <footer class="promo-footer">
+            <p>A little suspense. A great movie night.</p>
+            <a class="promo-download" href="media/promo/wheel-promo-omni-dark.mp4" download>Download film <span>MP4 · 1080p</span> <span aria-hidden="true">↗</span></a>
+        </footer>
+
+        <details class="promo-transcript">
+            <summary>Read the film transcript</summary>
+            <p>So many films. Still can’t pick? Your wheel. Your way. Choose box art or classic slices. One Spin: one click, one movie night. Knockout: every round raises the stakes. Wheelchinko: drop in and let gravity pick. Movie night. Decided. Tonight’s pick: Arrival. Praise the wheel. Letterboxd Watchlist Wheel — wheel.sensei.lol.</p>
+            <a href="index.html">Open the wheel <span aria-hidden="true">→</span></a>
+        </details>
+    </main>
+    <script type="module" src="js/promo/player.js"></script>
+</body>
+</html>
