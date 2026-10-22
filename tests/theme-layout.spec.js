@@ -54,7 +54,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     expect((await page.locator('#theme-picker').boundingBox()).height).toBeLessThan(100);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-collapsed.png') });
     await summary.click();
-    await expect(gallery.getByRole('radio')).toHaveCount(15);
+    await expect(gallery.getByRole('radio')).toHaveCount(16);
     expect((await gallery.boundingBox()).height).toBeLessThanOrEqual(290);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-desktop.png') });
 
@@ -77,7 +77,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     await expect(search).toBeFocused();
     await search.fill('');
     await page.getByRole('button', { name: 'All', exact: true }).click();
-    await expect(gallery.getByRole('radio')).toHaveCount(15);
+    await expect(gallery.getByRole('radio')).toHaveCount(16);
     await birthday.focus();
     await page.keyboard.press('Escape');
     await expect(gallery).not.toBeVisible();
@@ -109,43 +109,49 @@ test('Theme gallery fits a narrow screen and all themes remain reachable', async
     }
 });
 
-test('Omni persists its palette and restores Classic colors without replacing Modern', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
-    await expect(page.locator('#movie-list li')).toHaveCount(10);
-    await page.locator('.movie-color__input').first().fill('#123456');
-    const originalColors = await page.evaluate(async () =>
-        (await import('/js/state.js')).appState.movies.map(movie => movie.color));
-    await page.click('#settings-open');
-    await page.locator('#wheel-style').selectOption('classic');
-    await page.locator('.theme-picker__summary').click();
-    await page.getByRole('button', { name: 'Everyday', exact: true }).click();
-    await page.getByRole('radio', { name: 'Omni', exact: true }).click();
-    await expect(page.locator('body')).toHaveClass(/theme-omni/);
-    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 249, 245)');
-    await page.reload();
-    await expect(page.locator('body')).toHaveClass(/theme-omni/);
-    await expect(page.locator('#movie-list li')).toHaveCount(10);
-    await expect(page.locator('#wheel')).toBeVisible();
-    const colors = await page.evaluate(async () => {
-        const { appState } = await import('/js/state.js');
-        const { omniPalette } = await import('/js/utils.js');
-        return appState.movies.map(movie => movie.color).every((color, index) => color === omniPalette[index % omniPalette.length]);
+for (const theme of [
+    { id: 'omni', name: 'Omni', palette: 'omniPalette', background: 'rgb(250, 249, 245)', center: [250, 249, 245, 255] },
+    { id: 'omni-dark', name: 'Omni Dark', palette: 'omniDarkPalette', background: 'rgb(24, 28, 25)', center: [24, 28, 25, 255] }
+]) {
+    test(`${theme.name} persists its palette and restores Classic colors without replacing Modern`, async ({ page }) => {
+        const themeClass = new RegExp(`(?:^|\\s)theme-${theme.id}(?:\\s|$)`);
+        await page.goto('/');
+        await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+        await expect(page.locator('#movie-list li')).toHaveCount(10);
+        await page.locator('.movie-color__input').first().fill('#123456');
+        const originalColors = await page.evaluate(async () =>
+            (await import('/js/state.js')).appState.movies.map(movie => movie.color));
+        await page.click('#settings-open');
+        await page.locator('#wheel-style').selectOption('classic');
+        await page.locator('.theme-picker__summary').click();
+        await page.getByRole('button', { name: 'Everyday', exact: true }).click();
+        await page.getByRole('radio', { name: theme.name, exact: true }).click();
+        await expect(page.locator('body')).toHaveClass(themeClass);
+        await expect(page.locator('body')).toHaveCSS('background-color', theme.background);
+        await page.reload();
+        await expect(page.locator('body')).toHaveClass(themeClass);
+        await expect(page.locator('#movie-list li')).toHaveCount(10);
+        await expect(page.locator('#wheel')).toBeVisible();
+        const colors = await page.evaluate(async paletteName => {
+            const { appState } = await import('/js/state.js');
+            const palette = (await import('/js/utils.js'))[paletteName];
+            return appState.movies.map(movie => movie.color).every((color, index) => color === palette[index % palette.length]);
+        }, theme.palette);
+        expect(colors).toBe(true);
+        await expect.poll(() => page.locator('#wheel').evaluate(canvas =>
+            Array.from(canvas.getContext('2d').getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data)
+        )).toEqual(theme.center);
+        await page.click('#settings-open');
+        await expect(page.locator('.theme-picker__current-name')).toHaveText(theme.name);
+        await page.locator('.theme-picker__summary').click();
+        await page.getByRole('radio', { name: 'Modern', exact: true }).click();
+        await expect(page.locator('body')).toHaveClass(/(?:^|\s)theme-modern(?:\s|$)/);
+        await expect(page.locator('body')).not.toHaveClass(themeClass);
+        await page.getByRole('radio', { name: 'Classic', exact: true }).click();
+        expect(await page.evaluate(async () =>
+            (await import('/js/state.js')).appState.movies.map(movie => movie.color))).toEqual(originalColors);
     });
-    expect(colors).toBe(true);
-    await expect.poll(() => page.locator('#wheel').evaluate(canvas =>
-        Array.from(canvas.getContext('2d').getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data)
-    )).toEqual([250, 249, 245, 255]);
-    await page.click('#settings-open');
-    await expect(page.locator('.theme-picker__current-name')).toHaveText('Omni');
-    await page.locator('.theme-picker__summary').click();
-    await page.getByRole('radio', { name: 'Modern', exact: true }).click();
-    await expect(page.locator('body')).toHaveClass(/theme-modern/);
-    await expect(page.locator('body')).not.toHaveClass(/theme-omni/);
-    await page.getByRole('radio', { name: 'Classic', exact: true }).click();
-    expect(await page.evaluate(async () =>
-        (await import('/js/state.js')).appState.movies.map(movie => movie.color))).toEqual(originalColors);
-});
+}
 
 for (const width of [1440, 1100, 768, 375]) {
     test(`Studio layout keeps the list and wheel usable at ${width}px`, async ({ page }, testInfo) => {

@@ -222,11 +222,18 @@ export const omniPalette = [
     '#dcac85', '#a8b7bf', '#ca6d4a', '#d9d5bf'
 ];
 
+// Deeper terracotta, sand, sage, and slate for the dark Omni studio.
+export const omniDarkPalette = [
+    '#b96640', '#b79872', '#405c4a', '#7c8868',
+    '#a67d59', '#748b96', '#9f5037', '#a09d83'
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
     { id: 'modern', name: 'Modern', palette: modernPalette },
     { id: 'omni', name: 'Omni', palette: omniPalette },
+    { id: 'omni-dark', name: 'Omni Dark', palette: omniDarkPalette },
     { id: 'friendslop', name: 'Gaming Friendslop', palette: friendslopPalette },
     { id: 'holiday', name: 'Christmas', palette: holidayPalette },
     { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },

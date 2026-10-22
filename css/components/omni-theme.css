@@ -1,5 +1,5 @@
-/* Omni Wheel: warm paper, sage surfaces, charcoal controls and terracotta accents. */
-body.theme-omni {
+/* Omni studio variants share flat styling with sage and terracotta accents. */
+body:is(.theme-omni, .theme-omni-dark) {
     --accent: #a95130;
     --accent-glow: #e7835518;
     --accent-rgb: 169, 81, 48;
@@ -11,6 +11,20 @@ body.theme-omni {
     --control-radius: 7px;
     --focus-ring: #b95931;
     --muted: #697365;
+    --omni-checked-border: #94a587;
+    --omni-danger-bg: #faeee7;
+    --omni-danger-text: #963d28;
+    --omni-hover: #edf0e6;
+    --omni-overlay: #17221b88;
+    --omni-primary: #242a28;
+    --omni-primary-hover: #414a43;
+    --omni-primary-text: #fff;
+    --omni-radio-shadow: #26301e22;
+    --omni-row: #fafbf7;
+    --omni-selection-border: #d0d8c8;
+    --omni-selection-text: #42543c;
+    --omni-theater-surface: #f0f2e9;
+    --omni-toggle: #647859;
     --shadow: #26301e08;
     --surface: #fff;
     --surface-2: #faf9f5;
@@ -30,17 +44,58 @@ body.theme-omni {
     font-family: 'DM Sans', Inter, system-ui, sans-serif;
 }
 
-body.theme-omni :is(h1, h2, h3, h4) {
+body.theme-omni-dark {
+    --accent: #df936f;
+    --accent-glow: #df936f18;
+    --accent-rgb: 223, 147, 111;
+    --accent-strong: #e8aa87;
+    --background: #181c19;
+    --border: #394139;
+    --border-strong: #53614e;
+    --card-bg: #222823;
+    --focus-ring: #df936f;
+    --muted: #b2b9a8;
+    --omni-checked-border: #8c9f7a;
+    --omni-danger-bg: #422c24;
+    --omni-danger-text: #f0b89c;
+    --omni-hover: #353e36;
+    --omni-overlay: #0b100cd9;
+    --omni-primary: #b4bba1;
+    --omni-primary-hover: #c5cbb5;
+    --omni-primary-text: #20271f;
+    --omni-radio-shadow: #00000044;
+    --omni-row: #272f28;
+    --omni-selection-border: #637859;
+    --omni-selection-text: #d1ddbf;
+    --omni-theater-surface: #29322b;
+    --omni-toggle: #b4bba1;
+    --shadow: #00000022;
+    --surface: #222823;
+    --surface-2: #1d231e;
+    --surface-3: #344435;
+    --surface-control: #2e372f;
+    --surface-muted: #29322b;
+    --surface-raised: #353e36;
+    --text: #eeefe4;
+    --text-1: #eeefe4;
+    --text-2: #b2b9a8;
+    --text-muted: #b2b9a8;
+    --text-primary: #eeefe4;
+    --text-secondary: #b2b9a8;
+    color-scheme: dark;
+}
+
+body:is(.theme-omni, .theme-omni-dark) :is(h1, h2, h3, h4) {
     font-family: Manrope, Inter, system-ui, sans-serif;
     letter-spacing: -0.035em;
 }
 
-body.theme-omni .app-header h1 {
+body:is(.theme-omni, .theme-omni-dark) .app-header h1 {
     font-size: clamp(2rem, 3vw, 2.7rem);
     font-weight: 600;
 }
 
-body.theme-omni :is(.card, .win-modal__content, .modal-content, .settings-modal__content,
+body:is(.theme-omni, .theme-omni-dark) :is(.card, .win-modal__content, .modal-content, .settings-modal__content,
     .settings-group, .data-transfer, .slice-editor, .knockout-remaining, .vhs-inspector) {
     backdrop-filter: none;
     background: var(--surface);
@@ -48,11 +103,11 @@ body.theme-omni :is(.card, .win-modal__content, .modal-content, .settings-modal_
     box-shadow: none;
 }
 
-body.theme-omni :is(.card, .saved-wheels-bar) {
+body:is(.theme-omni, .theme-omni-dark) :is(.card, .saved-wheels-bar) {
     border-radius: 10px;
 }
 
-body.theme-omni :is(.card h2, .app-header h1, .win-modal__title, .import-hero-text h3) {
+body:is(.theme-omni, .theme-omni-dark) :is(.card h2, .app-header h1, .win-modal__title, .import-hero-text h3) {
     -webkit-text-fill-color: currentColor;
     background: none;
     color: var(--text);
@@ -60,7 +115,7 @@ body.theme-omni :is(.card h2, .app-header h1, .win-modal__title, .import-hero-te
     text-shadow: none;
 }
 
-body.theme-omni :is(.btn, button.btn) {
+body:is(.theme-omni, .theme-omni-dark) :is(.btn, button.btn) {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 7px;
@@ -69,142 +124,142 @@ body.theme-omni :is(.btn, button.btn) {
     font-weight: 600;
 }
 
-body.theme-omni .btn:hover:not(:disabled) {
-    background: #edf0e6;
+body:is(.theme-omni, .theme-omni-dark) .btn:hover:not(:disabled) {
+    background: var(--omni-hover);
     box-shadow: none;
 }
 
-body.theme-omni :is(.btn.btn--primary, .btn.primary, .import-btn) {
-    background: #242a28;
-    border-color: #242a28;
-    color: #fff;
+body:is(.theme-omni, .theme-omni-dark) :is(.btn.btn--primary, .btn.primary, .import-btn) {
+    background: var(--omni-primary);
+    border-color: var(--omni-primary);
+    color: var(--omni-primary-text);
 }
 
-body.theme-omni :is(.btn.btn--primary, .btn.primary, .import-btn):hover:not(:disabled) {
-    background: #414a43;
+body:is(.theme-omni, .theme-omni-dark) :is(.btn.btn--primary, .btn.primary, .import-btn):hover:not(:disabled) {
+    background: var(--omni-primary-hover);
 }
 
-body.theme-omni #random-boost-btn {
-    background: #e9ede3;
-    border: 1px solid #d0d8c8;
-    color: #42543c;
+body:is(.theme-omni, .theme-omni-dark) #random-boost-btn {
+    background: var(--surface-3);
+    border: 1px solid var(--omni-selection-border);
+    color: var(--omni-selection-text);
 }
 
-body.theme-omni .btn.danger {
-    background: #faeee7;
-    color: #963d28;
+body:is(.theme-omni, .theme-omni-dark) .btn.danger {
+    background: var(--omni-danger-bg);
+    color: var(--omni-danger-text);
 }
 
-body.theme-omni :is(.text-input, .import-input, .movie-weight__select, .vhs-controls select) {
-    background: #faf9f5;
+body:is(.theme-omni, .theme-omni-dark) :is(.text-input, .import-input, .movie-weight__select, .vhs-controls select) {
+    background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: 7px;
     color: var(--text);
 }
 
-body.theme-omni :is(.movie-weight__select, .text-input, .wheel-fm__playlist-select) option {
+body:is(.theme-omni, .theme-omni-dark) :is(.movie-weight__select, .text-input, .wheel-fm__playlist-select) option {
     background: var(--surface);
     color: var(--text);
 }
 
-body.theme-omni :is(.text-input, .import-input):focus {
-    background: #fff;
+body:is(.theme-omni, .theme-omni-dark) :is(.text-input, .import-input):focus {
+    background: var(--surface);
     box-shadow: none;
     outline: 2px solid var(--focus-ring);
     outline-offset: 1px;
 }
 
-body.theme-omni :is(input, textarea)::placeholder {
-    color: #697365;
+body:is(.theme-omni, .theme-omni-dark) :is(input, textarea)::placeholder {
+    color: var(--muted);
     opacity: 1;
 }
 
-body.theme-omni :is(input[type='checkbox'], input[type='range']) {
-    accent-color: #647859;
+body:is(.theme-omni, .theme-omni-dark) :is(input[type='checkbox'], input[type='range']) {
+    accent-color: var(--omni-toggle);
 }
 
-body.theme-omni :is(.card-header, .settings-tabs, .movie-list li, .history-item) {
+body:is(.theme-omni, .theme-omni-dark) :is(.card-header, .settings-tabs, .movie-list li, .history-item) {
     border-color: var(--border);
 }
 
-body.theme-omni .import-bar {
+body:is(.theme-omni, .theme-omni-dark) .import-bar {
     background: var(--surface-muted);
     border-color: var(--border);
     border-radius: 7px;
     box-shadow: none;
 }
 
-body.theme-omni .movie-list li {
-    background: #fafbf7;
+body:is(.theme-omni, .theme-omni-dark) .movie-list li {
+    background: var(--omni-row);
 }
 
-body.theme-omni .movie-list li:is(.highlight, .is-champion) {
-    background: #e9ede3;
+body:is(.theme-omni, .theme-omni-dark) .movie-list li:is(.highlight, .is-champion) {
+    background: var(--surface-3);
     box-shadow: none;
 }
 
-body.theme-omni .knockout-badge {
-    background: #faeee7;
-    color: #963d28;
+body:is(.theme-omni, .theme-omni-dark) .knockout-badge {
+    background: var(--omni-danger-bg);
+    color: var(--omni-danger-text);
 }
 
-body.theme-omni .movie-list li.is-champion .knockout-badge {
-    background: #e9ede3;
-    color: #42543c;
+body:is(.theme-omni, .theme-omni-dark) .movie-list li.is-champion .knockout-badge {
+    background: var(--surface-3);
+    color: var(--omni-selection-text);
 }
 
-body.theme-omni .spin-mode-card {
+body:is(.theme-omni, .theme-omni-dark) .spin-mode-card {
     border-color: var(--border);
     border-radius: 7px;
 }
 
-body.theme-omni .spin-mode-option input:checked + .spin-mode-card {
-    background: #e9ede3;
-    border-color: #94a587;
+body:is(.theme-omni, .theme-omni-dark) .spin-mode-option input:checked + .spin-mode-card {
+    background: var(--surface-3);
+    border-color: var(--omni-checked-border);
     box-shadow: none;
 }
 
-body.theme-omni .spin-mode-option:hover .spin-mode-card {
-    border-color: #94a587;
+body:is(.theme-omni, .theme-omni-dark) .spin-mode-option:hover .spin-mode-card {
+    border-color: var(--omni-checked-border);
 }
 
-body.theme-omni :is(.win-modal, .modal-overlay) {
+body:is(.theme-omni, .theme-omni-dark) :is(.win-modal, .modal-overlay) {
     backdrop-filter: blur(3px);
-    background: #17221b88;
+    background: var(--omni-overlay);
 }
 
-body.theme-omni .spin-theater {
-    background: #faf9f5;
+body:is(.theme-omni, .theme-omni-dark) .spin-theater {
+    background: var(--surface-2);
     color: var(--text);
 }
 
-body.theme-omni :is(.spin-theater__status, .spin-theater__hint, .spin-theater__stack-title,
+body:is(.theme-omni, .theme-omni-dark) :is(.spin-theater__status, .spin-theater__hint, .spin-theater__stack-title,
     .spin-theater__contenders .knockout-remaining__name, .result) {
     color: var(--text);
 }
 
-body.theme-omni :is(.spin-theater__exit, .spin-theater__stack,
+body:is(.theme-omni, .theme-omni-dark) :is(.spin-theater__exit, .spin-theater__stack,
     .spin-theater__contenders .knockout-remaining) {
-    background: #f0f2e9;
+    background: var(--omni-theater-surface);
     border-color: var(--border);
     color: var(--text);
 }
 
-body.theme-omni .wheel-stage canvas {
+body:is(.theme-omni, .theme-omni-dark) .wheel-stage canvas {
     filter: none;
 }
 
-body.theme-omni .pointer {
+body:is(.theme-omni, .theme-omni-dark) .pointer {
     filter: none;
 }
 
-body.theme-omni .pointer::before,
-body.theme-omni .pointer::after {
-    background: #bd6341;
+body:is(.theme-omni, .theme-omni-dark) .pointer::before,
+body:is(.theme-omni, .theme-omni-dark) .pointer::after {
+    background: var(--accent-strong);
     box-shadow: none;
 }
 
-body.theme-omni .app-footer {
+body:is(.theme-omni, .theme-omni-dark) .app-footer {
     border-top: 1px solid var(--border);
     color: var(--muted);
     max-width: 1424px;
@@ -212,30 +267,30 @@ body.theme-omni .app-footer {
     width: 94%;
 }
 
-body.theme-omni .wheel-fm {
+body:is(.theme-omni, .theme-omni-dark) .wheel-fm {
     background: var(--surface);
     border-color: var(--border);
-    box-shadow: 0 8px 32px #26301e22;
+    box-shadow: 0 8px 32px var(--omni-radio-shadow);
 }
 
-body.theme-omni .wheel-fm__heading {
+body:is(.theme-omni, .theme-omni-dark) .wheel-fm__heading {
     border-color: var(--border);
 }
 
-body.theme-omni .wheel-fm__playlist-select {
+body:is(.theme-omni, .theme-omni-dark) .wheel-fm__playlist-select {
     background: var(--surface-control);
     border-color: var(--border);
 }
 
-body.theme-omni :is(.wheel-fm__control, .wheel-fm__minimize) {
+body:is(.theme-omni, .theme-omni-dark) :is(.wheel-fm__control, .wheel-fm__minimize) {
     background: var(--surface-control);
 }
 
-body.theme-omni .wheel-fm__control--play {
-    background: #242a28;
-    color: #fff;
+body:is(.theme-omni, .theme-omni-dark) .wheel-fm__control--play {
+    background: var(--omni-primary);
+    color: var(--omni-primary-text);
 }
 
-body.theme-omni .wheel-fm__control--play:hover {
-    background: #414a43;
+body:is(.theme-omni, .theme-omni-dark) .wheel-fm__control--play:hover {
+    background: var(--omni-primary-hover);
 }

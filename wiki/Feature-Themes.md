@@ -1,6 +1,6 @@
 # Feature: Visual Themes
 
-The **Letterboxd Watchlist Wheel** features a collection of 15 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
+The **Letterboxd Watchlist Wheel** features a collection of 16 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
 
 All themes share a wide studio layout inspired by Omni Wheel: saved wheels and import controls span the top, with the movie list beside the wheel on screens at least 1100px wide. Smaller screens stack the sections in their original reading order. The slice editor and remaining contenders fit within the wheel column; Theater Mode still provides a full-window stage.
 
@@ -27,6 +27,12 @@ Themes can be configured in the **Settings Modal**:
 * **Typography**: Manrope headings and DM Sans body text, with local system font fallbacks.
 * **Palette**: Terracotta (`#e98457`), sand (`#eecba1`), deep sage (`#586f61`), pale sage (`#b4bba1`), clay (`#dcac85`), slate (`#a8b7bf`), rust (`#ca6d4a`), and linen (`#d9d5bf`).
 * **Key Visuals**: Flat wheel slices with contrasting labels and a cream center, fine card borders, and quiet surfaces without ambient decorations. Choose **Omni** under **Everyday** in the theme browser. It is saved per wheel as `omni`; the existing Modern theme remains available separately.
+
+#### Omni Dark
+* **Aesthetic**: A darker version of Omni's studio design, with charcoal green backgrounds, muted cream text, deep sage selection states, and warm terracotta accents.
+* **Typography**: The same Manrope headings and DM Sans body text as Omni, with local system font fallbacks.
+* **Palette**: Dark terracotta (`#b96640`), sand (`#b79872`), sage (`#405c4a`), moss (`#7c8868`), clay (`#a67d59`), slate (`#748b96`), rust (`#9f5037`), and linen (`#a09d83`).
+* **Key Visuals**: Omni's flat wheel slices and quiet surfaces, with a dark wheel center, fine card borders, and readable contrasting labels. Choose **Omni Dark** under **Everyday** in the theme browser. It is saved per wheel as `omni-dark`.
 
 #### 1. Classic (Default)
 * **Aesthetic**: Warm cinema lounge styling with deep obsidian card panels, warm amber highlights, and clean typography.

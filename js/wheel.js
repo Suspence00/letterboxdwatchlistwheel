@@ -359,7 +359,8 @@ export function drawWheel(movies = null, segments = null) {
     });
 
     ctx.beginPath();
-    ctx.fillStyle = appState.preferences.theme === 'omni' ? '#faf9f5' : '#07121f';
+    const theme = appState.preferences.theme;
+    ctx.fillStyle = theme === 'omni' ? '#faf9f5' : theme === 'omni-dark' ? '#181c19' : '#07121f';
     ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
     ctx.fill();
 
@@ -374,12 +375,12 @@ export function drawEmptyWheel() {
     ctx.clearRect(0, 0, BASE_CANVAS_SIZE, BASE_CANVAS_SIZE);
     ctx.save();
     ctx.translate(BASE_CANVAS_SIZE / 2, BASE_CANVAS_SIZE / 2);
-    const isOmni = appState.preferences.theme === 'omni';
-    ctx.fillStyle = isOmni ? '#e9ede3' : 'rgba(255, 255, 255, 0.12)';
+    const theme = appState.preferences.theme;
+    ctx.fillStyle = theme === 'omni' ? '#e9ede3' : theme === 'omni-dark' ? '#344435' : 'rgba(255, 255, 255, 0.12)';
     ctx.beginPath();
     ctx.arc(0, 0, BASE_CANVAS_SIZE / 2.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = isOmni ? '#586f61' : 'rgba(255, 255, 255, 0.6)';
+    ctx.fillStyle = theme === 'omni' ? '#586f61' : theme === 'omni-dark' ? '#eeefe4' : 'rgba(255, 255, 255, 0.6)';
     ctx.font = '700 22px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -462,11 +463,20 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1,
     context.textBaseline = 'middle';
 
     context.fillStyle = '#ffffff';
-    const isOmni = appState.preferences.theme === 'omni';
+    const isOmni = ['omni', 'omni-dark'].includes(appState.preferences.theme);
     if (isOmni) {
         const rgb = fillColor.slice(1).match(/.{2}/g).map(value => parseInt(value, 16));
-        const brightness = rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114;
-        context.fillStyle = brightness > 145 ? '#28352c' : '#ffffff';
+        if (appState.preferences.theme === 'omni-dark') {
+            const linear = rgb.map(value => {
+                const channel = value / 255;
+                return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            });
+            const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+            context.fillStyle = luminance > 0.179 ? '#0b100c' : '#ffffff';
+        } else {
+            const brightness = rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114;
+            context.fillStyle = brightness > 145 ? '#28352c' : '#ffffff';
+        }
     }
     const totalHeight = layout.lineHeight * (layout.lines.length - 1);
 
