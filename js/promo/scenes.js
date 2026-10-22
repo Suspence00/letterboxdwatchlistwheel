@@ -72,42 +72,64 @@ export function knockout(ctx, t) {
     text(ctx, 'Six contenders. One champion.', 100, 749, 28, C.muted, { weight: 400 });
     pill(ctx, 'BOX ART', 100, 836, C.mint);
   });
-  const elimTimes = [0.65, 1.4, 2.15, 2.9, 3.65];
-  const order = [3, 1, 5, 2, 4];
-  const step = elimTimes.filter(time => t >= time).length;
-  const survivorsAt = k => [0, 1, 2, 3, 4, 5].filter(n => !order.slice(0, k).includes(n));
-  const curr = survivorsAt(step);
-  const prev = survivorsAt(Math.max(0, step - 1));
-  const since = step > 0 ? t - elimTimes[step - 1] : 1;
-  const repack = ease(since / 0.45);
+  const times = [0, 0.65, 1.4, 2.15, 2.9, 3.65];
+  const lineup = [3, 1, 5, 2, 4, 0];
+  const step = times.slice(1).filter(time => t >= time).length;
+  const angleAt = (m, k) => {
+    if (m === 0) return angleAt(1, k) - TAU * 0.42;
+    return -Math.PI / 2 - (k - (m - 1)) * TAU / (7 - m);
+  };
+  const m = Math.min(5, step + 1);
+  const segProgress = step < 5 ? ease((t - times[step]) / (times[step + 1] - times[step])) : 1;
   const champ = step === 5 ? ease((t - 3.65) / 0.55) : 0;
-  const baseRot = (1 - champ) * (t * 0.55);
-  const cards = curr.map((index, slot) => {
-    const prevSlot = Math.max(0, prev.indexOf(index));
-    const prevAngle = prevSlot * TAU / prev.length;
-    const currAngle = slot * TAU / curr.length;
+  const since = step > 0 ? t - times[step] : 1;
+  const strike = step > 0 && since < 0.22 ? Math.sin((since / 0.22) * Math.PI) : 0;
+  const cards = lineup.slice(step).map((index, offset) => {
+    const k = step + offset;
+    const angle = step < 5 ? mix(angleAt(step, k), angleAt(m, k), segProgress) : angleAt(5, 5);
     return {
       index,
-      angle: baseRot + mix(prevAngle, currAngle, repack),
+      angle,
       radiusScale: 1 - champ,
       scale: 1 + champ * 0.58,
     };
   });
-  boxWheel(ctx, 1415, 530, 236, baseRot, {
+  const wheelX = 1415;
+  const wheelY = 560;
+  const wheelR = 228;
+  boxWheel(ctx, wheelX, wheelY, wheelR, 0, {
     cards,
     selected: step === 5 ? 0 : -1,
     championProgress: champ,
+    pointer: 'top',
+    pointerStrike: strike,
   });
-  // Eliminated tape ejects down-left clear of the right-side contenders readout.
+  // Knocked-off tape launches upward-right off the top arrow in the direction of spin.
   if (step > 0) {
-    const removed = order[step - 1];
+    const removed = lineup[step - 1];
     const drop = ease(since / 0.65);
     if (drop < 1) {
+      const topSlotY = wheelY - wheelR * 0.73 * 0.81;
+      const baseW = wheelR * 0.41 * 1.05;
+      const baseH = baseW * 1.56;
+      const scale = 1 + Math.sin(drop * Math.PI) * 0.06 - drop * 0.2;
+      if (strike > 0.05) {
+        ctx.save();
+        ctx.globalAlpha = strike * 0.65;
+        ctx.beginPath();
+        ctx.arc(wheelX, wheelY - wheelR * 0.91, 14 + (1 - strike) * 26, 0, TAU);
+        ctx.strokeStyle = C.orange;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+      }
       ctx.save();
-      ctx.globalAlpha = 1 - drop;
-      const scale = 1 - drop * 0.18;
-      tape(ctx, FILMS[removed], 1215 - drop * 110, 610 + drop * 195,
-        134 * scale, 210 * scale, -0.1 - drop * 0.42, removed + 1);
+      ctx.globalAlpha = 1 - clamp((drop - 0.3) / 0.7) ** 1.6;
+      tape(ctx, FILMS[removed],
+        wheelX + drop * 255,
+        topSlotY - Math.sin(drop * Math.PI * 0.78) * 92 + drop * 18,
+        baseW * scale, baseH * scale,
+        drop * 0.62, removed + 1);
       ctx.restore();
     }
   }

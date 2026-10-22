@@ -23,7 +23,7 @@ function ellipse(ctx, x, y, rx, ry, fill, stroke, width = 1) {
  * @param {number} y
  * @param {number} r Outer cassette radius; allow another 35px for the pointer.
  * @param {number} [rotation]
- * @param {{activeFilms?: number[], selected?: number, cards?: Array<{index: number, angle: number, radiusScale?: number, scale?: number}>, championProgress?: number}} [options]
+ * @param {{activeFilms?: number[], selected?: number, cards?: Array<{index: number, angle: number, radiusScale?: number, scale?: number}>, championProgress?: number, pointer?: 'right' | 'top', pointerStrike?: number}} [options]
  */
 export function boxWheel(ctx, x, y, r, rotation = 0, options = {}) {
   const active = (options.activeFilms || FILMS.map((_, i) => i))
@@ -36,6 +36,7 @@ export function boxWheel(ctx, x, y, r, rotation = 0, options = {}) {
   const surface = C.surface || '#222823';
   const border = C.border || '#394139';
   const champP = options.championProgress ?? (active.length === 1 && !options.cards ? 1 : 0);
+  const topPointer = options.pointer === 'top';
   ctx.save();
   ctx.translate(x, y);
 
@@ -60,9 +61,9 @@ export function boxWheel(ctx, x, y, r, rotation = 0, options = {}) {
   const cards = rawCards.map(item => {
     const { index, angle, radiusScale = 1, scale = 1 } = item;
     const depth = Math.sin(angle);
-    const gate = Math.max(0, Math.cos(angle)) ** 3;
-    const zOrder = depth * 0.72 + gate * 0.88 + (options.selected === index ? 1.5 : 0);
-    const perspective = (1 + depth * 0.08 + gate * 0.05) * scale;
+    const gate = Math.max(0, topPointer ? -Math.sin(angle) : Math.cos(angle)) ** 3;
+    const zOrder = depth * (topPointer ? 0.45 : 0.72) + gate * 0.95 + (options.selected === index ? 1.5 : 0);
+    const perspective = (1 + depth * (topPointer ? 0.04 : 0.08) + gate * 0.05) * scale;
     return { index, angle, depth, zOrder, perspective, radiusScale };
   }).sort((a, b) => a.zOrder - b.zOrder);
 
@@ -107,7 +108,7 @@ export function boxWheel(ctx, x, y, r, rotation = 0, options = {}) {
     roundRect(ctx, w / 2 - 3, -h / 2 + 4, 9, h - 1, 2, border);
     line(ctx, w / 2 + 3, -h / 2 + 9, w / 2 + 3, h / 2 - 4, '#9daa8d70', 1);
     tape(ctx, FILMS[index], 0, 0, w, h, 0, index + 1);
-    if (depth < 0 && radiusScale > 0.5 && !selected) {
+    if (depth < 0 && !topPointer && radiusScale > 0.5 && !selected) {
       roundRect(ctx, -w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 3,
         `rgba(16,22,17,${-depth * 0.18})`);
     }
@@ -136,11 +137,19 @@ export function boxWheel(ctx, x, y, r, rotation = 0, options = {}) {
   }
 
   ctx.beginPath();
-  ctx.moveTo(r + 7, 0);
-  ctx.lineTo(r + 34, -16);
-  ctx.lineTo(r + 34, 16);
+  if (topPointer) {
+    const strike = (options.pointerStrike || 0) * 12;
+    const tipY = -r * 0.94 + strike;
+    ctx.moveTo(0, tipY);
+    ctx.lineTo(-18, tipY - 30);
+    ctx.lineTo(18, tipY - 30);
+  } else {
+    ctx.moveTo(r + 7, 0);
+    ctx.lineTo(r + 34, -16);
+    ctx.lineTo(r + 34, 16);
+  }
   ctx.closePath();
-  ctx.fillStyle = options.selected === undefined ? C.orange : C.cream;
+  ctx.fillStyle = (options.pointerStrike || 0) > 0.2 || options.selected >= 0 ? C.cream : C.orange;
   ctx.fill();
   ctx.restore();
 }
