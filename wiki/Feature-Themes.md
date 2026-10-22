@@ -28,13 +28,14 @@ Themes can be configured in the **Settings Modal**:
 * **Palette**: Terracotta (`#e98457`), sand (`#eecba1`), deep sage (`#586f61`), pale sage (`#b4bba1`), clay (`#dcac85`), slate (`#a8b7bf`), rust (`#ca6d4a`), and linen (`#d9d5bf`).
 * **Key Visuals**: Flat wheel slices with contrasting labels and a cream center, fine card borders, and quiet surfaces without ambient decorations. Choose **Omni** under **Everyday** in the theme browser. It is saved per wheel as `omni`; the existing Modern theme remains available separately.
 
-#### Omni Dark
+#### Omni Dark (Default)
 * **Aesthetic**: A darker version of Omni's studio design, with charcoal green backgrounds, muted cream text, deep sage selection states, and warm terracotta accents.
 * **Typography**: The same Manrope headings and DM Sans body text as Omni, with local system font fallbacks.
 * **Palette**: Dark terracotta (`#b96640`), sand (`#b79872`), sage (`#405c4a`), moss (`#7c8868`), clay (`#a67d59`), slate (`#748b96`), rust (`#9f5037`), and linen (`#a09d83`).
 * **Key Visuals**: Omni's flat wheel slices and quiet surfaces, with a dark wheel center, fine card borders, and readable contrasting labels. Choose **Omni Dark** under **Everyday** in the theme browser. It is saved per wheel as `omni-dark`.
+* **Default**: New wheels and saved data without a theme use Omni Dark. Existing saved theme choices are preserved.
 
-#### 1. Classic (Default)
+#### 1. Classic
 * **Aesthetic**: Warm cinema lounge styling with deep obsidian card panels, warm amber highlights, and clean typography.
 * **Palette**: 15 distinct high-contrast colors (`#ff8600`, `#3ab0ff`, `#f25f5c`, `#70e000`, etc.), followed by deterministic Golden Angle (137.5°) color generation for larger lists.
 * **Key Visuals**: Subtle neutral shadows, balanced contrast, and complete support for custom user-assigned slice colors.

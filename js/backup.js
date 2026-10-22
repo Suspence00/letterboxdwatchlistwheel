@@ -3,7 +3,7 @@
  */
 
 import { appState, saveState } from './state.js';
-import { buildMovieIdentityKey, clampWeight, getDefaultColorForIndex, sanitizeColor } from './utils.js';
+import { buildMovieIdentityKey, clampWeight, getDefaultColorForIndex, sanitizeColor, DEFAULT_THEME } from './utils.js';
 
 const BACKUP_VERSION = 1;
 
@@ -394,7 +394,7 @@ function normalizePreferences(preferences = {}) {
         hideFinalistsBox: Boolean(preferences?.hideFinalistsBox),
         showFinalistsFromStart: Boolean(preferences?.showFinalistsFromStart),
         decorationsEnabled: preferences?.decorationsEnabled !== false,
-        theme: typeof preferences?.theme === 'string' ? preferences.theme : 'default',
+        theme: typeof preferences?.theme === 'string' ? preferences.theme : DEFAULT_THEME,
         boosterColors: typeof preferences?.boosterColors === 'object' ? preferences.boosterColors : {},
         themeColorOverrides: typeof preferences?.themeColorOverrides === 'object' ? preferences.themeColorOverrides : {}
     };

@@ -2,7 +2,7 @@
  * State management for the Letterboxd Watchlist Wheel
  */
 
-import { debounce } from './utils.js';
+import { debounce, DEFAULT_THEME } from './utils.js';
 
 const STORAGE_PREFIX = 'letterboxd_workspace_';
 const INDEX_KEY = 'letterboxd_workspaces_index';
@@ -34,7 +34,7 @@ export const appState = {
         vhsShowLabels: true,
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
-        theme: 'default',
+        theme: DEFAULT_THEME,
         themeColorOverrides: {},
         decorationsEnabled: true
     }
@@ -210,7 +210,7 @@ function loadWorkspaceData(id) {
                 vhsCapacityVersion: loaded.preferences.vhsCapacityVersion || 2,
                 hideFinalistsBox: Boolean(loaded.preferences.hideFinalistsBox),
                 showFinalistsFromStart: Boolean(loaded.preferences.showFinalistsFromStart),
-                theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : 'default',
+                theme: typeof loaded.preferences.theme === 'string' ? loaded.preferences.theme : DEFAULT_THEME,
                 themeColorOverrides: safeOverrides,
                 boosterColors: safeBoosterColors,
                 decorationsEnabled: loaded.preferences.decorationsEnabled !== false,
@@ -225,7 +225,7 @@ function loadWorkspaceData(id) {
                 vhsCapacity: 250,
                 hideFinalistsBox: false,
                 showFinalistsFromStart: false,
-                theme: 'default',
+                theme: DEFAULT_THEME,
                 themeColorOverrides: {},
                 boosterColors: {},
                 decorationsEnabled: true,
@@ -267,7 +267,7 @@ export function resetState() {
         vhsCapacity: 250,
         hideFinalistsBox: false,
         showFinalistsFromStart: false,
-        theme: 'default',
+        theme: DEFAULT_THEME,
         themeColorOverrides: {},
         boosterColors: {},
         decorationsEnabled: true,

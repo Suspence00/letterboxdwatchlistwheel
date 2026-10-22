@@ -247,6 +247,7 @@ export const THEMES = [
     { id: 'birthday', name: 'Birthday Party', palette: birthdayPalette }
 ];
 
+export const DEFAULT_THEME = 'omni-dark';
 export const DEFAULT_SLICE_COLOR = basePalette[0];
 
 export const getActiveTheme = () => {

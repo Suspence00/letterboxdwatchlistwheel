@@ -17,6 +17,7 @@ for (const width of [1280, 375]) {
         await expect(search).toBeFocused();
         await page.getByRole('textbox', { name: 'New wheel name' }).fill('Horror night');
         await page.getByRole('button', { name: 'Create wheel', exact: true }).click();
+        await expect(page.locator('body')).toHaveClass(/(?:^|\s)theme-omni-dark(?:\s|$)/);
         await expect(page.getByRole('button', { name: 'Current wheel: Horror night', exact: true })).toBeFocused();
         await expect(page.locator('#movie-list li.empty')).toBeVisible();
         await expect(page.locator('#movie-list li:not(.empty)')).toHaveCount(0);

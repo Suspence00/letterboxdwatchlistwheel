@@ -34,6 +34,7 @@ import {
     basePalette,
     clampWeight,
     debounce,
+    DEFAULT_THEME,
     getMovieOriginalIndex,
     getPaletteColorForIndex,
     getStoredWeight,
@@ -276,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const normalizeTheme = (value) => {
         const themeExists = THEMES.some(t => t.id === value);
-        return themeExists ? value : 'default';
+        return themeExists ? value : DEFAULT_THEME;
     };
 
     const getPaletteForTheme = (themeId) => {
@@ -403,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshPreferences: () => {
             syncFinalistsToggles();
             applyTheme(appState.preferences?.theme, { force: true });
-            themePicker?.sync(appState.preferences?.theme || 'default');
+            themePicker?.sync(appState.preferences?.theme || DEFAULT_THEME);
             themePicker?.syncDecorations();
         },
         resetKnockoutUI: refreshKnockoutBoxVisibility

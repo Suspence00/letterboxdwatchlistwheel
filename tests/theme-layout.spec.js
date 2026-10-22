@@ -3,6 +3,7 @@ import path from 'node:path';
 
 test('Theme picker supports keyboard navigation, decorations toggle, and backup sync', async ({ page }) => {
     await page.goto('/');
+    await expect(page.locator('body')).toHaveClass(/(?:^|\s)theme-omni-dark(?:\s|$)/);
     await page.click('#settings-open');
     await page.locator('.theme-picker__summary').click();
 
@@ -116,6 +117,11 @@ for (const theme of [
     test(`${theme.name} persists its palette and restores Classic colors without replacing Modern`, async ({ page }) => {
         const themeClass = new RegExp(`(?:^|\\s)theme-${theme.id}(?:\\s|$)`);
         await page.goto('/');
+        await page.click('#settings-open');
+        await page.locator('.theme-picker__summary').click();
+        await page.getByRole('radio', { name: 'Classic', exact: true }).click();
+        await page.locator('.theme-picker__summary').click();
+        await page.click('#settings-modal-close');
         await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
         await expect(page.locator('#movie-list li')).toHaveCount(10);
         await page.locator('.movie-color__input').first().fill('#123456');
