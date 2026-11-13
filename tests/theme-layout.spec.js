@@ -123,6 +123,7 @@ test('Dune · Arrakis persists its palette, artwork preference, and winner revea
     await page.getByRole('radio', { name: 'Dune · Arrakis', exact: true }).click();
     await expect(page.locator('body')).toHaveClass(/\btheme-arrakis\b/);
     await expect(page.locator('.arrakis-decorations')).toBeVisible();
+    await expect(page.locator('.arrakis-decorations')).toHaveCSS('background-image', /\/media\/themes\/arrakis\.webp/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const firstColor = () => page.evaluate(async () => {
         const { appState } = await import('/js/state.js');

@@ -5,10 +5,10 @@ export const themeEffects = {
         particles: { colors: ['#ffcc96', '#eea465', '#bb6d3d', '#fff0d8', '#9cdafa'], size: 2, spread: 4, count: 90 }
     },
     spooky: {
-        hub: ['#151321', '#cbc4dd', '#423750', '#171321'],
+        hub: ['#18151b', '#9b7680', '#33272f', '#17141b'],
         tick: { frequency: 270, end: 92, wave: 'sawtooth', volume: 0.027 },
         chime: { notes: [146.83, 155.56, 220], release: 0.85, spacing: 0.15 },
-        particles: { colors: ['#fcead1', '#c5b4ee', '#a575de', '#ff9f5f'], size: 2, spread: 4, count: 44 },
+        particles: { colors: ['#efd4bf', '#c6a1a8', '#b77567', '#8c6178'], size: 2, spread: 4, count: 44 },
         scene: { winner: 'Tonight at the haunted drive-in' }
     },
     forest: {

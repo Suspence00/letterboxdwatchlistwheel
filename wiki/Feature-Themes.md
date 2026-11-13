@@ -24,7 +24,7 @@ Themes can be configured in the **Settings Modal**:
 
 #### Dune · Arrakis
 
-Choose **Dune · Arrakis** in the theme browser. The theme pairs original sandworm and ornithopter artwork with copper, sandstone, and spice-blue accents. Both wheel styles have a blue iris at the hub. With wheel sounds enabled, the wheel ticks like a thumper and the winner gets a low three-note chime. Turn off **Enable ambient theme decorations** to hide the header artwork. The theme is saved per wheel as `arrakis`.
+Choose **Dune · Arrakis** in the theme browser. Arrakis is the only theme with generated artwork. Its sandworm and ornithopter illustration is paired with copper, sandstone, and spice-blue accents. Both wheel styles have a blue iris at the hub. With wheel sounds enabled, the wheel ticks like a thumper and the winner gets a low three-note chime. Turn off **Enable ambient theme decorations** to hide the header artwork. The theme is saved per wheel as `arrakis`.
 
 #### Omni
 * **Aesthetic**: Omni Wheel's light studio design, with warm cream paper, white cards, sage selection states, charcoal buttons, and terracotta accents.
@@ -60,7 +60,7 @@ Choose **Dune · Arrakis** in the theme browser. The theme pairs original sandwo
 * **Aesthetic**: Sleek modern co-op gaming lobby styling inspired by weekend voice calls, multiplayer lobbies, and friendslop party games.
 * **Typography**: Crisp modern sans-serif typography (`Inter, system-ui, -apple-system, sans-serif`) with subtle depth drop-shadows.
 * **Palette**: Lethal hazmat orange (`#f97316`), Discord blurple / squad blue (`#5865f2`), co-op revive emerald (`#10b981`), scrap loot gold (`#eab308`), party coral pink (`#f43f5e`), drop pod violet (`#8b5cf6`), and oxygen cyan (`#06b6d4`).
-* **Movie night**: An arcade terminal in a spaceship rec room, a hazard-marked wheel, and synthesized pickup sounds. The winner appears as a successful extraction with pixel particles.
+* **Movie night**: Scanlines, a hazard-marked wheel, and synthesized pickup sounds. The winner appears as a successful extraction with pixel particles.
 
 #### 5. Retro 95
 * **Aesthetic**: Nostalgic 1990s desktop operating system styling.
@@ -72,7 +72,7 @@ Choose **Dune · Arrakis** in the theme browser. The theme pairs original sandwo
 * **Aesthetic**: Cozy wilderness campsite on a crisp autumn evening.
 * **Typography**: Warm literary Georgia serif with ember glow text shadow.
 * **Palette**: Deep pine green (`#2e5a44`), campfire amber (`#e58f24`), flame red (`#e25822`), bark wood brown (`#8b5a2b`), mossy green (`#607d3b`), and birch silver (`#d2d7d3`).
-* **Movie night**: A lakeside campsite at dusk, a wheel made to look like a cross-section of timber, and a woodblock tick. The winning title appears in lantern light with rising embers.
+* **Movie night**: A pine-green header with a warm glow, a timber-patterned wheel, and a woodblock tick. The winning title appears in lantern light with rising embers.
 
 ---
 
@@ -80,17 +80,17 @@ Choose **Dune · Arrakis** in the theme browser. The theme pairs original sandwo
 
 #### Thanksgiving
 
-Choose **Thanksgiving** under **Seasonal**. A candlelit farmhouse table sets the scene, with cranberry, pumpkin, and cider colors, a pie-crust rim on the VHS wheel, and a four-note dinner chime. The winning movie is served as **The main course** with a shower of autumn leaves.
+Choose **Thanksgiving** under **Seasonal** for cranberry, pumpkin, and cider colors, a pie-crust rim on the VHS wheel, and a four-note dinner chime. The winning movie is served as **The main course** with a shower of autumn leaves.
 
 #### 7. Christmas (Holiday)
 * **Aesthetic**: Warm holiday cheer with evergreen boughs, crimson ribbons, and festive celebration.
 * **Palette**: Traditional berry crimson (`#c93737`), pine green (`#1f7a4d`), star gold (`#f0c75e`), and winter sky blue (`#7ab6d9`).
-* **Movie night**: A snowy small-town theater, a wheel rim lit like a marquee, and bell-like ticks. The winner appears under a brass frame with a fresh flurry of snow.
+* **Movie night**: An evergreen and gold header, a wheel rim lit like a marquee, and bell-like ticks. The winner appears under a brass frame with a fresh flurry of snow.
 
 #### 8. Hanukkah
 * **Aesthetic**: Refined festival of lights celebration with deep twilight and candlelight illumination.
 * **Palette**: Royal sapphire blues (`#1d4ed8`, `#3b82f6`, `#1e40af`) paired with radiant menorah candle gold (`#facc15`, `#fde68a`).
-* **Movie night**: A brass hanukkiah against a frosted window, with a dreidel nearby. A blue-and-brass wheel and a candlelit winner reveal carry the scene through the spin.
+* **Movie night**: A sapphire header with a warm glow, a blue-and-brass wheel, and a candlelit winner reveal.
 
 #### 9. Alaska
 * **Aesthetic**: Crisp subarctic wilderness beneath glowing auroras and the northern night sky.
@@ -113,10 +113,10 @@ Choose **Thanksgiving** under **Seasonal**. A candlelit farmhouse table sets the
 * **Key Visuals**: Animated CSS firework bursts featuring multi-color star bursts, heart bursts, and expanding concentric sparkle rings over a deep midnight sky.
 
 #### 13. Spooky Halloween
-* **Aesthetic**: Atmospheric haunted twilight perfect for horror marathons.
-* **Typography**: Dramatic Georgia serif with eerie lime green glow.
-* **Palette**: Pumpkin orange (`#FF7518`), midnight indigo (`#4B0082`), slime green (`#39FF14`), blood red (`#8B0000`), and ghostly bone (`#E0DCD3`).
-* **Movie night**: A haunted drive-in at midnight, a film-reel wheel, and a creaking projector tick. Theater Mode adds a projection beam, and the winning title lights up through drifting dust.
+* **Aesthetic**: A late-night horror screening with a film-strip detail in the header and a dark film-reel wheel.
+* **Typography**: Cinzel headings and warm ivory text.
+* **Palette**: Burgundy, charcoal, muted plum, and bone.
+* **Movie night**: A creaking projector tick, a dim burgundy Theater Mode, and drifting dust at the winner reveal.
 
 #### 14. Birthday Party
 * **Aesthetic**: Prestigious, milestone celebration with deep obsidian slate, warm champagne amber glow, and rich royal blue & gold accents.

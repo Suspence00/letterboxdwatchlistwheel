@@ -2,12 +2,12 @@ import { test, expect } from './fixtures.js';
 import path from 'node:path';
 
 const scenes = [
-    { id: 'spooky', label: 'Spooky Halloween', art: 'spooky', winner: 'Tonight at the haunted drive-in', effect: 'projector-dust', tick: 270 },
-    { id: 'forest', label: 'Forest Camp', art: 'forest', winner: 'Tonight around the campfire', effect: 'camp-embers', tick: 460 },
-    { id: 'thanksgiving', label: 'Thanksgiving', art: 'thanksgiving', winner: 'The main course', effect: 'falling-leaves', tick: 315 },
-    { id: 'holiday', label: 'Christmas', art: 'christmas', winner: 'Under the marquee tonight', effect: 'falling-snow', tick: 870 },
-    { id: 'hanukkah', label: 'Hanukkah', art: 'hanukkah', winner: 'Tonight by candlelight', effect: 'camp-embers', tick: 690 },
-    { id: 'friendslop', label: 'Gaming Friendslop', art: 'friendslop', winner: 'Extraction complete', effect: 'arcade-pixels', tick: 380 }
+    { id: 'spooky', label: 'Spooky Halloween', winner: 'Tonight at the haunted drive-in', effect: 'projector-dust', tick: 270 },
+    { id: 'forest', label: 'Forest Camp', winner: 'Tonight around the campfire', effect: 'camp-embers', tick: 460 },
+    { id: 'thanksgiving', label: 'Thanksgiving', winner: 'The main course', effect: 'falling-leaves', tick: 315 },
+    { id: 'holiday', label: 'Christmas', winner: 'Under the marquee tonight', effect: 'falling-snow', tick: 870 },
+    { id: 'hanukkah', label: 'Hanukkah', winner: 'Tonight by candlelight', effect: 'camp-embers', tick: 690 },
+    { id: 'friendslop', label: 'Gaming Friendslop', winner: 'Extraction complete', effect: 'arcade-pixels', tick: 380 }
 ];
 
 async function chooseTheme(page, name) {
@@ -26,17 +26,11 @@ for (const scene of scenes) {
         await expect(page.locator('#movie-list li')).toHaveCount(10);
         await chooseTheme(page, scene.label);
 
-        const artwork = page.locator('.theme-scene-decorations');
+        const backdrop = page.locator('.theme-scene-decorations');
         await expect(page.locator('body')).toHaveClass(new RegExp(`\\btheme-${scene.id}\\b`));
-        await expect(artwork).toBeVisible();
-        await expect(artwork).toHaveCSS('background-image', new RegExp(`/media/themes/${scene.art}\\.webp`));
-        expect(await artwork.evaluate(async (element) => {
-            const source = getComputedStyle(element).backgroundImage.match(/url\("([^"]+)"\)/)?.[1];
-            const image = new Image();
-            image.src = source;
-            await image.decode();
-            return image.naturalWidth;
-        })).toBeGreaterThan(1000);
+        await expect(backdrop).toBeVisible();
+        await expect(backdrop).toHaveCSS('background-image', /gradient/);
+        await expect(backdrop).not.toHaveCSS('background-image', /url\(/);
         await expect(page.locator('.vhs-hub')).toHaveCSS('background-image', /radial-gradient/);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         const tick = await page.evaluate(async () => {

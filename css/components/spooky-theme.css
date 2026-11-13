@@ -1,217 +1,80 @@
-/* Spooky Halloween Theme */
-
-.spooky-decorations {
-    display: none;
-    pointer-events: none;
-}
-
-body.theme-spooky .spooky-decorations {
-    display: block;
+:is(.theme-spooky, .theme-card[data-theme='spooky']) {
+    --scene-action: #e3b494;
+    --scene-backdrop: linear-gradient(100deg, #100e14 30%, transparent 80%), radial-gradient(ellipse at 90% 50%, #5c222e, #21131d 60%);
+    --scene-edge: #77505d;
+    --scene-header: repeating-linear-gradient(90deg, #e3b49455 0 8px, transparent 8px 20px) right 1.25rem bottom 0.9rem / min(32%, 13rem) 5px no-repeat,
+        var(--scene-backdrop);
+    --scene-hub: radial-gradient(circle, #18151b 0 18%, #9b7680 19% 24%, #33272f 25% 53%, #68414d 54% 56%, #17141b 57%);
+    --scene-light: #efd4bf;
+    --scene-particles: projector-dust;
+    --scene-surface: #211a22;
+    --scene-wheel: radial-gradient(circle, #302630 0 37%, #1a171e 38% 63%, #5f303f 64% 65%, #231a24 66%);
 }
 
 body.theme-spooky {
-    --background: #0d0814;
-    --card-bg: rgba(22, 14, 33, 0.95);
-    --text: #e0dcd3; /* Ghostly Bone */
-    --muted: #9185a0;
-    --accent: #ff7518; /* Pumpkin Orange */
-    --accent-strong: #39ff14; /* Slime Green */
-    --shadow: rgba(0, 0, 0, 0.65);
-    
-    background: 
-        radial-gradient(circle at 10% 20%, rgba(75, 0, 130, 0.2) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(255, 117, 24, 0.08) 0%, transparent 45%),
-        #0d0814;
+    --accent: #e3b494;
+    --accent-strong: #c77883;
+    --background: #110e14;
+    --card-bg: #211a22;
+    --muted: #c6b0b9;
+    --shadow: #0b070bcc;
+    --text: #f4e8dc;
+
+    background: radial-gradient(ellipse at top right, #2d1722, #110e14 45rem);
     color: var(--text);
 }
 
-body.theme-spooky .app-header h1 {
-    color: #ff7518 !important;
-    text-shadow: 
-        0 0 8px rgba(57, 255, 20, 0.5), 
-        3px 3px 0px #000000;
-    font-family: 'Georgia', serif;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-body.theme-spooky .app-header p {
-    font-family: 'Georgia', serif;
-    font-style: italic;
-    color: #39ff14;
-    opacity: 0.8;
-}
-
-body.theme-spooky .card {
-    border: 1px solid rgba(255, 117, 24, 0.25);
-    box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.6), 
-        inset 0 0 15px rgba(75, 0, 130, 0.25);
-}
-
-body.theme-spooky .app-header {
-    border-bottom: 2px solid rgba(57, 255, 20, 0.42);
-}
-
-body.theme-spooky .card h2,
-body.theme-spooky .settings-group legend {
-    text-shadow: 0 0 10px rgba(255, 117, 24, 0.5), 2px 2px 0 #190b24;
-}
-
-body.theme-spooky .card h2,
-body.theme-spooky .settings-group legend {
-    color: #ff7518;
-    font-family: 'Georgia', serif;
-    letter-spacing: 1px;
-}
-
-body.theme-spooky .btn.btn--primary {
-    background: linear-gradient(135deg, #ff7518 0%, #8b0000 100%);
-    box-shadow: 0 4px 15px rgba(255, 117, 24, 0.4);
-    border: 1px solid rgba(255, 117, 24, 0.4);
-    font-family: 'Georgia', serif;
-    font-weight: bold;
-}
-
-body.theme-spooky .btn.btn--primary:hover {
-    background: linear-gradient(135deg, #ff8c39 0%, #b30000 100%);
-    box-shadow: 0 6px 20px rgba(255, 117, 24, 0.6), 0 0 12px rgba(57, 255, 20, 0.4);
-    transform: translateY(-2px);
-}
-
-body.theme-spooky .btn {
-    border-color: rgba(75, 0, 130, 0.4);
-}
-
-body.theme-spooky .text-input {
-    background: rgba(13, 8, 20, 0.9);
-    border-color: rgba(75, 0, 130, 0.6);
-    color: #e0dcd3;
-}
-
-body.theme-spooky .text-input:focus {
-    border-color: #39ff14;
-    outline: 2px solid #ff7518;
-    box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
-}
-
-body.theme-spooky .movie-odds--secondary {
-    color: #39ff14;
-}
-
-body.theme-spooky .movie-link:hover {
-    color: #ff7518;
+body.theme-spooky :is(.app-header h1, .card h2, #win-modal .win-modal__title) {
+    color: #f4e8dc;
+    font-family: 'Cinzel', Georgia, serif;
 }
 
 body.theme-spooky .seasonal-accent {
-    display: none !important;
+    display: none;
 }
 
-/* Flying Bats Decoration */
-.spooky-bat {
-    position: fixed;
-    width: 28px;
-    height: 16px;
-    background-color: #050308;
-    z-index: 0;
-    pointer-events: none;
-    clip-path: polygon(
-        50% 30%, 65% 10%, 75% 25%, 90% 10%, 100% 30%, 85% 55%, 70% 45%, 50% 85%, 
-        30% 45%, 15% 55%, 0% 30%, 10% 10%, 25% 25%, 35% 10%
-    );
-    opacity: 0.6;
+body.theme-spooky .vhs-disc--back {
+    background: #100c11;
+    border-color: #2a1e26;
 }
 
-.bat-1 {
-    animation: bat-fly-left-to-right 14s linear infinite;
+body.theme-spooky .vhs-disc--middle {
+    background: #39232e;
+    border-color: #50313e;
 }
 
-.bat-2 {
-    animation: bat-fly-right-to-left 20s linear infinite;
-    animation-delay: 3s;
+body.theme-spooky .vhs-hub::after {
+    border: 1px dashed #c6a1a8;
+    border-radius: 50%;
+    content: '';
+    inset: 11px;
+    position: absolute;
 }
 
-.bat-3 {
-    animation: bat-fly-left-to-right 17s linear infinite;
-    animation-delay: 7s;
+body.theme-spooky .vhs-flapper,
+body.theme-spooky .pointer::after {
+    background: linear-gradient(90deg, #67323e, #e3b494 48%, #834452);
+    border-color: #e3b494;
 }
 
-/* Spiderwebs in Corners */
-.spooky-web-topleft {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 140px;
-    height: 140px;
-    opacity: 0.25;
-    background: 
-        radial-gradient(circle at top left, transparent 20%, rgba(255, 117, 24, 0.2) 21%, rgba(255, 117, 24, 0.2) 23%, transparent 24%,
-                        transparent 39%, rgba(255, 117, 24, 0.2) 40%, rgba(255, 117, 24, 0.2) 42%, transparent 43%,
-                        transparent 59%, rgba(255, 117, 24, 0.2) 60%, rgba(255, 117, 24, 0.2) 62%, transparent 63%),
-        linear-gradient(30deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%),
-        linear-gradient(60deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%);
-    z-index: 5;
-    pointer-events: none;
+body.theme-spooky[data-theme-scene] .spin-theater {
+    background: radial-gradient(ellipse at 50% 60%, #412532, #151017 65%, #0b090d);
 }
 
-.spooky-web-topright {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 140px;
-    height: 140px;
-    opacity: 0.25;
-    background: 
-        radial-gradient(circle at top right, transparent 20%, rgba(255, 117, 24, 0.2) 21%, rgba(255, 117, 24, 0.2) 23%, transparent 24%,
-                        transparent 39%, rgba(255, 117, 24, 0.2) 40%, rgba(255, 117, 24, 0.2) 42%, transparent 43%,
-                        transparent 59%, rgba(255, 117, 24, 0.2) 60%, rgba(255, 117, 24, 0.2) 62%, transparent 63%),
-        linear-gradient(-30deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%),
-        linear-gradient(-60deg, transparent 49%, rgba(255, 117, 24, 0.25) 50%, rgba(255, 117, 24, 0.25) 51%, transparent 52%);
-    z-index: 5;
-    pointer-events: none;
+body.theme-spooky .vhs-tape .vhs-face--front {
+    background: linear-gradient(150deg, #472b38, #1c171f 68%);
 }
 
-/* ----------- Animations ----------- */
-@keyframes bat-fly-left-to-right {
-    0% {
-        left: -40px;
-        top: 25%;
-        transform: translateY(0) scale(1);
-    }
-    25% {
-        transform: translateY(-15px) scaleY(0.4);
-    }
-    50% {
-        transform: translateY(0) scale(1.1);
-    }
-    75% {
-        transform: translateY(-15px) scaleY(0.4);
-    }
-    100% {
-        left: 100vw;
-        top: 15%;
-        transform: translateY(0) scale(1);
-    }
+body.theme-spooky .vhs-tape .vhs-face--left {
+    background: linear-gradient(90deg, #221923, #633746);
 }
 
-@keyframes bat-fly-right-to-left {
-    0% {
-        right: -40px;
-        top: 40%;
-        transform: scaleX(-1) translateY(0) scale(0.85);
-    }
-    25% {
-        transform: scaleX(-1) translateY(-20px) scaleY(0.4) scaleX(0.85);
-    }
-    50% {
-        transform: scaleX(-1) translateY(0) scale(0.95);
-    }
-    75% {
-        transform: scaleX(-1) translateY(-20px) scaleY(0.4) scaleX(0.85);
-    }
-    100% {
-        right: 100vw;
-        top: 25%;
-        transform: scaleX(-1) translateY(0) scale(0.85);
-    }
+body.theme-spooky .vhs-sectors {
+    opacity: 0.85;
+}
+
+@keyframes projector-dust {
+    0% { opacity: 0; transform: translate(-32vw, 48vh); }
+    35% { opacity: 0.85; }
+    100% { opacity: 0; transform: translate(calc(18vw + var(--confetti-x-move)), 18vh); }
 }

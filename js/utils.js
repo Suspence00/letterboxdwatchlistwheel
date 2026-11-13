@@ -155,16 +155,8 @@ export const retro95Palette = [
 ];
 
 export const spookyPalette = [
-    '#FF7518', // Pumpkin Orange
-    '#4B0082', // Indigo Purple
-    '#39FF14', // Slime Green
-    '#D95D0F', // Flame Amber
-    '#8B0000', // Dark Blood Red
-    '#7B1FA2', // Bright Purple
-    '#E0DCD3', // Ghostly Bone
-    '#311B92', // Midnight Violet
-    '#FF5722', // Deep Orange
-    '#1A0C2B'  // Pitch Black Purple
+    '#a34b60', '#524660', '#967c80', '#75405b', '#b77567',
+    '#454658', '#c0a994', '#633242', '#8c6178', '#766678'
 ];
 
 export const forestPalette = [
