@@ -268,22 +268,10 @@ body:is(.theme-omni, .theme-omni-dark) .app-footer {
 }
 
 body:is(.theme-omni, .theme-omni-dark) .wheel-fm {
-    background: var(--surface);
-    border-color: var(--border);
-    box-shadow: 0 8px 32px var(--omni-radio-shadow);
-}
-
-body:is(.theme-omni, .theme-omni-dark) .wheel-fm__heading {
-    border-color: var(--border);
-}
-
-body:is(.theme-omni, .theme-omni-dark) .wheel-fm__playlist-select {
-    background: var(--surface-control);
-    border-color: var(--border);
-}
-
-body:is(.theme-omni, .theme-omni-dark) :is(.wheel-fm__control, .wheel-fm__minimize) {
-    background: var(--surface-control);
+    --wheel-fm-accent: var(--accent);
+    --wheel-fm-focus: var(--focus-ring);
+    --wheel-fm-shadow: var(--omni-radio-shadow);
+    --wheel-fm-surface: var(--surface);
 }
 
 body:is(.theme-omni, .theme-omni-dark) .wheel-fm__control--play {

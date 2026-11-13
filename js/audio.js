@@ -185,11 +185,7 @@ function setWheelFmStatus(message) {
     if (elements.wheelFmStatus) elements.wheelFmStatus.textContent = message;
 }
 
-function setWheelFmPlaylistSummary(message) {
-    if (elements.wheelFmPlaylistMeta) elements.wheelFmPlaylistMeta.textContent = message;
-}
-
-function showWheelFmPlaylistPlaceholder(message, optionLabel = 'No tracks available') {
+function showWheelFmPlaylistPlaceholder(optionLabel = 'No tracks available') {
     if (elements.wheelFmPlaylistSelect) {
         elements.wheelFmPlaylistSelect.disabled = true;
         elements.wheelFmPlaylistSelect.innerHTML = '';
@@ -198,7 +194,6 @@ function showWheelFmPlaylistPlaceholder(message, optionLabel = 'No tracks availa
         placeholder.textContent = optionLabel;
         elements.wheelFmPlaylistSelect.append(placeholder);
     }
-    setWheelFmPlaylistSummary(message);
 }
 
 function setWheelFmPlaylistSelection(index) {
@@ -260,7 +255,7 @@ function renderWheelFmPlaylist() {
     elements.wheelFmPlaylistSelect.innerHTML = '';
 
     if (!wheelFmState.playlist.length) {
-        showWheelFmPlaylistPlaceholder('No tracks loaded for Wheel.FM.');
+        showWheelFmPlaylistPlaceholder();
         return;
     }
 
@@ -274,8 +269,6 @@ function renderWheelFmPlaylist() {
     });
 
     setWheelFmPlaylistSelection(wheelFmState.currentIndex);
-    const total = wheelFmState.playlist.length;
-    setWheelFmPlaylistSummary(`${total} track${total === 1 ? '' : 's'} loaded`);
 }
 
 function formatWheelFmTime(seconds) {
@@ -330,6 +323,12 @@ function handleWheelFmSeekChange(event) {
     wheelFmState.isSeeking = false;
 }
 
+function syncWheelFmPlaybackButton() {
+    const playing = !elements.wheelFmAudio.paused;
+    elements.wheelFmPlayBtn.classList.toggle('is-playing', playing);
+    elements.wheelFmPlayBtn.setAttribute('aria-label', playing ? 'Pause Wheel.FM' : 'Play Wheel.FM');
+}
+
 async function loadWheelFmTrack(index, options = {}) {
     if (!elements.wheelFmAudio || !wheelFmState.playlist.length) return;
 
@@ -341,6 +340,7 @@ async function loadWheelFmTrack(index, options = {}) {
     elements.wheelFmAudio.pause();
     elements.wheelFmAudio.src = track.file;
     elements.wheelFmAudio.currentTime = 0;
+    syncWheelFmPlaybackButton();
 
     if (elements.wheelFmSeek) {
         elements.wheelFmSeek.value = 0;
@@ -391,189 +391,33 @@ function handleWheelFmPrevious() {
     const prevIndex = (wheelFmState.currentIndex - 1 + wheelFmState.playlist.length) % wheelFmState.playlist.length;
     loadWheelFmTrack(prevIndex, { autoplay: true });
 }
-function savePlayerState(wheelFmContainer) {
-    let state = 'expanded';
-    if (wheelFmContainer.classList.contains('is-ultra-minimized')) {
-        state = 'ultra-minimized';
-    } else if (wheelFmContainer.classList.contains('is-minimized')) {
-        state = 'minimized';
-    }
-    localStorage.setItem('wheel-fm-state', state);
+
+function initWheelFmOptions() {
+    const options = document.getElementById('wheel-fm-options');
+    if (!options) return;
+    const trigger = options.querySelector('summary');
+
+    options.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !options.open) return;
+        event.stopPropagation();
+        options.open = false;
+        trigger.focus();
+    });
+
+    options.addEventListener('focusout', (event) => {
+        if (event.relatedTarget && !options.contains(event.relatedTarget)) options.open = false;
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!options.open || options.contains(event.target)) return;
+        const restoreFocus = options.contains(document.activeElement);
+        options.open = false;
+        if (restoreFocus) trigger.focus();
+    });
 }
 
 async function initWheelFm() {
-    const wheelFmContainer = document.querySelector('.wheel-fm');
-    const minimizeBtn = document.getElementById('wheel-fm-minimize');
-
-    // Restore layout and position
-    if (wheelFmContainer) {
-        const savedState = localStorage.getItem('wheel-fm-state');
-        if (savedState === 'ultra-minimized') {
-            wheelFmContainer.classList.add('is-ultra-minimized');
-            if (minimizeBtn) {
-                minimizeBtn.textContent = '═';
-                minimizeBtn.setAttribute('aria-expanded', 'false');
-                minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
-            }
-        } else if (savedState === 'minimized') {
-            wheelFmContainer.classList.add('is-minimized');
-            if (minimizeBtn) {
-                minimizeBtn.textContent = '═';
-                minimizeBtn.setAttribute('aria-expanded', 'false');
-                minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
-            }
-        }
-
-        const savedX = localStorage.getItem('wheel-fm-pos-x');
-        const savedY = localStorage.getItem('wheel-fm-pos-y');
-        if (savedX !== null && savedY !== null) {
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const targetX = Math.max(0, Math.min(Number(savedX), viewportWidth - 60));
-            const targetY = Math.max(0, Math.min(Number(savedY), viewportHeight - 60));
-
-            wheelFmContainer.style.bottom = 'auto';
-            wheelFmContainer.style.right = 'auto';
-            wheelFmContainer.style.left = `${targetX}px`;
-            wheelFmContainer.style.top = `${targetY}px`;
-        }
-
-        // Draggable Logic
-        let isDragging = false;
-        let hasMoved = false;
-        let startX = 0, startY = 0;
-        let initialX = 0, initialY = 0;
-        const heading = wheelFmContainer.querySelector('.wheel-fm__heading');
-
-        wheelFmContainer.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0 && e.pointerType === 'mouse') return;
-            if (e.target.closest('button, select, input, option')) return;
-
-            const isFab = wheelFmContainer.classList.contains('is-ultra-minimized');
-            if (!isFab && !e.target.closest('.wheel-fm__heading')) return;
-
-            isDragging = true;
-            hasMoved = false;
-
-            const rect = wheelFmContainer.getBoundingClientRect();
-            initialX = rect.left;
-            initialY = rect.top;
-
-            startX = e.clientX;
-            startY = e.clientY;
-
-            wheelFmContainer.setPointerCapture(e.pointerId);
-            if (isFab) {
-                wheelFmContainer.style.cursor = 'grabbing';
-            } else if (heading) {
-                heading.style.cursor = 'grabbing';
-            }
-        });
-
-        wheelFmContainer.addEventListener('pointermove', (e) => {
-            if (!isDragging) return;
-
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-
-            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-                hasMoved = true;
-            }
-
-            let newX = initialX + dx;
-            let newY = initialY + dy;
-
-            const rect = wheelFmContainer.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            newX = Math.max(0, Math.min(newX, viewportWidth - rect.width));
-            newY = Math.max(0, Math.min(newY, viewportHeight - rect.height));
-
-            wheelFmContainer.style.bottom = 'auto';
-            wheelFmContainer.style.right = 'auto';
-            wheelFmContainer.style.left = `${newX}px`;
-            wheelFmContainer.style.top = `${newY}px`;
-        });
-
-        const stopDragging = (e) => {
-            if (!isDragging) return;
-            isDragging = false;
-
-            const isFab = wheelFmContainer.classList.contains('is-ultra-minimized');
-            wheelFmContainer.style.cursor = '';
-            if (heading) heading.style.cursor = 'grab';
-
-            try {
-                wheelFmContainer.releasePointerCapture(e.pointerId);
-            } catch (err) {}
-
-            const rect = wheelFmContainer.getBoundingClientRect();
-            localStorage.setItem('wheel-fm-pos-x', String(rect.left));
-            localStorage.setItem('wheel-fm-pos-y', String(rect.top));
-        };
-
-        wheelFmContainer.addEventListener('pointerup', stopDragging);
-        wheelFmContainer.addEventListener('pointercancel', stopDragging);
-
-        // Click to expand FAB
-        wheelFmContainer.addEventListener('click', () => {
-            if (wheelFmContainer.classList.contains('is-ultra-minimized') && !hasMoved) {
-                wheelFmContainer.classList.remove('is-ultra-minimized');
-                if (minimizeBtn) {
-                    minimizeBtn.textContent = '_';
-                    minimizeBtn.setAttribute('aria-expanded', 'true');
-                    minimizeBtn.setAttribute('aria-label', 'Minimize Wheel.FM');
-                }
-                savePlayerState(wheelFmContainer);
-            }
-        });
-
-        // Toggle Minimization
-        if (minimizeBtn) {
-            minimizeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (wheelFmContainer.classList.contains('is-minimized')) {
-                    wheelFmContainer.classList.remove('is-minimized');
-                    wheelFmContainer.classList.add('is-ultra-minimized');
-                    minimizeBtn.textContent = '═';
-                    minimizeBtn.setAttribute('aria-expanded', 'false');
-                    minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
-                } else if (wheelFmContainer.classList.contains('is-ultra-minimized')) {
-                    wheelFmContainer.classList.remove('is-ultra-minimized');
-                    minimizeBtn.textContent = '_';
-                    minimizeBtn.setAttribute('aria-expanded', 'true');
-                    minimizeBtn.setAttribute('aria-label', 'Minimize Wheel.FM');
-                } else {
-                    wheelFmContainer.classList.add('is-minimized');
-                    minimizeBtn.textContent = '═';
-                    minimizeBtn.setAttribute('aria-expanded', 'false');
-                    minimizeBtn.setAttribute('aria-label', 'Expand Wheel.FM');
-                }
-                savePlayerState(wheelFmContainer);
-            });
-        }
-
-        // Viewport resize handling
-        window.addEventListener('resize', () => {
-            const rect = wheelFmContainer.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            let currentX = rect.left;
-            let currentY = rect.top;
-
-            if (wheelFmContainer.style.left) {
-                let adjustedX = Math.max(0, Math.min(currentX, viewportWidth - rect.width));
-                let adjustedY = Math.max(0, Math.min(currentY, viewportHeight - rect.height));
-
-                if (adjustedX !== currentX || adjustedY !== currentY) {
-                    wheelFmContainer.style.left = `${adjustedX}px`;
-                    wheelFmContainer.style.top = `${adjustedY}px`;
-                }
-            }
-        });
-    }
+    initWheelFmOptions();
 
     elements.wheelFmPlayBtn.addEventListener('click', handleWheelFmPlayToggle);
     if (elements.wheelFmNextBtn) elements.wheelFmNextBtn.addEventListener('click', handleWheelFmNext);
@@ -607,18 +451,12 @@ async function initWheelFm() {
     elements.wheelFmAudio.addEventListener('error', () => {
         setWheelFmStatus('Could not load the current Wheel.FM track.');
     });
-    elements.wheelFmAudio.addEventListener('play', () => {
-        elements.wheelFmPlayBtn.classList.add('is-playing');
-        if (wheelFmContainer) wheelFmContainer.classList.add('is-playing');
-    });
-    elements.wheelFmAudio.addEventListener('pause', () => {
-        elements.wheelFmPlayBtn.classList.remove('is-playing');
-        if (wheelFmContainer) wheelFmContainer.classList.remove('is-playing');
-    });
+    elements.wheelFmAudio.addEventListener('play', syncWheelFmPlaybackButton);
+    elements.wheelFmAudio.addEventListener('pause', syncWheelFmPlaybackButton);
 
     setWheelFmControlsDisabled(true);
     setWheelFmStatus('Looking for Wheel.FM tracks…');
-    showWheelFmPlaylistPlaceholder('Loading playlist…', 'Loading…');
+    showWheelFmPlaylistPlaceholder('Loading…');
 
     try {
         const response = await fetch(WHEEL_FM_PLAYLIST_PATH, { cache: 'no-store' });
@@ -637,7 +475,7 @@ async function initWheelFm() {
 
         if (!channelNames.length) {
             setWheelFmStatus('Add MP3 files to wheel-fm/ and list them in playlist.json to start broadcasting.');
-            showWheelFmPlaylistPlaceholder('Add tracks to wheel-fm/ to build your playlist.');
+            showWheelFmPlaylistPlaceholder();
             return;
         }
 
@@ -669,7 +507,7 @@ async function initWheelFm() {
     } catch (error) {
         console.error(error);
         setWheelFmStatus('Wheel.FM playlist missing or invalid.');
-        showWheelFmPlaylistPlaceholder('Wheel.FM playlist missing or invalid.');
+        showWheelFmPlaylistPlaceholder();
     }
 }
 
@@ -682,7 +520,7 @@ function loadChannel(channelName) {
         .filter(Boolean);
 
     wheelFmState.playlist = normalized;
-    setWheelFmControlsDisabled(false);
+    setWheelFmControlsDisabled(!normalized.length);
     renderWheelFmPlaylist();
     // Reset to first track of new channel
     loadWheelFmTrack(0, { autoplay: false });

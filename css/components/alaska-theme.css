@@ -206,35 +206,12 @@ body.theme-alaska .alaska-flag-accent {
    ========================================= */
 
 body.theme-alaska .wheel-fm {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px rgba(30, 58, 138, 0.15);
-}
-
-body.theme-alaska .wheel-fm__eyebrow {
-    color: #1e3a8a;
-}
-
-body.theme-alaska .wheel-fm__track-title {
-    color: #0f172a;
-}
-
-body.theme-alaska .wheel-fm__tagline,
-body.theme-alaska .wheel-fm__track-artist,
-body.theme-alaska .wheel-fm__volume-label,
-body.theme-alaska .wheel-fm__volume-value,
-body.theme-alaska .wheel-fm__time,
-body.theme-alaska .wheel-fm__status {
-    color: #64748b;
-}
-
-body.theme-alaska .wheel-fm__heading {
-    border-bottom-color: rgba(30, 58, 138, 0.1);
-}
-
-body.theme-alaska .wheel-fm__status {
-    border-top-color: rgba(30, 58, 138, 0.1);
+    --muted: #475569;
+    --text: #0f172a;
+    --wheel-fm-accent: var(--accent);
+    --wheel-fm-border: #cbd5e1;
+    --wheel-fm-shadow: rgb(30 58 138 / 15%);
+    --wheel-fm-surface: #f8fafc;
 }
 
 body.theme-alaska .wheel-fm__control {
@@ -266,12 +243,12 @@ body.theme-alaska .wheel-fm__playlist-select option {
     color: #1e293b;
 }
 
-body.theme-alaska .wheel-fm__minimize {
+body.theme-alaska .wheel-fm__toggle {
     background: rgba(30, 58, 138, 0.05);
     color: #1e3a8a;
 }
 
-body.theme-alaska .wheel-fm__minimize:hover {
+body.theme-alaska .wheel-fm__toggle:hover {
     background: rgba(30, 58, 138, 0.1);
 }
 

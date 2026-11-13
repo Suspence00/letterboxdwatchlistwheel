@@ -178,29 +178,7 @@ Manage multiple distinct watchlists and workspaces:
 
 ## 5. Audio & Wheel.FM
 
-Enhance the room atmosphere with synthesized audio effects and ambient soundtrack playback.
-
-```
-+-------------------------------------------------------------+
-| 📻 Wheel.FM  [ Synthwave Chill v ]   [<] [ > ] [>]  [ _ ]   |
-| "Midnight Drive" - Neon Horizon       01:24 / 03:45 ========|
-+-------------------------------------------------------------+
-```
-
-### Floating Draggable Player
-The **Wheel.FM** player floats above the interface and can be dragged anywhere on the screen:
-* Click and hold the header bar (or FAB bubble) to reposition the player. Coordinates are saved to your browser so the player remembers its position across reloads.
-* Automatic viewport clamping prevents the player from disappearing off-screen during window resizing.
-
-### Three View Modes
-Cycle through three viewing layouts using the header minimize button:
-1. **Expanded Mode (Default):** Full track title, artist info, interactive seek scrubber, time readout, volume slider, channel dropdown, and playback controls.
-2. **Compact Mode (`_`):** Sleek, condensed bar retaining playback buttons and title without taking up vertical canvas room.
-3. **FAB Radio Bubble Mode (`═`):** Collapses into a minimal circular floating action button with a radio icon (📻). Can be parked in any screen corner and clicked once to restore.
-
-### Channels & Soundtracks
-* Select from curated music channels (e.g., *Synthwave*, *Lofi Chill*, *Cinematic Orchestral*).
-* Use the seek scrubber to skip to any point in the track, or adjust volume via the slider.
+Use the Wheel.FM bar at the bottom of the screen to play, pause, or skip tracks. Select **Options** to choose a channel or track, adjust the volume, or seek within the current track. Press Escape or click elsewhere to close Options.
 
 ### Synthesized Sound Effects
 * Tactile mechanical wheel ticks, winning orchestral major-triad chimes, and knockout pitch-sweep effects are generated in real time using the browser's **Web Audio API**.

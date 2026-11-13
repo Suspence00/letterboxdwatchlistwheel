@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         wheelFmTrackArtist: document.getElementById('wheel-fm-track-artist'),
         wheelFmChannelSelect: document.getElementById('wheel-fm-channel'),
         wheelFmPlaylistSelect: document.getElementById('wheel-fm-playlist'),
-        wheelFmPlaylistMeta: document.getElementById('wheel-fm-playlist-meta'),
         wheelFmVolumeSlider: document.getElementById('wheel-fm-volume'),
         wheelFmVolumeValue: document.getElementById('wheel-fm-volume-value'),
         wheelFmSeek: document.getElementById('wheel-fm-seek'),

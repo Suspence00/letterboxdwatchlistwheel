@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Letterboxd Watchlist Wheel</title>
   <meta name="description" content="Give your Letterboxd watchlist a dramatic spin or Plinko drop to decide what to watch next. 3D VHS wheel, Knockout, 1 Spin, and Wheelchinko." />
   <meta property="og:type" content="website" />
@@ -989,55 +989,51 @@
   </div>
 
   <section class="wheel-fm" aria-labelledby="wheel-fm-heading">
-    <div class="wheel-fm__fab-icon" aria-hidden="true">📻</div>
-    <div class="wheel-fm__heading">
-      <p class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</p>
-      <div class="wheel-fm__header-controls">
-        <button type="button" class="wheel-fm__minimize" id="wheel-fm-minimize" aria-label="Minimize Wheel.FM"
-          aria-expanded="true">_</button>
-      </div>
-    </div>
-    <div class="wheel-fm__content" id="wheel-fm-content">
-      <p class="wheel-fm__tagline">Praise the Wheel!</p>
-      <div class="wheel-fm__player" aria-live="polite">
-        <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
-          aria-label="Play previous track"></button>
-        <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
-          aria-label="Play or pause Wheel.FM"></button>
-        <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
-          aria-label="Skip to next track"></button>
-        <div class="wheel-fm__track">
+    <div class="wheel-fm__bar">
+      <div class="wheel-fm__info">
+        <h2 class="wheel-fm__eyebrow" id="wheel-fm-heading">Wheel.FM</h2>
+        <div class="wheel-fm__track" aria-live="polite" aria-atomic="true">
           <p class="wheel-fm__track-title" id="wheel-fm-track-title">Awaiting playlist…</p>
           <p class="wheel-fm__track-artist" id="wheel-fm-track-artist"></p>
         </div>
       </div>
-      <div class="wheel-fm__playlist">
-        <label class="wheel-fm__playlist-label" for="wheel-fm-channel">Channel</label>
-        <select id="wheel-fm-channel" class="wheel-fm__playlist-select" aria-label="Select Wheel.FM Channel">
-          <option value="">Loading Channels...</option>
-        </select>
-
-        <label class="wheel-fm__playlist-label" for="wheel-fm-playlist">Playlist</label>
-        <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled aria-label="Pick a Wheel.FM track">
-          <option>Loading…</option>
-        </select>
-        <p class="wheel-fm__playlist-meta" id="wheel-fm-playlist-meta">Waiting for tracks</p>
+      <div class="wheel-fm__player">
+        <button type="button" class="wheel-fm__control wheel-fm__control--prev" id="wheel-fm-prev"
+          aria-label="Play previous track" disabled></button>
+        <button type="button" class="wheel-fm__control wheel-fm__control--play" id="wheel-fm-play"
+          aria-label="Play Wheel.FM" disabled></button>
+        <button type="button" class="wheel-fm__control wheel-fm__control--next" id="wheel-fm-next"
+          aria-label="Skip to next track" disabled></button>
       </div>
-      <div class="wheel-fm__volume">
-        <label class="wheel-fm__volume-label" for="wheel-fm-volume">Volume</label>
-        <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1" value="80"
-          aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-label="Wheel.FM volume" />
-        <span class="wheel-fm__volume-value" id="wheel-fm-volume-value">80%</span>
-      </div>
-      <div class="wheel-fm__progress">
-        <span class="wheel-fm__time" id="wheel-fm-current-time">0:00</span>
-        <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
-        <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0" disabled />
-        <span class="wheel-fm__time" id="wheel-fm-duration">0:00</span>
-      </div>
-      <p class="wheel-fm__status" id="wheel-fm-status">Add MP3s to <code>wheel-fm/</code> to start broadcasting.</p>
-      <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
+      <details class="wheel-fm__options" id="wheel-fm-options">
+        <summary class="wheel-fm__toggle" aria-label="Wheel.FM options">Options</summary>
+        <div class="wheel-fm__panel">
+          <div class="wheel-fm__playlist">
+            <label for="wheel-fm-channel">Channel</label>
+            <select id="wheel-fm-channel" class="wheel-fm__playlist-select" disabled>
+              <option value="">Loading channels…</option>
+            </select>
+            <label for="wheel-fm-playlist">Track</label>
+            <select id="wheel-fm-playlist" class="wheel-fm__playlist-select" disabled>
+              <option>Loading…</option>
+            </select>
+          </div>
+          <div class="wheel-fm__progress">
+            <span class="wheel-fm__time" id="wheel-fm-current-time" aria-hidden="true">0:00</span>
+            <label class="visually-hidden" for="wheel-fm-seek">Wheel.FM progress</label>
+            <input type="range" id="wheel-fm-seek" class="wheel-fm__seek" min="0" max="100" step="0.1" value="0" disabled />
+            <span class="wheel-fm__time" id="wheel-fm-duration" aria-hidden="true">0:00</span>
+          </div>
+          <div class="wheel-fm__volume">
+            <label for="wheel-fm-volume">Volume</label>
+            <input type="range" id="wheel-fm-volume" class="wheel-fm__volume-slider" min="0" max="100" step="1" value="80" />
+            <span class="wheel-fm__volume-value" id="wheel-fm-volume-value" aria-hidden="true">80%</span>
+          </div>
+          <p class="wheel-fm__status" id="wheel-fm-status" role="status"></p>
+        </div>
+      </details>
     </div>
+    <audio id="wheel-fm-audio" preload="metadata" hidden></audio>
   </section>
 
   <div id="boost-modal" class="win-modal" role="dialog" aria-modal="true" aria-labelledby="boost-modal-title" hidden>

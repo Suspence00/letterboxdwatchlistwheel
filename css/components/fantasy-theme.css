@@ -186,7 +186,7 @@ body.theme-fantasy .booster-tag {
 }
 
 body.theme-fantasy .wheel-fm {
-  background: rgba(22, 17, 13, 0.92);
-  border: 1px solid rgba(212, 163, 115, 0.25);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+  --wheel-fm-border: rgba(212, 163, 115, 0.25);
+  --wheel-fm-shadow: rgb(0 0 0 / 60%);
+  --wheel-fm-surface: #16110d;
 }

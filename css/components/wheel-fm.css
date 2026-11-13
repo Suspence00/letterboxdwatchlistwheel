@@ -1,206 +1,164 @@
+html:has(.wheel-fm) {
+    --wheel-fm-height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    scroll-padding-block-end: calc(var(--wheel-fm-height) + 0.75rem);
+}
+
+body:has(> .wheel-fm) {
+    padding-block-end: var(--wheel-fm-height);
+    padding-block-start: max(2rem, env(safe-area-inset-top, 0px));
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+}
+
 .wheel-fm {
-    backdrop-filter: blur(16px);
-    background: rgba(15, 26, 39, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    bottom: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.25rem;
+    --wheel-fm-accent: color-mix(in srgb, var(--accent) 65%, white);
+    --wheel-fm-control-edge: color-mix(in srgb, var(--muted) 65%, var(--wheel-fm-surface, #0f1a27));
+    --wheel-fm-focus: var(--wheel-fm-accent);
+    --wheel-fm-inline-gutter: max(0.75rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+
+    background: var(--wheel-fm-surface, #0f1a27);
+    border-top: 1px solid var(--wheel-fm-border, var(--border));
+    box-shadow: 0 -4px 24px var(--wheel-fm-shadow, rgb(0 0 0 / 25%));
+    color: var(--text);
+    inset: auto 0 0;
+    padding-block-end: env(safe-area-inset-bottom, 0px);
+    padding-inline: var(--wheel-fm-inline-gutter);
     position: fixed;
-    right: 1.5rem;
-    transition: border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease, width 0.3s ease;
-    width: 360px;
-    z-index: 1000;
+    z-index: 900;
 }
 
-.wheel-fm.is-minimized {
-    gap: 0.5rem;
-    padding: 1rem;
-    width: 360px;
-}
-
-.wheel-fm.is-ultra-minimized {
+.wheel-fm__bar {
     align-items: center;
-    border-radius: 50%;
-    cursor: pointer;
     display: flex;
-    height: 56px;
-    justify-content: center;
-    padding: 0;
-    transition: border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease, width 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    width: 56px;
+    gap: clamp(0.375rem, 2vw, 1.5rem);
+    margin-inline: auto;
+    max-width: 1424px;
+    min-height: calc(3.75rem - 1px);
 }
 
-.wheel-fm.is-ultra-minimized.is-playing {
-    animation: fab-pulse 2s infinite ease-in-out;
-    border-color: var(--accent);
-    box-shadow: 0 0 16px rgba(255, 153, 51, 0.4);
-}
-
-.wheel-fm.is-ultra-minimized .wheel-fm__heading,
-.wheel-fm.is-ultra-minimized .wheel-fm__content {
-    display: none;
-}
-
-.wheel-fm__fab-icon {
-    display: none;
-}
-
-.wheel-fm.is-ultra-minimized .wheel-fm__fab-icon {
-    display: block;
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-.wheel-fm__heading {
+.wheel-fm__info {
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: grab;
     display: flex;
-    justify-content: space-between;
-    padding-bottom: 0.75rem;
-    user-select: none;
-    width: 100%;
-}
-
-.wheel-fm.is-minimized .wheel-fm__heading {
-    border-bottom: none;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0;
-}
-
-@keyframes fab-pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.08);
-    }
+    flex: 1;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    min-width: 0;
 }
 
 .wheel-fm__eyebrow {
-    color: var(--accent);
+    color: var(--wheel-fm-accent);
+    flex-shrink: 0;
     font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
     margin: 0;
     text-transform: uppercase;
 }
 
-.wheel-fm__minimize {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 4px;
-    color: var(--text);
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1;
-    padding: 0.25rem 0.5rem;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 24px;
-    width: 24px;
+.wheel-fm__track {
+    min-width: 0;
 }
 
-.wheel-fm__minimize:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-.wheel-fm__content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: opacity 0.2s ease;
-}
-
-.wheel-fm.is-minimized .wheel-fm__content {
-    gap: 0.5rem;
-}
-
-/* Mini Player Visibility Toggles */
-.wheel-fm.is-minimized .wheel-fm__tagline,
-.wheel-fm.is-minimized .wheel-fm__playlist,
-.wheel-fm.is-minimized .wheel-fm__volume,
-.wheel-fm.is-minimized .wheel-fm__status,
-.wheel-fm.is-minimized .wheel-fm__time {
-    display: none;
-}
-
-.wheel-fm__tagline {
-    font-size: 0.8rem;
-    font-weight: 600;
+.wheel-fm__track-title,
+.wheel-fm__track-artist {
+    line-height: 1.2;
     margin: 0;
-    opacity: 0.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wheel-fm__track-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.wheel-fm__track-artist {
+    color: var(--muted);
+    font-size: 0.75rem;
 }
 
 .wheel-fm__player {
     align-items: center;
     display: flex;
-    gap: 1rem;
-    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 0.125rem;
 }
 
-.wheel-fm.is-minimized .wheel-fm__player {
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
-.wheel-fm__control {
+.wheel-fm__control,
+.wheel-fm__toggle {
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
+    background: var(--surface-control);
+    border: 1px solid var(--wheel-fm-control-edge);
     color: var(--text);
     cursor: pointer;
     display: flex;
-    height: 32px;
     justify-content: center;
-    transition: all 0.2s ease;
-    width: 32px;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
 }
 
-.wheel-fm__control:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+.wheel-fm__control {
+    border-radius: 50%;
+    padding: 0;
+}
+
+.wheel-fm__toggle {
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.375rem;
+    list-style: none;
+    padding: 0 0.5rem;
+}
+
+.wheel-fm__toggle::-webkit-details-marker {
+    display: none;
+}
+
+.wheel-fm__toggle::after {
+    border: solid currentColor;
+    border-width: 1.5px 1.5px 0 0;
+    content: '';
+    height: 0.375rem;
+    transform: translateY(2px) rotate(-45deg);
+    width: 0.375rem;
+}
+
+.wheel-fm__options[open] .wheel-fm__toggle::after {
+    transform: translateY(-2px) rotate(135deg);
+}
+
+.wheel-fm :is(button, summary, input, select):focus-visible {
+    outline: 3px solid var(--wheel-fm-focus);
+    outline-offset: 2px;
+}
+
+.wheel-fm__control:hover:not(:disabled),
+.wheel-fm__toggle:hover,
+.wheel-fm__options[open] .wheel-fm__toggle {
+    border-color: var(--wheel-fm-focus);
+}
+
+.wheel-fm__control:disabled {
+    cursor: default;
+    opacity: 0.55;
 }
 
 .wheel-fm__control--play {
-    background: var(--accent);
+    background: var(--wheel-fm-accent);
+    border-color: transparent;
     color: #0b1622;
-    height: 42px;
-    width: 42px;
-}
-
-.wheel-fm.is-minimized .wheel-fm__control--play {
-    height: 36px;
-    width: 36px;
-    font-size: 0.9rem;
-}
-
-.wheel-fm__control--play:hover {
-    background: #ff9933;
 }
 
 .wheel-fm__control--prev::before {
     content: '⏮';
-    font-size: 0.8rem;
 }
 
 .wheel-fm__control--next::before {
     content: '⏭';
-    font-size: 0.8rem;
 }
 
 .wheel-fm__control--play::before {
     content: '▶';
-    font-size: 1.1rem;
     margin-left: 2px;
 }
 
@@ -209,128 +167,110 @@
     margin-left: 0;
 }
 
-.wheel-fm__track {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-    /* Allow text truncation */
-}
-
-.wheel-fm__track-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.wheel-fm__track-artist {
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.wheel-fm__panel {
+    background: var(--wheel-fm-surface, #0f1a27);
+    border: 1px solid var(--wheel-fm-border, var(--border));
+    border-radius: 0.75rem;
+    bottom: calc(100% + 0.5rem);
+    box-shadow: 0 8px 24px var(--wheel-fm-shadow, rgb(0 0 0 / 25%));
+    display: grid;
+    gap: 0.75rem;
+    inset-inline-end: max(var(--wheel-fm-inline-gutter), (100% - 1424px) / 2);
+    max-height: calc(100vh - var(--wheel-fm-height) - 1rem);
+    max-height: calc(100dvh - var(--wheel-fm-height) - 1rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 0.875rem;
+    position: absolute;
+    width: min(24rem, calc(100% - 2 * var(--wheel-fm-inline-gutter)));
 }
 
 .wheel-fm__playlist {
-    align-items: stretch;
-    /* Stretch to fill width */
-    display: flex;
-    flex-direction: column;
-    /* Stack vertically */
+    align-items: center;
+    display: grid;
     gap: 0.5rem;
-    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
 }
 
-.wheel-fm__playlist-label {
-    display: none;
-    /* Hide label to save space */
-}
-
-.wheel-fm__playlist-select {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 0.85rem;
-    width: 100%;
-    padding: 0.4rem 0.6rem;
-}
-
-.wheel-fm__playlist-select option {
-    background-color: #0f1a27;
-    color: var(--text);
-}
-
-.wheel-fm__playlist-meta {
-    display: none;
-    /* Hide meta to save space */
-}
-
-.wheel-fm__volume {
-    align-items: center;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-}
-
-.wheel-fm__volume-label {
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.wheel-fm__volume-slider {
-    accent-color: var(--accent);
-    width: 80px;
-}
-
-.wheel-fm__volume-value {
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    min-width: 2.5em;
-    text-align: right;
-}
-
-.wheel-fm__progress {
-    align-items: center;
-    display: flex;
-    gap: 0.75rem;
-    width: 100%;
-}
-
-.wheel-fm__seek {
-    accent-color: var(--accent);
-    flex: 1;
-    width: 100%;
-    height: 4px;
-}
-
-.wheel-fm__time {
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    min-width: 2.5em;
-}
-
+.wheel-fm__playlist label,
+.wheel-fm__volume label,
+.wheel-fm__time,
+.wheel-fm__volume-value,
 .wheel-fm__status {
     color: var(--muted);
     font-size: 0.75rem;
-    margin: 0;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 0.75rem;
 }
 
-/* On phones the player follows the page instead of covering the spin controls. */
-@media (max-width: 600px) {
+.wheel-fm__playlist-select {
+    background: var(--surface-control);
+    border: 1px solid var(--wheel-fm-control-edge);
+    border-radius: 0.5rem;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.875rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.5rem;
+    width: 100%;
+}
+
+.wheel-fm__playlist-select option {
+    background: var(--wheel-fm-surface, #0f1a27);
+    color: var(--text);
+}
+
+.wheel-fm__progress,
+.wheel-fm__volume {
+    align-items: center;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.wheel-fm__seek,
+.wheel-fm__volume-slider {
+    accent-color: var(--wheel-fm-accent);
+    height: 1.5rem;
+    margin: 0;
+    width: 100%;
+}
+
+.wheel-fm__time,
+.wheel-fm__volume-value {
+    font-variant-numeric: tabular-nums;
+    min-width: 4ch;
+}
+
+.wheel-fm__volume-value {
+    text-align: end;
+}
+
+.wheel-fm__status {
+    margin: 0;
+}
+
+@media (min-width: 900px) {
     .wheel-fm {
-        margin-top: 1.5rem;
+        --wheel-fm-inline-gutter: max(4vw, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+    }
+
+    .wheel-fm__bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    .wheel-fm__options {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 600px) {
+    .wheel-fm__info {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .wheel-fm__track {
         max-width: 100%;
-        position: static;
     }
 }

@@ -187,8 +187,6 @@ for (const width of [1440, 1100, 768, 375]) {
         await page.locator('#movie-search').fill('');
         await expect(page.locator('#movie-list li')).toHaveCount(10);
         expect((await page.locator('.movie-summary').first().boundingBox()).width).toBeGreaterThan(150);
-        await page.locator('#wheel-fm-minimize').click();
-        await page.locator('#wheel-fm-minimize').click();
         await page.locator('#movie-search').blur();
         await page.screenshot({ fullPage: true, animations: 'disabled', path: testInfo.outputPath(`omni-${width}.png`) });
         await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
