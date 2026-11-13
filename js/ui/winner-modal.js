@@ -12,12 +12,14 @@ import { isVhsEnabled, clearVhsReveal, getCurrentSpinMode } from '../vhs-wheel.j
 import { closeSpinTheater } from '../spin-theater.js';
 import { getStoredWeight } from '../utils.js';
 import { getWinnerId } from '../wheel.js';
+import { themeEffects } from '../theme-effects.js';
 
 // DOM Elements map with fallback to document.getElementById
 const defaultElementIds = {
     winModal: 'win-modal',
     winModalCloseBtn: 'win-modal-close',
     winModalTitle: 'win-modal-title',
+    themedWinnerNote: 'themed-winner-note',
     winModalDetails: 'win-modal-details',
     winModalPosterWrapper: 'win-modal-poster-wrapper',
     winModalPoster: 'win-modal-poster',
@@ -272,6 +274,11 @@ export function showWinnerPopup(movie, context = {}) {
 
     if (elements.winModalTitle) {
         elements.winModalTitle.textContent = `The movie selected was ${movie.name}!`;
+    }
+    if (elements.themedWinnerNote) {
+        const note = themeEffects[appState.preferences.theme]?.scene?.winner;
+        elements.themedWinnerNote.textContent = note || '';
+        elements.themedWinnerNote.hidden = !note;
     }
     if (elements.winModalDetails) {
         elements.winModalDetails.textContent = details.length

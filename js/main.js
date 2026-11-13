@@ -43,6 +43,7 @@ import {
 } from './utils.js';
 import { openSpinTheater } from './spin-theater.js';
 import { getCurrentSpinMode, applyLabelsPreference } from './vhs-wheel.js';
+import { themeEffects } from './theme-effects.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -341,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (safeTheme !== 'default') {
             document.body.classList.add(`theme-${safeTheme}`);
         }
+        document.body.toggleAttribute('data-theme-scene', Boolean(themeEffects[safeTheme]?.scene));
         
         if (elements.themeSelect) {
             elements.themeSelect.value = safeTheme;

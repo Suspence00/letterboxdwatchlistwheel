@@ -4,6 +4,7 @@
  */
 
 import { getActiveTheme } from './utils.js';
+import { themeEffects } from './theme-effects.js';
 
 const WHEEL_FM_PLAYLIST_PATH = 'wheel-fm/playlist.json';
 const DEFAULT_WHEEL_FM_VOLUME = 0.8;
@@ -70,15 +71,15 @@ export function playTickSound() {
     if (wheelSoundsMuted) return;
 
     ensureAudioContext();
-    const isArrakis = getActiveTheme() === 'arrakis';
+    const { frequency = 600, end, wave = 'triangle', volume = 0.08 } = themeEffects[getActiveTheme()]?.tick || {};
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
-    oscillator.type = 'triangle';
+    oscillator.type = wave;
     const now = audioContext.currentTime;
-    oscillator.frequency.setValueAtTime(isArrakis ? 145 : 600, now);
-    if (isArrakis) oscillator.frequency.exponentialRampToValueAtTime(62, now + 0.1);
+    oscillator.frequency.setValueAtTime(frequency, now);
+    if (end) oscillator.frequency.exponentialRampToValueAtTime(end, now + 0.1);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
     oscillator.connect(gain).connect(audioContext.destination);
     oscillator.start(now);
@@ -91,17 +92,16 @@ export function playWinSound() {
     ensureAudioContext();
     const now = audioContext.currentTime;
 
-    const isArrakis = getActiveTheme() === 'arrakis';
-    const notes = isArrakis ? [82.41, 123.47, 164.81] : [523.25, 659.25, 783.99];
+    const { notes = [523.25, 659.25, 783.99], release = 0.4, spacing = 0.12, wave = 'sine' } =
+        themeEffects[getActiveTheme()]?.chime || {};
     notes.forEach((frequency, index) => {
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        oscillator.type = 'sine';
+        oscillator.type = wave;
         oscillator.frequency.value = frequency;
-        const startTime = now + index * (isArrakis ? 0.16 : 0.12);
+        const startTime = now + index * spacing;
         gain.gain.setValueAtTime(0.0001, startTime);
         gain.gain.exponentialRampToValueAtTime(0.12, startTime + 0.05);
-        const release = isArrakis ? 0.9 : 0.4;
         gain.gain.exponentialRampToValueAtTime(0.0001, startTime + release);
         oscillator.connect(gain).connect(audioContext.destination);
         oscillator.start(startTime);

@@ -1,0 +1,378 @@
+body.theme-thanksgiving {
+    --accent: #ffc17c;
+    --accent-strong: #a84138;
+    --card-bg: #2b1814;
+    --muted: #e0bca5;
+    --shadow: rgb(18 6 3 / 60%);
+    --text: #fff0d8;
+
+    background: radial-gradient(ellipse at top right, #5a2a1b, #21110e 45rem);
+    color: var(--text);
+}
+
+:is(.theme-spooky, .theme-card[data-theme='spooky']) {
+    --scene-image: url('../../media/themes/spooky.webp');
+    --scene-surface: #171120;
+    --scene-edge: #78658c;
+    --scene-light: #dac9ff;
+    --scene-action: #ffb978;
+    --scene-wheel: radial-gradient(circle, #171320 0 18%, transparent 19%),
+        repeating-conic-gradient(from 9deg, #40364d 0deg 26deg, #130f1b 27deg 50deg, #574962 51deg 60deg);
+    --scene-hub: radial-gradient(circle, #181322 0 16%, #d4c8df 18% 23%, #423750 25% 43%, #171321 45%);
+    --scene-particles: projector-dust;
+}
+
+:is(.theme-forest, .theme-card[data-theme='forest']) {
+    --scene-image: url('../../media/themes/forest.webp');
+    --scene-surface: #16221c;
+    --scene-edge: #738369;
+    --scene-light: #ffdba5;
+    --scene-action: #efb674;
+    --scene-wheel: repeating-radial-gradient(ellipse at 46% 53%, #6c452a 0 2px, #bd8455 3px 12px, #95663f 14px 18px);
+    --scene-hub: radial-gradient(ellipse at 50% 62%, #ffe1a5 0 12%, #d88a4e 15% 23%, #583322 32%, #221c17 65%);
+    --scene-particles: camp-embers;
+    --scene-position: 80% 64%;
+}
+
+:is(.theme-thanksgiving, .theme-card[data-theme='thanksgiving']) {
+    --scene-image: url('../../media/themes/thanksgiving.webp');
+    --scene-surface: #2b1814;
+    --scene-edge: #a26b4e;
+    --scene-light: #ffe3aa;
+    --scene-action: #ffc17c;
+    --scene-wheel: repeating-conic-gradient(#5a2e2033 0 1deg, transparent 1deg 20deg),
+        radial-gradient(circle, #ce833b 0 58%, #b96934 64%, #f0bf76 66% 71%, #8b4927 73%);
+    --scene-hub: radial-gradient(circle, #dba357 0 16%, #8e4d29 18% 31%, #efb66b 34% 40%, #572a1e 43%);
+    --scene-particles: falling-leaves;
+    --scene-position: 77% 58%;
+}
+
+:is(.theme-holiday, .theme-card[data-theme='holiday']) {
+    --scene-image: url('../../media/themes/christmas.webp');
+    --scene-surface: #14251e;
+    --scene-edge: #877352;
+    --scene-light: #ffe5af;
+    --scene-action: #f5c486;
+    --scene-wheel: repeating-conic-gradient(from 5deg, #285340 0deg 18deg, #942f43 19deg 35deg, #cea45f 36deg);
+    --scene-hub: radial-gradient(circle, #ffe4a7 0 12%, #a73a4a 14% 33%, #d9a860 35% 40%, #19392e 43%);
+    --scene-particles: falling-snow;
+    --scene-position: 77% 31%;
+}
+
+:is(.theme-hanukkah, .theme-card[data-theme='hanukkah']) {
+    --scene-image: url('../../media/themes/hanukkah.webp');
+    --scene-surface: #131e35;
+    --scene-edge: #8c7a62;
+    --scene-light: #ffdf91;
+    --scene-action: #f4ce84;
+    --scene-wheel: repeating-conic-gradient(#ecc47755 0deg 1.5deg, transparent 1.5deg 45deg),
+        repeating-radial-gradient(circle, #1f3d68 0 19px, #315687 20px 22px, #132844 24px 27px);
+    --scene-hub: radial-gradient(ellipse at 50% 43%, #fff2be 0 10%, #e7af5d 16% 22%, #355b88 31%, #152b49 59%);
+    --scene-particles: camp-embers;
+    --scene-position: 80% 39%;
+}
+
+:is(.theme-friendslop, .theme-card[data-theme='friendslop']) {
+    --scene-image: url('../../media/themes/friendslop.webp');
+    --scene-surface: #171724;
+    --scene-edge: #797294;
+    --scene-light: #d6fa75;
+    --scene-action: #d6fa75;
+    --scene-wheel: repeating-conic-gradient(#a2d15736 0deg 1deg, transparent 1deg 12deg),
+        repeating-radial-gradient(circle, #201c30 0 20px, #6c6581 21px 22px, #282137 23px 32px);
+    --scene-hub: radial-gradient(circle, #d6fa75 0 9%, #293921 11% 25%, #829343 27% 31%, #191724 34%);
+    --scene-particles: arcade-pixels;
+}
+
+.theme-scene-decorations {
+    display: none;
+}
+
+body[data-theme-scene] {
+    --border: var(--scene-edge);
+    --focus-ring: var(--scene-light);
+    --surface-2: var(--scene-surface);
+    --surface-3: color-mix(in srgb, var(--scene-light) 16%, var(--scene-surface));
+    --text-1: var(--text);
+    --text-2: var(--muted);
+    --wheel-fm-accent: var(--scene-action);
+    --wheel-fm-focus: var(--focus-ring);
+    --wheel-fm-surface: var(--scene-surface);
+
+    color-scheme: dark;
+}
+
+body[data-theme-scene] .app-header {
+    background: var(--scene-surface);
+    border: 1px solid var(--scene-edge);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    justify-content: center;
+    margin-bottom: clamp(0.75rem, 1.5vw, 1.375rem);
+    min-height: clamp(13.5rem, 23vw, 22rem);
+    overflow: hidden;
+    padding: clamp(1.25rem, 4vw, 3.5rem);
+    position: relative;
+}
+
+body[data-theme-scene] .theme-scene-decorations {
+    background: linear-gradient(90deg, #08060be8, #08060b9c 38%, transparent 74%),
+        var(--scene-image) var(--scene-position, 72% 40%) / cover;
+    display: block;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+body[data-theme-scene] .header-controls {
+    position: static;
+}
+
+body[data-theme-scene] .app-header h1 {
+    font-size: clamp(1.75rem, 3.4vw, 3.25rem);
+    line-height: 1.1;
+    margin: 0;
+    max-width: 19ch;
+    text-wrap: balance;
+}
+
+body[data-theme-scene] .app-header p:last-child {
+    color: #f3e8df;
+    font-family: inherit;
+    font-style: normal;
+    margin-bottom: 0;
+    max-width: 39ch;
+    opacity: 1;
+}
+
+body[data-theme-scene] .settings-toggle {
+    background: var(--scene-surface);
+    border: 1px solid var(--scene-edge);
+    color: var(--text);
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+body:is(.theme-holiday, .theme-hanukkah) .seasonal-accent {
+    display: none;
+}
+
+body.theme-spooky .app-header h1 {
+    color: #f4ddc2 !important;
+    text-shadow: 0 2px 18px #0c0611;
+}
+
+.theme-thanksgiving :is(.app-header h1, .card h2, .win-modal__title) {
+    font-family: Georgia, serif;
+}
+
+.theme-friendslop .app-header h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+body[data-theme-scene] :is(.btn.btn--primary, .btn.primary, .import-btn):not(:disabled) {
+    background: var(--scene-action);
+    border-color: var(--scene-action);
+    color: #211914;
+}
+
+body[data-theme-scene] :is(.btn.btn--primary, .btn.primary, .import-btn):hover:not(:disabled) {
+    background: color-mix(in srgb, var(--scene-action) 85%, white);
+}
+
+body[data-theme-scene] .vhs-disc--front {
+    background: var(--scene-wheel);
+    border-color: var(--scene-edge);
+    box-shadow: inset 0 0 0 4px #130e19b3, inset 0 0 38px #130e1980;
+}
+
+body[data-theme-scene] .vhs-hub {
+    background: var(--scene-hub);
+    border-color: var(--scene-edge);
+}
+
+body[data-theme-scene] .vhs-hub > * {
+    visibility: hidden;
+}
+
+body[data-theme-scene] .spin-theater {
+    background: radial-gradient(ellipse at 50% 66%, var(--surface-3), var(--scene-surface) 53%, #09080d 96%);
+}
+
+body.theme-spooky .spin-theater {
+    background: conic-gradient(from -73deg at 98% 77%, transparent 0 7deg, #afa6da26 9deg, #9184c614 42deg, transparent 44deg),
+        radial-gradient(ellipse at 50% 55%, #392b48, #120e1c 62%, #09080d 97%);
+}
+
+body.theme-thanksgiving .vhs-disc--front {
+    background: repeating-conic-gradient(#5a2e2033 0 1deg, transparent 1deg 20deg),
+        radial-gradient(circle, #bf7339 0 54%, #a65c2e 61%, transparent 62%),
+        repeating-conic-gradient(from 5deg, #d5924d 0deg 7deg, #edb873 9deg 14deg, #b76a33 17deg 20deg);
+    border-color: #cf8a47;
+    border-style: ridge;
+}
+
+body.theme-holiday .vhs-disc--front {
+    border: 12px dotted #efc479;
+    box-shadow: 0 0 24px #ffcf7966, inset 0 0 0 4px #130e19b3, inset 0 0 38px #130e1980;
+}
+
+body.theme-friendslop .vhs-disc--front {
+    border: 12px dashed #8fa050;
+}
+
+body[data-theme-scene] #win-modal .win-modal__content {
+    background: radial-gradient(ellipse at top, var(--surface-3), var(--scene-surface) 58%);
+    border: 1px solid var(--scene-edge);
+}
+
+.themed-winner-note {
+    color: var(--scene-light);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    margin: 0 0 0.6rem;
+    padding-inline: 1.375rem;
+    text-transform: uppercase;
+}
+
+.theme-spooky #win-modal .win-modal__title {
+    animation: projector-on 0.8s ease-out both;
+    background: radial-gradient(ellipse at 50% 0%, #f5efff, #c0adf4 68%);
+    background-clip: text;
+    filter: drop-shadow(0 0 12px #bba6ff5c);
+}
+
+@keyframes projector-on {
+    from { opacity: 0.35; }
+    to { opacity: 1; }
+}
+
+.theme-forest #win-modal .win-modal__content {
+    background: radial-gradient(ellipse at 50% 0%, #594025, var(--scene-surface) 62%);
+    box-shadow: 0 0 55px #f79e4552;
+}
+
+.theme-thanksgiving #win-modal .win-modal__content {
+    border: 4px double var(--scene-edge);
+}
+
+.theme-holiday #win-modal .win-modal__content {
+    border: 4px double var(--scene-edge);
+    box-shadow: 0 0 36px #ffd98d3d;
+}
+
+.theme-hanukkah #win-modal .win-modal__content {
+    background: radial-gradient(ellipse at top, #443a39, var(--scene-surface) 60%);
+    box-shadow: 0 0 50px #f4ce843d;
+}
+
+.theme-friendslop #win-modal .win-modal__content {
+    border-top: 5px solid var(--scene-light);
+}
+
+.theme-friendslop .themed-winner-note {
+    font-family: ui-monospace, monospace;
+}
+
+.theme-forest .campfire {
+    bottom: calc(var(--wheel-fm-height) + 1rem);
+}
+
+.theme-thanksgiving :is(.card, .saved-wheels-bar) {
+    border: 1px solid var(--scene-edge);
+}
+
+.theme-thanksgiving .selection-summary__link {
+    color: var(--scene-light);
+}
+
+body[data-theme-scene] #random-boost-btn {
+    background: var(--surface-3);
+    border: 1px solid var(--scene-edge);
+    color: var(--scene-light);
+}
+
+.theme-card:is([data-theme='spooky'], [data-theme='forest'], [data-theme='thanksgiving'], [data-theme='holiday'], [data-theme='hanukkah'], [data-theme='friendslop']) .theme-card__preview {
+    background: linear-gradient(90deg, #08060bd9, transparent 85%),
+        var(--scene-image) var(--scene-position, 72% 40%) / cover;
+}
+
+body[data-theme-scene] .confetti-container {
+    z-index: 2010;
+}
+
+body[data-theme-scene] .confetti-piece {
+    animation-fill-mode: both;
+    animation-name: var(--scene-particles);
+    animation-timing-function: ease-out;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+}
+
+.theme-thanksgiving .confetti-piece {
+    border-radius: 90% 0 90% 0;
+}
+
+.theme-friendslop .confetti-piece {
+    border-radius: 0;
+}
+
+@keyframes projector-dust {
+    0% { opacity: 0; transform: translate(-32vw, 48vh); }
+    35% { opacity: 0.85; }
+    100% { opacity: 0; transform: translate(calc(18vw + var(--confetti-x-move)), 18vh); }
+}
+
+@keyframes camp-embers {
+    0% { opacity: 0; transform: translateY(80vh) scale(0.75); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--confetti-x-move), 16vh) scale(0.2); }
+}
+
+@keyframes falling-leaves {
+    0% { opacity: 0; transform: translateY(-5vh) rotate(20deg); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--confetti-x-move), 85vh) rotate(340deg); }
+}
+
+@keyframes falling-snow {
+    0% { opacity: 0; transform: translateY(-4vh); }
+    20% { opacity: 0.85; }
+    100% { opacity: 0; transform: translate(calc(var(--confetti-x-move) / 2), 83vh); }
+}
+
+@keyframes arcade-pixels {
+    0% { opacity: 0; transform: translateY(10vh) scale(0.4); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--confetti-x-move), 68vh) rotate(180deg); }
+}
+
+@media (max-width: 700px) {
+    body[data-theme-scene] .app-header {
+        justify-content: flex-end;
+        min-height: 16rem;
+    }
+
+    body[data-theme-scene] .theme-scene-decorations {
+        background: linear-gradient(0deg, #08060bf5 1%, #08060bc4 31%, #08060b26 76%),
+            var(--scene-image) var(--scene-position, 77% 40%) / cover;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-theme-scene] .confetti-piece {
+        display: none;
+    }
+
+    .theme-spooky #win-modal .win-modal__title {
+        animation: none;
+    }
+}

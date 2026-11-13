@@ -175,109 +175,6 @@ body.theme-friendslop .wheel-stage .pointer::after {
     filter: drop-shadow(-2px 0 6px rgba(249, 115, 22, 0.45));
 }
 
-/* Ambient Co-op Voice Lobby HUD Widget */
-.friendslop-lobby-hud {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(20, 22, 30, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    bottom: 24px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px 14px;
-    position: fixed;
-    right: 24px;
-    z-index: 5;
-}
-
-.friendslop-lobby-header {
-    align-items: center;
-    display: flex;
-    gap: 8px;
-}
-
-.friendslop-voice-pulse {
-    animation: friendslop-pulse 2s ease-in-out infinite;
-    background: #10b981;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-    display: inline-block;
-    height: 8px;
-    width: 8px;
-}
-
-.friendslop-lobby-title {
-    color: #f1f5f9;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.friendslop-lobby-badge {
-    background: rgba(88, 101, 242, 0.2);
-    border: 1px solid rgba(88, 101, 242, 0.35);
-    border-radius: 999px;
-    color: #818cf8;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 1px 6px;
-}
-
-.friendslop-squad-row {
-    align-items: center;
-    display: flex;
-    gap: 6px;
-}
-
-.friendslop-player-chip {
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    color: #cbd5e1;
-    display: inline-flex;
-    font-size: 0.65rem;
-    font-weight: 600;
-    gap: 4px;
-    padding: 2px 6px;
-}
-
-.friendslop-player-chip.player--1 {
-    border-color: rgba(249, 115, 22, 0.35);
-    color: #fdba74;
-}
-
-.friendslop-player-chip.player--2 {
-    border-color: rgba(88, 101, 242, 0.35);
-    color: #a5b4fc;
-}
-
-.friendslop-player-chip.player--3 {
-    border-color: rgba(16, 185, 129, 0.35);
-    color: #6ee7b7;
-}
-
-.friendslop-player-chip.player--4 {
-    border-color: rgba(244, 63, 94, 0.35);
-    color: #fda4af;
-}
-
-.friendslop-player-dot {
-    border-radius: 50%;
-    display: inline-block;
-    height: 5px;
-    width: 5px;
-}
-
-.player--1 .friendslop-player-dot { background: #f97316; }
-.player--2 .friendslop-player-dot { background: #5865f2; }
-.player--3 .friendslop-player-dot { background: #10b981; }
-.player--4 .friendslop-player-dot { background: #f43f5e; }
-
 /* Ambient Floating Icons */
 .friendslop-floating-item {
     color: rgba(255, 255, 255, 0.12);
@@ -304,17 +201,6 @@ body.theme-friendslop .wheel-stage .pointer::after {
 }
 
 /* Animations & Responsive */
-@keyframes friendslop-pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.45;
-        transform: scale(0.85);
-    }
-}
-
 @keyframes friendslop-float-slow {
     0%, 100% {
         transform: translateY(0px) rotate(0deg);
@@ -334,18 +220,12 @@ body.theme-friendslop .wheel-stage .pointer::after {
 }
 
 @media (max-width: 600px) {
-    .friendslop-lobby-hud {
-        bottom: 12px;
-        padding: 6px 10px;
-        right: 12px;
-    }
     .friendslop-floating-item {
         display: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .friendslop-voice-pulse,
     .friendslop-floating-item {
         animation: none !important;
     }

@@ -12,6 +12,7 @@ import {
 } from './vhs-wheel.js';
 import { openSpinTheater, closeSpinTheater, setTheaterStatus, lockSpinControls, clearEliminationStack } from './spin-theater.js';
 import { syncWheelchinko } from './ui/wheelchinko-ui.js';
+import { themeEffects } from './theme-effects.js';
 
 const TAU = 2 * Math.PI;
 const POINTER_DIRECTION = (3 * Math.PI) / 2;
@@ -361,6 +362,12 @@ export function drawWheel(movies = null, segments = null) {
     ctx.beginPath();
     const theme = appState.preferences.theme;
     ctx.fillStyle = theme === 'omni' ? '#faf9f5' : theme === 'omni-dark' ? '#181c19' : '#07121f';
+    const hubColors = themeEffects[theme]?.hub;
+    if (hubColors) {
+        const hub = ctx.createRadialGradient(0, 0, 0, 0, 0, radius * 0.2);
+        hubColors.forEach((color, index) => hub.addColorStop(index / (hubColors.length - 1), color));
+        ctx.fillStyle = hub;
+    }
     if (theme === 'arrakis') {
         const iris = ctx.createRadialGradient(0, 0, 0, 0, 0, radius * 0.2);
         iris.addColorStop(0.16, '#101f2b');
@@ -475,7 +482,7 @@ function wrapText(context, text, maxWidth, maxArcLength, movieId, angleSpan = 1,
 
     context.fillStyle = '#ffffff';
     const theme = appState.preferences.theme;
-    const hasFlatLabels = ['omni', 'omni-dark', 'arrakis'].includes(theme);
+    const hasFlatLabels = theme === 'omni' || theme === 'omni-dark' || Boolean(themeEffects[theme]);
     if (hasFlatLabels) {
         const rgb = fillColor.slice(1).match(/.{2}/g).map(value => parseInt(value, 16));
         if (theme !== 'omni') {

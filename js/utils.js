@@ -233,6 +233,11 @@ export const arrakisPalette = [
     '#55535d', '#af8257', '#8faebb', '#6a392a', '#e6ce9d'
 ];
 
+export const thanksgivingPalette = [
+    '#b45139', '#e0a850', '#733742', '#9b643b', '#68704a',
+    '#d17b40', '#633d35', '#edc88c', '#984336', '#867253'
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
@@ -249,6 +254,7 @@ export const THEMES = [
     { id: 'america', name: '4th of July', palette: americaPalette },
     { id: 'retro-95', name: 'Retro 95', palette: retro95Palette },
     { id: 'spooky', name: 'Spooky Halloween', palette: spookyPalette },
+    { id: 'thanksgiving', name: 'Thanksgiving', palette: thanksgivingPalette },
     { id: 'forest', name: 'Forest Camp', palette: forestPalette },
     { id: 'birthday', name: 'Birthday Party', palette: birthdayPalette }
 ];

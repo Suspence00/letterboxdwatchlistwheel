@@ -55,12 +55,12 @@ test('Theme browser stays compact, filters results, and persists the selected th
     expect((await page.locator('#theme-picker').boundingBox()).height).toBeLessThan(100);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-collapsed.png') });
     await summary.click();
-    await expect(gallery.getByRole('radio')).toHaveCount(17);
+    await expect(gallery.getByRole('radio')).toHaveCount(18);
     expect((await gallery.boundingBox()).height).toBeLessThanOrEqual(290);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-desktop.png') });
 
     await page.getByRole('button', { name: 'Seasonal', exact: true }).click();
-    await expect(gallery.getByRole('radio')).toHaveCount(7);
+    await expect(gallery.getByRole('radio')).toHaveCount(8);
     await page.getByRole('searchbox', { name: 'Search themes' }).fill('birthday');
     await expect(gallery.getByRole('radio')).toHaveCount(1);
     const birthday = gallery.getByRole('radio', { name: 'Birthday Party' });
@@ -78,7 +78,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     await expect(search).toBeFocused();
     await search.fill('');
     await page.getByRole('button', { name: 'All', exact: true }).click();
-    await expect(gallery.getByRole('radio')).toHaveCount(17);
+    await expect(gallery.getByRole('radio')).toHaveCount(18);
     await birthday.focus();
     await page.keyboard.press('Escape');
     await expect(gallery).not.toBeVisible();

@@ -196,19 +196,6 @@
   </div>
 
   <div class="friendslop-decorations" aria-hidden="true">
-    <div class="friendslop-lobby-hud">
-      <div class="friendslop-lobby-header">
-        <span class="friendslop-voice-pulse"></span>
-        <span class="friendslop-lobby-title">Co-Op Lobby</span>
-        <span class="friendslop-lobby-badge">4/4</span>
-      </div>
-      <div class="friendslop-squad-row">
-        <span class="friendslop-player-chip player--1"><i class="friendslop-player-dot"></i>P1</span>
-        <span class="friendslop-player-chip player--2"><i class="friendslop-player-dot"></i>P2</span>
-        <span class="friendslop-player-chip player--3"><i class="friendslop-player-dot"></i>P3</span>
-        <span class="friendslop-player-chip player--4"><i class="friendslop-player-dot"></i>P4</span>
-      </div>
-    </div>
     <div class="friendslop-floating-item friendslop-item-1">
       <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <line x1="6" y1="12" x2="10" y2="12"></line>
@@ -238,6 +225,7 @@
 
   <header class="app-header">
     <div class="arrakis-decorations" aria-hidden="true"></div>
+    <div class="theme-scene-decorations" aria-hidden="true"></div>
     <p class="arrakis-heading">Arrakis</p>
     <div class="header-controls">
       <h1>Letterboxd Watchlist Wheel</h1>
@@ -662,6 +650,7 @@
       <button type="button" class="win-modal__close" id="win-modal-close"
         aria-label="Close winner dialog">&times;</button>
       <p class="arrakis-winner-note">The desert has spoken.</p>
+      <p id="themed-winner-note" class="themed-winner-note" hidden></p>
       <h3 id="win-modal-title" class="win-modal__title"></h3>
       <p id="win-modal-details" class="win-modal__details"></p>
       <div class="win-modal__body">
@@ -760,6 +749,7 @@
                 <option value="america">4th of July</option>
                 <option value="retro-95">Retro 95</option>
                 <option value="spooky">Spooky Halloween</option>
+                <option value="thanksgiving">Thanksgiving</option>
                 <option value="forest">Forest Camp</option>
                 <option value="birthday">Birthday Party</option>
               </select>

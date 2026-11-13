@@ -2,23 +2,17 @@
  * Confetti animation effects
  */
 
+import { getActiveTheme } from '../utils.js';
+import { themeEffects } from '../theme-effects.js';
+
 let confettiTimeoutId = null;
 
 export function getConfettiPalette() {
-    if (typeof document !== 'undefined' && document.body?.classList.contains('theme-arrakis')) {
-        return ['#ffcc96', '#eea465', '#bb6d3d', '#fff0d8', '#9cdafa'];
-    }
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-birthday')) {
+    const theme = getActiveTheme();
+    const colors = themeEffects[theme]?.particles?.colors;
+    if (colors) return colors;
+    if (theme === 'birthday') {
         return ['#f59e0b', '#2563eb', '#059669', '#dc2626', '#d97706', '#94a3b8', '#3b82f6', '#fbbf24'];
-    }
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-hanukkah')) {
-        return ['#1d4ed8', '#60a5fa', '#facc15', '#fde68a', '#93c5fd', '#2563eb'];
-    }
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-holiday')) {
-        return ['#d1495b', '#2ea44f', '#f0c75e', '#f7e1a1', '#9b2f2f', '#4c956c'];
-    }
-    if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-friendslop')) {
-        return ['#f97316', '#5865f2', '#10b981', '#eab308', '#f43f5e', '#8b5cf6', '#06b6d4'];
     }
     return ['#ff8600', '#ffd23f', '#06d6a0', '#00bbf9', '#f94144', '#9d4edd'];
 }
@@ -35,15 +29,14 @@ export function triggerConfetti(container = document.getElementById('confetti-co
     container.innerHTML = '';
 
     const colors = getConfettiPalette();
-    const isArrakis = document.body.classList.contains('theme-arrakis');
-    const pieceCount = isArrakis ? 90 : 140;
+    const { count = 140, size = 8, spread = 8 } = themeEffects[getActiveTheme()]?.particles || {};
 
-    for (let i = 0; i < pieceCount; i += 1) {
+    for (let i = 0; i < count; i += 1) {
         const piece = document.createElement('span');
         piece.className = 'confetti-piece';
-        const size = isArrakis ? 2 + Math.random() * 4 : 8 + Math.random() * 8;
-        piece.style.width = `${size}px`;
-        piece.style.height = `${size * 1.4}px`;
+        const diameter = size + Math.random() * spread;
+        piece.style.width = `${diameter}px`;
+        piece.style.height = `${diameter * 1.4}px`;
         piece.style.backgroundColor = colors[i % colors.length];
         piece.style.left = `${Math.random() * 100}%`;
         piece.style.animationDelay = `${Math.random() * 0.3}s`;
