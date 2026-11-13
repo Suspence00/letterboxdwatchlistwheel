@@ -20,6 +20,7 @@ test.describe('Wheelchinko Mode', () => {
       const first = state.appState.activeWorkspaceId;
       const second = state.createWorkspace('Other board');
       state.switchWorkspace(second);
+      state.appState.preferences.spinMode = 'wheelchinko';
       state.appState.movies = [0, 1, 2].map(i => ({ id: `other-${i}`, name: `Other ${i}`, weight: 1, color: '#ff8600' }));
       state.appState.selectedIds = new Set(state.appState.movies.map(m => m.id));
       state.saveState();

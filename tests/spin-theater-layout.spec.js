@@ -29,6 +29,7 @@ for (const style of ['vhs', 'classic']) {
         await page.emulateMedia({ reducedMotion: 'no-preference' });
         await page.goto('/');
         await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+        await page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' }).click();
         if (style === 'classic') {
             await page.locator('#settings-open').click();
             await page.locator('#wheel-style').selectOption(style);
@@ -48,6 +49,7 @@ for (const style of ['vhs', 'classic']) {
             await page.emulateMedia({ reducedMotion: 'reduce' });
             await page.goto('/');
             await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+            await page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' }).click();
             if (style === 'classic') {
                 await page.locator('#settings-open').click();
                 await page.locator('#wheel-style').selectOption(style);

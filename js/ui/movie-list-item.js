@@ -11,7 +11,7 @@ import {
 import { applyKnockoutStatusToElement } from './knockout-ui.js';
 import { renderBoosterTags } from './boost-station.js';
 import { promptForInput } from './modals.js';
-import { setMovieOddsLabel } from './movie-odds.js';
+import { updateMovieOdds } from './movie-odds.js';
 
 export function getSafeHttpUrl(value) {
     if (typeof value !== 'string' || !value.trim()) return '';
@@ -30,7 +30,7 @@ export function getSafeHttpUrl(value) {
  * @param {{ updateMovieList: () => void, onAppearanceChange: () => void, removeCustomEntry: (id: string|number) => void }} actions
  */
 export function buildMovieListItem(movie, index, context, actions) {
-    const { oddsMap, winOddsMap, weightsEnabled, randomBoostActive, themeLocked, winnerId, weightCopy, knockoutMode } = context;
+    const { weightsEnabled, randomBoostActive, themeLocked, winnerId, weightCopy } = context;
     const li = document.createElement('li');
     li.dataset.id = movie.id;
     if (winnerId === movie.id) {
@@ -97,23 +97,14 @@ export function buildMovieListItem(movie, index, context, actions) {
         label.appendChild(metaEl);
     }
 
-    const hasRiskOdds = oddsMap.has(movie.id);
-    const hasWinOdds = winOddsMap.has(movie.id);
-    const oddsValue = hasRiskOdds ? oddsMap.get(movie.id) || 0 : 0;
-    const winOddsValue = hasWinOdds ? winOddsMap.get(movie.id) || 0 : 0;
-    const isActive = isSelected && hasRiskOdds;
-    const isWinActive = isSelected && hasWinOdds;
     const oddsGroup = document.createElement('div');
     oddsGroup.className = 'movie-odds-group';
 
     const oddsEl = document.createElement('span');
     oddsEl.className = 'movie-odds movie-odds--risk';
-    oddsEl.hidden = !knockoutMode;
-    setMovieOddsLabel(oddsEl, oddsValue, isActive, 'Risk', weightCopy.riskLabel);
 
     const winOddsEl = document.createElement('span');
     winOddsEl.className = 'movie-odds movie-odds--win';
-    setMovieOddsLabel(winOddsEl, winOddsValue, isWinActive, 'Win', weightCopy.winLabel);
 
     oddsGroup.appendChild(oddsEl);
     oddsGroup.appendChild(winOddsEl);
@@ -136,6 +127,7 @@ export function buildMovieListItem(movie, index, context, actions) {
 
     li.appendChild(checkbox);
     li.appendChild(label);
+    updateMovieOdds(oddsGroup, movie.id, isSelected, context);
 
     if (weightsEnabled) {
         const weightWrapper = document.createElement('div');

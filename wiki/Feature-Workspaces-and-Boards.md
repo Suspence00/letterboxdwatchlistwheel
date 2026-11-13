@@ -32,7 +32,7 @@ Every wheel stores its own dedicated state in `localStorage` under a unique UUID
 | **Winner History** | Isolated | The log of previous winners and champions spun on this wheel. |
 | **Game Progression** | Isolated | Ongoing Knockout Mode elimination rounds. |
 | **Tied Letterboxd URL** | Isolated | The Letterboxd list or watchlist URL bound to this wheel. |
-| **Theme & Preferences** | Isolated | Selected visual theme, VHS capacity, and label toggles. |
+| **Theme & Preferences** | Isolated | Spin mode, visual theme, VHS capacity, and label toggles. New boards start in 1 Spin. |
 
 ---
 

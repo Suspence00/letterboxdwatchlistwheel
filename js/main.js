@@ -2,10 +2,10 @@
  * Main entry point for the Letterboxd Watchlist Wheel
  */
 
-import { loadState, appState, saveState, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace } from './state.js';
+import { loadState, appState, getCurrentSpinMode, normalizeSpinMode, saveState, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace } from './state.js';
 
 import { initAudio } from './audio.js';
-import { initWheel, spinWheel, invalidateWheelCache, drawWheel } from './wheel.js';
+import { initWheel, spinWheel, invalidateWheelCache } from './wheel.js';
 import {
     initUI,
     updateMovieList,
@@ -42,7 +42,7 @@ import {
     THEMES
 } from './utils.js';
 import { openSpinTheater } from './spin-theater.js';
-import { getCurrentSpinMode, applyLabelsPreference } from './vhs-wheel.js';
+import { applyLabelsPreference } from './vhs-wheel.js';
 import { themeEffects } from './theme-effects.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -223,6 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Modules
     loadState();
+    const syncSpinMode = () => {
+        for (const radio of elements.spinModeRadios) radio.checked = radio.value === getCurrentSpinMode();
+    };
+    syncSpinMode();
 
     // Initialize Audio
     initAudio(elements);
@@ -402,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshMovies: updateMovieList,
         renderHistory,
         refreshPreferences: () => {
+            syncSpinMode();
             syncFinalistsToggles();
             applyTheme(appState.preferences?.theme, { force: true });
             themePicker?.sync(appState.preferences?.theme || DEFAULT_THEME);
@@ -461,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLabelsPreference(appState.preferences?.vhsShowLabels !== false);
 
     window.addEventListener('letterboxd:workspacechange', () => {
+        syncSpinMode();
         if (elements.searchInput) {
             elements.searchInput.value = appState.filter.query || '';
         }
@@ -480,17 +486,18 @@ document.addEventListener('DOMContentLoaded', () => {
         invalidateWheelCache();
         updateMovieList();
         renderHistory();
-        refreshKnockoutBoxVisibility();
+        updateKnockoutRemainingBox([]);
         updateReshowWinnerButton();
     });
 
-    if (elements.spinModeRadios) {
-        elements.spinModeRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                drawWheel();
-                updateMovieList();
-                updateSpinButtonLabel();
-            });
+    for (const radio of elements.spinModeRadios) {
+        radio.addEventListener('change', () => {
+            const mode = normalizeSpinMode(radio.value);
+            if (!radio.checked || !mode) return;
+            appState.preferences.spinMode = mode;
+            saveState();
+            updateKnockoutRemainingBox([]);
+            updateMovieList();
         });
     }
 

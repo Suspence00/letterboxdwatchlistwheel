@@ -1,20 +1,20 @@
 /** Movie filtering, ordering, and synchronization with wheel and slice controls. */
-import { appState, debouncedSaveState } from '../state.js';
+import { appState, debouncedSaveState, getFilteredMovies, getFilteredSelectedMovies } from '../state.js';
 import { getStoredWeight, getMovieOriginalIndex } from '../utils.js';
 import {
     drawWheel,
     getWinnerId,
     setWinnerId,
-    setWeightMode,
-    getSelectionOdds
+    getModeOdds
 } from '../wheel.js';
+import { getActiveSpinMode } from '../vhs-wheel.js';
 import { closeWinnerPopup, updateReshowWinnerButton } from './winner-modal.js';
-import { resetSliceEditor, syncSliceEditorWithSelection, updateDisplayedOdds } from './slice-editor.js';
+import { resetSliceEditor, syncSliceEditorWithSelection, updateSliceOddsDisplay } from './slice-editor.js';
 import { buildMovieListItem, getSafeHttpUrl } from './movie-list-item.js';
+import { getModeCopy, updateMovieOdds } from './movie-odds.js';
 import { createMovieListViewport } from './movie-list-viewport.js';
 
 const elements = {};
-let getSpinMode = () => 'knockout';
 let updateSpinButtonLabel = () => {};
 let viewport = null;
 let wheelUpdateFrame = null;
@@ -26,7 +26,6 @@ function isThemePaletteLocked() {
 /** Connect list updates to the orchestrator without importing the UI facade. */
 export function initMovieList(domElements, callbacks) {
     Object.assign(elements, domElements);
-    getSpinMode = callbacks.getSpinMode;
     updateSpinButtonLabel = callbacks.updateSpinButtonLabel;
     const actions = {
         updateMovieList,
@@ -38,31 +37,6 @@ export function initMovieList(domElements, callbacks) {
     };
     viewport = createMovieListViewport(elements, (movie, index, context) =>
         buildMovieListItem(movie, index, context, actions));
-}
-
-/** @returns {import('../types.js').Movie[]} */
-export function getFilteredMovies() {
-    const { movies, filter } = appState;
-
-    return movies.filter((movie) => {
-        if (!filter.showCustoms && movie.isCustom) return false;
-
-        if (filter.normalizedQuery) {
-            const haystack = [movie.name, movie.year, movie.date]
-                .filter((part) => typeof part === 'string' && part.trim())
-                .join(' ')
-                .toLowerCase();
-
-            if (!haystack.includes(filter.normalizedQuery)) return false;
-        }
-
-        return true;
-    });
-}
-
-/** @returns {import('../types.js').Movie[]} */
-export function getFilteredSelectedMovies() {
-    return getFilteredMovies().filter((movie) => appState.selectedIds.has(movie.id));
 }
 
 function getActiveFilterDescriptions() {
@@ -77,23 +51,6 @@ function getActiveFilterDescriptions() {
         descriptions.push(`sorted by ${appState.filter.sortMode}`);
     }
     return descriptions;
-}
-
-function getModeCopy(isInverseMode) {
-    if (isInverseMode) {
-        return {
-            riskLabel: 'Pick risk this spin',
-            winLabel: 'Odds to be final winner',
-            weightHelp: 'Knockout mode: higher weight makes a movie harder to be picked in elimination spins (better odds to reach the end).',
-            weightLabel: 'Knockout weight'
-        };
-    }
-    return {
-        riskLabel: 'Odds to win',
-        winLabel: 'Final winner odds',
-        weightHelp: 'One Spin mode: higher weight increases the chance this movie is picked on the single spin.',
-        weightLabel: 'Spin weight (more likely)'
-    };
 }
 
 function applyWeightCopy(copy) {
@@ -129,10 +86,8 @@ export function updateMovieList() {
         }
     }
 
-    const spinMode = getSpinMode();
-    const inverseMode = spinMode === 'knockout';
-    setWeightMode(inverseMode ? 'inverse' : 'normal');
-    const currentWeightCopy = getModeCopy(inverseMode);
+    const spinMode = getActiveSpinMode();
+    const currentWeightCopy = getModeCopy(spinMode);
     applyWeightCopy(currentWeightCopy);
     const weightsEnabled = true;
     const randomBoostActive = spinMode === 'random-boost';
@@ -171,8 +126,7 @@ export function updateMovieList() {
         return;
     }
 
-    const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: inverseMode });
-    const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+    const { oddsMap, winOddsMap } = getModeOdds(selectedMovies, spinMode);
 
     const displayMovies = [...filteredMovies];
     if (!appState.knockoutResults.size) {
@@ -228,7 +182,7 @@ export function updateMovieList() {
     }
 
     const renderContext = {
-        knockoutMode: inverseMode,
+        spinMode,
         oddsMap,
         winOddsMap,
         weightsEnabled,
@@ -248,6 +202,20 @@ export function updateMovieList() {
     updateReshowWinnerButton();
 }
 
+export function updateDisplayedOdds() {
+    const spinMode = getActiveSpinMode();
+    const weightCopy = getModeCopy(spinMode);
+    const { oddsMap, winOddsMap } = getModeOdds(undefined, spinMode);
+    const context = { oddsMap, winOddsMap, spinMode, weightCopy };
+    const ids = new Map(appState.movies.map(movie => [String(movie.id), movie.id]));
+    viewport.updateOdds(context);
+    for (const row of elements.movieListEl.querySelectorAll('li[data-id]')) {
+        const id = ids.get(row.dataset.id);
+        updateMovieOdds(row, id, appState.selectedIds.has(id), context);
+    }
+    updateSliceOddsDisplay(context);
+}
+
 function updateSpinEligibility(count) {
     if (elements.spinEligibility) {
         const label = `${count} ${count === 1 ? 'movie' : 'movies'} eligible to spin`;
@@ -256,13 +224,12 @@ function updateSpinEligibility(count) {
     if (elements.goToSpin) elements.goToSpin.hidden = count === 0;
 }
 
-function scheduleWheelUpdate() {
+export function scheduleWheelUpdate() {
     if (wheelUpdateFrame) return;
     wheelUpdateFrame = requestAnimationFrame(() => {
         wheelUpdateFrame = null;
-        const selectedMovies = getFilteredSelectedMovies();
-        drawWheel(selectedMovies);
-        updateDisplayedOdds(selectedMovies);
+        drawWheel();
+        updateDisplayedOdds();
         debouncedSaveState();
     });
 }

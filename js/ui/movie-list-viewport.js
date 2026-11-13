@@ -184,5 +184,11 @@ export function createMovieListViewport(elements, buildMovieListItem) {
     }
 
     initVirtualList();
-    return { renderMovieList, resetVirtualList };
+    return {
+        renderMovieList,
+        resetVirtualList,
+        updateOdds(odds) {
+            if (virtualListState.context) Object.assign(virtualListState.context, odds);
+        }
+    };
 }

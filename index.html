@@ -438,14 +438,14 @@
       <div class="card-body">
         <div class="spin-mode-selector" role="group" aria-label="Spin mode">
           <label class="spin-mode-option">
-            <input type="radio" name="spin-mode" value="knockout" checked>
+            <input type="radio" name="spin-mode" value="knockout">
             <div class="spin-mode-card">
               <span class="spin-mode-title">Knockout Mode</span>
               <span class="spin-mode-desc">Elimination rounds until one movie remains.</span>
             </div>
           </label>
           <label class="spin-mode-option">
-            <input type="radio" name="spin-mode" value="one-spin">
+            <input type="radio" name="spin-mode" value="one-spin" checked>
             <div class="spin-mode-card">
               <span class="spin-mode-title">1 Spin Mode</span>
               <span class="spin-mode-desc">One spin picks the winner. Higher weights improve the odds.</span>
@@ -1075,8 +1075,7 @@
 
       <div style="padding: 1.5rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
         <div id="verify-summary" style="margin-bottom: 1rem; color: #edf2f7;"></div>
-        <p class="helper-text" style="color: #a0aec0; margin-bottom: 1rem;">Simulation of <strong>10,000 spins</strong>
-          based on current weights.</p>
+        <p class="helper-text" id="verify-description" style="color: #a0aec0; margin-bottom: 1rem;"></p>
         <div class="verify-table-container" style="display: block; visibility: visible;">
           <table class="verify-table" id="verify-table">
             <thead>

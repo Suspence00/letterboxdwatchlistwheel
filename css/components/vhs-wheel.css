@@ -99,10 +99,17 @@
 }
 
 .vhs-disc--front {
-    background: repeating-conic-gradient(from 0deg, #b3996833 0deg 0.4deg, transparent 0.4deg 36deg),
-        radial-gradient(circle, #574a36 0%, #88754f 63%, #aa9164 100%);
+    background: radial-gradient(circle, #574a36 0%, #88754f 63%, #aa9164 100%);
     border-color: #8c7653;
     box-shadow: inset 0 0 0 3px #302b22, inset 0 0 35px #302819;
+}
+
+.vhs-sectors {
+    background: var(--vhs-sectors);
+    border-radius: 50%;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
 }
 
 .vhs-hub {

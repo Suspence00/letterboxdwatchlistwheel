@@ -1,6 +1,7 @@
-import { appState, saveState } from './state.js';
+import { appState, getCurrentSpinMode, saveState } from './state.js';
 import { fetchMovieMetadata } from './movie-metadata.js';
-import { getMovieOriginalIndex } from './utils.js';
+import { getMovieOriginalIndex, getStoredWeight } from './utils.js';
+import { getEffectiveWeight } from './wheel-odds.js';
 import {
     setTheaterStatus, prepareEliminationStackSlot, commitEliminationStackSlot, addTapeToEliminationStack, setSpinTheaterCallbacks
 } from './spin-theater.js';
@@ -28,8 +29,8 @@ export function getVhsCapacity() {
     return Number(appState.preferences?.vhsCapacity) || DEFAULT_VHS_CAPACITY;
 }
 
-export function getCurrentSpinMode() {
-    return document.querySelector('input[name="spin-mode"]:checked')?.value || 'knockout';
+export function getActiveSpinMode() {
+    return activeMode || getCurrentSpinMode();
 }
 
 export function useVhsForMovies(movies) {
@@ -39,7 +40,7 @@ export function useVhsForMovies(movies) {
 }
 
 /** Uniform sampling without replacement. Pins only affect the next lineup. */
-export function getVhsLineup(eligible, mode = activeMode || getCurrentSpinMode(), redraw = false) {
+export function getVhsLineup(eligible, mode = getCurrentSpinMode(), redraw = false) {
     if (!isVhsEnabled() || mode !== 'one-spin') return eligible;
     if (workspaceId !== appState.activeWorkspaceId) {
         workspaceId = appState.activeWorkspaceId;
@@ -116,7 +117,7 @@ export function initVhsWheel(handlers) {
     scene.innerHTML = `<div class="vhs-rig"><div class="vhs-rotor">
         <div class="vhs-disc vhs-disc--back" aria-hidden="true"></div>
         <div class="vhs-disc vhs-disc--middle" aria-hidden="true"></div>
-        <div class="vhs-disc vhs-disc--front" aria-hidden="true"></div>
+        <div class="vhs-disc vhs-disc--front" aria-hidden="true"><div class="vhs-sectors"></div></div>
         <div class="vhs-hub" aria-hidden="true"><span>PRAISE</span><strong>THE WHEEL!</strong></div>
         <div class="vhs-tapes"></div></div>
         <div class="vhs-flapper" aria-hidden="true"></div></div>`;
@@ -201,7 +202,7 @@ export function updateVhsControls(eligible) {
     const settingsGroup = document.getElementById('settings-vhs-group');
     const settingsCapacity = document.getElementById('settings-vhs-capacity');
     const settingsLabels = document.getElementById('settings-vhs-labels');
-    const mode = activeMode || getCurrentSpinMode();
+    const mode = getActiveSpinMode();
     if (style) {
         style.value = isVhsEnabled() ? 'vhs' : 'classic';
         style.disabled = busy;
@@ -237,12 +238,14 @@ export function updateVhsControls(eligible) {
 function updateInspector() {
     const movie = inspectedMovie;
     inspector.querySelector('.vhs-inspector__title').textContent = movie?.name || 'Choose a tape to inspect it';
-    const weight = movie?.weight || 1;
-    const isKnockout = (activeMode || getCurrentSpinMode()) === 'knockout';
-    const effectiveWeight = item => isKnockout ? 1 / (item.weight || 1) : item.weight || 1;
+    const mode = getActiveSpinMode();
+    const weight = mode === 'random-boost' ? 1 : getStoredWeight(movie);
+    const isKnockout = mode === 'knockout';
+    const effectiveWeight = item => getEffectiveWeight(item, mode);
     const total = displayedMovies.reduce((sum, item) => sum + effectiveWeight(item), 0);
+    const chance = movie && (!isKnockout || displayedMovies.length > 1) ? effectiveWeight(movie) / total : 0;
     inspector.querySelector('.vhs-inspector__detail').textContent = movie
-        ? `${movie.year || 'Year unknown'} · ${weight}× weight · ${(effectiveWeight(movie) / total * 100).toFixed(1)}% ${isKnockout ? 'elimination risk' : 'chance in this lineup'}` : '';
+        ? `${movie.year || 'Year unknown'} · ${weight}× weight · ${(chance * 100).toFixed(1)}% ${isKnockout ? 'elimination risk' : 'chance in this lineup'}` : '';
     const pin = inspector.querySelector('#vhs-pin');
     pin.hidden = getCurrentSpinMode() !== 'one-spin' || callbacks.getEligible().length <= getVhsCapacity();
     pin.disabled = !movie;
@@ -306,8 +309,8 @@ function makeTape(movie, index, interactive = true) {
     return tape;
 }
 
-/** Only the rotor transform changes per frame; posters and cuboids are reused. */
-export function renderVhsWheel(movies, angle, { spinning = false, winnerId = null } = {}) {
+/** Reuse the sleeves while laying them out at the centers of the weighted sectors. */
+export function renderVhsWheel(movies, angle, { segments = [], spinning = false, winnerId = null } = {}) {
     if (!scene) return false;
     const isSpinchinkoSpin = Boolean(activeMode && getCurrentSpinMode() === 'wheelchinko');
     if (getCurrentSpinMode() === 'wheelchinko' && !isSpinchinkoSpin) {
@@ -322,13 +325,19 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
     scene.closest('.wheel-stage').classList.toggle('has-vhs', visible);
     document.getElementById('wheel').hidden = visible;
     if (!visible) return false;
-    const key = movies.map(movie => `${movie.id}:${movie.name}:${movie.year}:${movie.vhsCoverImage || ''}`).join('|');
+    const key = JSON.stringify(segments.map(({ movie, endAngle }) =>
+        [movie.id, movie.name, movie.year, movie.vhsCoverImage, endAngle]));
     if (key !== renderedKey) {
         renderedKey = key;
         const tapes = scene.querySelector('.vhs-tapes');
         const tapeScale = movies.length > 10 ? Math.min(1, (12 / movies.length) * 1.05) : 1;
         const tapeRadius = 271 - 66 * tapeScale;
-        scene.style.setProperty('--tape-scale', tapeScale.toFixed(3));
+        const sectorStops = segments.flatMap(({ startAngle, endAngle }) => [
+            `#e7b77880 ${startAngle}rad`,
+            `#e7b77820 ${Math.min(startAngle + 0.012, endAngle)}rad`,
+            `transparent ${endAngle}rad`
+        ]);
+        scene.style.setProperty('--vhs-sectors', `conic-gradient(from 90deg, ${sectorStops.join(', ')})`);
 
         const existingTapes = new Map();
         for (const tape of tapes.querySelectorAll('.vhs-tape')) {
@@ -346,8 +355,9 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
             }
         }
 
-        movies.forEach((movie, index) => {
-            const midpoint = (index + 0.5) * 2 * Math.PI / movies.length;
+        segments.forEach(({ movie, startAngle, endAngle }, index) => {
+            const span = endAngle - startAngle;
+            const midpoint = startAngle + span / 2;
             let tape = existingTapes.get(String(movie.id));
             if (tape && tape.dataset.vhsCoverImage !== (movie.vhsCoverImage || '')) {
                 tape.remove();
@@ -367,6 +377,7 @@ export function renderVhsWheel(movies, angle, { spinning = false, winnerId = nul
             tape.style.left = `${300 + Math.cos(midpoint) * tapeRadius}px`;
             tape.style.top = `${300 + Math.sin(midpoint) * tapeRadius}px`;
             tape.style.setProperty('--tape-angle', `${midpoint + Math.PI / 2}rad`);
+            tape.style.setProperty('--tape-scale', String(Math.min(tapeScale, span * tapeRadius / 90)));
         });
     }
     displayedMovies = movies;

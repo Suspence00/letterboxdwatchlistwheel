@@ -51,6 +51,8 @@ Because survival depends on the total pool weight of all remaining contenders, b
 | **4x** | $0.250$ | $0.250 / 4.250$ | **5.9%** | ~14.1% safer |
 | **5x** | $0.200$ | $0.200 / 4.200$ | **4.8%** | ~15.2% safer |
 
+The movie list and Contenders panel show each title's chance of winning from the current pool. The calculation accounts for the full sequence of eliminations. With three movies weighted 5×, 1×, and 1×, the favorite has about a 76% chance of winning.
+
 > [!IMPORTANT]
 > The app manages all inverse transformations automatically. You never need to calculate reciprocals manually: **Higher weight is always safer and more advantageous for your picks.**
 

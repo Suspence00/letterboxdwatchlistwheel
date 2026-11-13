@@ -104,6 +104,7 @@ export function showVerificationResults(auditData) {
 
     const modal = document.getElementById('verify-modal');
     const tableBody = document.querySelector('#verify-table tbody');
+    const description = document.getElementById('verify-description');
 
     if (!tableBody) {
         console.error('Verify table body not found in DOM');
@@ -111,6 +112,10 @@ export function showVerificationResults(auditData) {
     }
 
     tableBody.innerHTML = '';
+    if (description) {
+        const trial = auditData.mode === 'knockout' ? 'Knockout tournaments' : 'single spins';
+        description.textContent = `Simulated ${auditData.iterations.toLocaleString()} ${trial} with ${auditData.candidatesCount.toLocaleString()} eligible movies.`;
+    }
 
     // Summary Stats
     let goodCount = 0;

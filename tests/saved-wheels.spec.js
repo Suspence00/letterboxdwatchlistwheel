@@ -9,6 +9,9 @@ for (const width of [1280, 375]) {
         await expect(picker).toBeVisible();
         await page.locator('input[type="file"]').first().setInputFiles(path.resolve('sample-watchlist.csv'));
         await expect(page.locator('#movie-list li').first()).toBeVisible();
+        const mode = page.locator('input[name="spin-mode"]:checked');
+        await expect(mode).toHaveValue('one-spin');
+        await page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' }).click();
         const movieCount = await page.locator('#movie-list li').count();
         const originalId = await picker.inputValue();
         await page.getByRole('button', { name: 'Manage wheels', exact: true }).click();
@@ -21,6 +24,7 @@ for (const width of [1280, 375]) {
         await expect(page.getByRole('button', { name: 'Current wheel: Horror night', exact: true })).toBeFocused();
         await expect(page.locator('#movie-list li.empty')).toBeVisible();
         await expect(page.locator('#movie-list li:not(.empty)')).toHaveCount(0);
+        await expect(mode).toHaveValue('one-spin');
         const newId = await picker.inputValue();
         expect(newId).not.toBe(originalId);
         await search.fill('no matching wheel');
@@ -33,6 +37,7 @@ for (const width of [1280, 375]) {
         await expect(page.getByRole('button', { name: 'Current wheel: My Watchlist', exact: true })).toBeFocused();
         await expect(picker).toHaveValue(originalId);
         await expect(page.locator('#movie-list li')).toHaveCount(movieCount);
+        await expect(mode).toHaveValue('knockout');
         await search.fill('');
         await page.locator('.board-item.active').getByRole('button', { name: 'Rename', exact: true }).click();
         await page.getByRole('textbox', { name: 'Wheel name', exact: true }).fill('Movie night');
@@ -49,6 +54,7 @@ for (const width of [1280, 375]) {
         await expect(page.locator('#movie-list li:not(.empty)')).toHaveCount(0);
         await picker.selectOption(originalId);
         await page.reload();
+        await expect(mode).toHaveValue('knockout');
         await expect(picker).toHaveValue(originalId);
         await expect(picker.locator('option:checked')).toHaveText('Movie night');
         await expect(page.locator('#movie-list li')).toHaveCount(movieCount);

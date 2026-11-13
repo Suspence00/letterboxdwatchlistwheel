@@ -25,7 +25,7 @@ export function setEliminationTotal(total) {
 export function lockSpinControls(locked) {
     if (locked) {
         lockedControls = Array.from(document.querySelectorAll(
-            '#import-card, #selection-card, #wheel-aside, .spin-mode-selector, .vhs-controls, #settings-open, #history-btn, #reshow-winner-btn'
+            '#import-card, #selection-card, #slice-editor, #wheel-aside, .spin-mode-selector, .vhs-controls, #settings-open, #history-btn, #reshow-winner-btn'
         ))
         .filter(element => element.id !== 'wheel-theater-btn')
         .map(element => [element, element.inert]);

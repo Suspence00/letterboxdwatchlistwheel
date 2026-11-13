@@ -6,6 +6,8 @@ test('Compact movie controls retain accessible names and keep odds in sync', asy
     await page.goto('/');
     await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
     await expect(page.locator('#movie-list li')).toHaveCount(10);
+    await expect(page.locator('input[name="spin-mode"][value="one-spin"]')).toBeChecked();
+    await page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' }).click();
     const first = page.locator('#movie-list li').first();
     const risk = first.locator('.movie-odds--risk');
     const win = first.locator('.movie-odds--win');
@@ -19,8 +21,8 @@ test('Compact movie controls retain accessible names and keep odds in sync', asy
 
     await first.getByRole('combobox', { name: 'Knockout weight for The Witch' }).selectOption('5');
     await expect(risk).toHaveText('Risk 2.2%');
-    await expect(win).toHaveText('Win 36%');
-    await expect(win).toHaveAttribute('aria-label', 'Odds to be final winner: 36%');
+    await expect(win).toHaveText('Win 58%');
+    await expect(win).toHaveAttribute('aria-label', 'Odds to be final winner: 58%');
 
     await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
     await expect(risk).toBeHidden();

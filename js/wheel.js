@@ -2,14 +2,15 @@
  * Wheel logic and animation
  */
 
-import { appState, addToHistory, saveState } from './state.js';
+import { appState, addToHistory, getCurrentSpinMode, getFilteredSelectedMovies, saveState } from './state.js';
 import { getDefaultColorForIndex, clampWeight, isThemePaletteLocked, getMovieOriginalIndex, sanitizeColor } from './utils.js';
 import { playTickSound, playWinSound, playKnockoutSound } from './audio.js';
 import {
     DEFAULT_VHS_CAPACITY, getVhsCapacity, initVhsWheel, isVhsEnabled, getVhsLineup, useVhsForMovies,
     renderVhsWheel, updateVhsControls, setVhsSpinMode, tickVhsPointer,
-    revealVhsWinner, clearVhsReveal, getCurrentSpinMode, animateVhsKnockout
+    revealVhsWinner, clearVhsReveal, getActiveSpinMode, animateVhsKnockout
 } from './vhs-wheel.js';
+import { getEffectiveWeight, getKnockoutWinOdds, pickWeighted } from './wheel-odds.js';
 import { openSpinTheater, closeSpinTheater, setTheaterStatus, lockSpinControls, clearEliminationStack } from './spin-theater.js';
 import { syncWheelchinko } from './ui/wheelchinko-ui.js';
 import { themeEffects } from './theme-effects.js';
@@ -97,7 +98,6 @@ let ctx = null;
 let rotationAngle = 0;
 let isSpinning = false;
 let isLastStandingInProgress = false;
-let useInverseWeights = false;
 let animationFrameId = null;
 let targetRotation = 0;
 let spinDuration = 0;
@@ -172,37 +172,6 @@ export function setWinnerId(id, spinMode = null) {
     }
 }
 
-export function setWeightMode(mode) {
-    useInverseWeights = mode === 'inverse';
-}
-
-function getFilteredSelectedMovies() {
-    const { movies, selectedIds, filter } = appState;
-    return movies.filter((movie) => {
-        if (!selectedIds.has(movie.id)) return false;
-        if (!filter.showCustoms && movie.isCustom) return false;
-        if (filter.normalizedQuery) {
-            const haystack = [movie.name, movie.year]
-                .filter(Boolean)
-                .join(' ')
-                .toLowerCase();
-            if (!haystack.includes(filter.normalizedQuery)) return false;
-        }
-        return true;
-    });
-}
-
-function getEffectiveWeight(movie, inverseOverride = null) {
-    const weight = Number.isFinite(movie.weight) && movie.weight > 0 ? movie.weight : 1;
-    const useInverse = typeof inverseOverride === 'boolean'
-        ? inverseOverride
-        : isLastStandingInProgress || useInverseWeights;
-    if (useInverse) {
-        return 1 / weight;
-    }
-    return weight;
-}
-
 function getEffectiveSliceColor(movie, fallbackIndex) {
     const originalIndex = getMovieOriginalIndex(movie, appState.movies);
     const paletteIndex = Number.isFinite(originalIndex) && originalIndex >= 0 ? originalIndex : fallbackIndex;
@@ -213,13 +182,12 @@ function getEffectiveSliceColor(movie, fallbackIndex) {
     return (movie && movie.color) ? sanitizeColor(movie.color, defaultColor) : defaultColor;
 }
 
-export function computeWheelModel(selectedMovies, options = {}) {
-    const { inverseModeOverride = null } = options;
+export function computeWheelModel(selectedMovies, mode = getActiveSpinMode()) {
     if (!selectedMovies.length) {
         return { segments: [], totalWeight: 0 };
     }
 
-    const weights = selectedMovies.map((movie) => getEffectiveWeight(movie, inverseModeOverride));
+    const weights = selectedMovies.map(movie => getEffectiveWeight(movie, mode));
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     if (!totalWeight) {
         return { segments: [], totalWeight: 0 };
@@ -241,14 +209,18 @@ export function computeWheelModel(selectedMovies, options = {}) {
     return { segments, totalWeight };
 }
 
-export function getSelectionOdds(selectedMovies = null, options = {}) {
-    const movies = selectedMovies || (isVhsEnabled() ? getVhsLineup(getFilteredSelectedMovies()) : getFilteredSelectedMovies());
-    const { inverseModeOverride = null } = options;
-    const { segments, totalWeight } = computeWheelModel(movies, { inverseModeOverride });
-    if (!segments.length || totalWeight <= 0) {
-        return new Map();
-    }
-    return new Map(segments.map((segment) => [segment.movie.id, segment.weight / totalWeight]));
+export function getModeOdds(eligible = getFilteredSelectedMovies(), mode = getActiveSpinMode()) {
+    if (mode === 'wheelchinko') return { oddsMap: new Map(), winOddsMap: new Map() };
+    const candidates = spinPool || getVhsLineup(eligible, mode);
+    const { segments, totalWeight } = computeWheelModel(candidates, mode);
+    const oddsMap = new Map(segments.map(({ movie, weight }) => [movie.id, weight / totalWeight]));
+    if (mode !== 'knockout') return { oddsMap: new Map(), winOddsMap: oddsMap };
+    if (candidates.length === 1) oddsMap.set(candidates[0].id, 0);
+    return { oddsMap, winOddsMap: getKnockoutWinOdds(candidates) };
+}
+
+export function getSelectionOdds() {
+    return getModeOdds().winOddsMap;
 }
 
 export function drawWheel(movies = null, segments = null) {
@@ -273,16 +245,10 @@ export function drawWheel(movies = null, segments = null) {
     if (isWheelchinko && vhsControls) vhsControls.hidden = true;
 
     const eligible = getFilteredSelectedMovies();
-    let selectedMovies;
-    if (spinPool) {
-        selectedMovies = spinPool;
-    } else if (isVhsEnabled() && getCurrentSpinMode() === 'one-spin') {
-        selectedMovies = getVhsLineup(eligible, 'one-spin');
-    } else {
-        selectedMovies = movies || eligible;
-    }
+    const selectedMovies = spinPool || getVhsLineup(movies || eligible, getCurrentSpinMode());
     updateVhsControls(eligible);
-    if (renderVhsWheel(selectedMovies, rotationAngle, { spinning: isSpinning, winnerId: appState.winnerId })) return;
+    const wheelSegments = segments || computeWheelModel(selectedMovies).segments;
+    if (renderVhsWheel(selectedMovies, rotationAngle, { segments: wheelSegments, spinning: isSpinning, winnerId: appState.winnerId })) return;
     if (!ctx) return;
 
     setupCanvasResolution();
@@ -306,7 +272,6 @@ export function drawWheel(movies = null, segments = null) {
         }
     }
 
-    const wheelSegments = segments || computeWheelModel(selectedMovies).segments;
     if (!wheelSegments.length) {
         drawEmptyWheel();
         return;
@@ -703,14 +668,8 @@ function performSpin(selectedMovies, options = {}) {
     );
 
     return new Promise((resolve) => {
-        const model = computeWheelModel(selectedMovies);
-        const totalWeight = model.totalWeight;
+        const { segments, totalWeight } = computeWheelModel(selectedMovies);
         const vhs = useVhsForMovies(selectedMovies);
-        const segments = vhs ? model.segments.map((segment, index) => ({
-            ...segment,
-            startAngle: index * TAU / selectedMovies.length,
-            endAngle: (index + 1) * TAU / selectedMovies.length
-        })) : model.segments;
         if (!segments.length || totalWeight <= 0) {
             isSpinning = false;
             resolve({ winningMovie: null, segments: [] });
@@ -726,16 +685,7 @@ function performSpin(selectedMovies, options = {}) {
             ui.updateSpinButtonLabel();
         }
 
-        const targetWeight = Math.random() * totalWeight;
-        let chosenSegment = segments[segments.length - 1];
-        let cumulative = 0;
-        for (const segment of segments) {
-            cumulative += segment.weight;
-            if (targetWeight <= cumulative) {
-                chosenSegment = segment;
-                break;
-            }
-        }
+        const chosenSegment = pickWeighted(segments, totalWeight);
 
         const segmentSpan = chosenSegment.endAngle - chosenSegment.startAngle;
         const randomOffset = vhs ? segmentSpan / 2 : (0.15 + Math.random() * 0.7) * segmentSpan;
@@ -788,7 +738,7 @@ function performSpin(selectedMovies, options = {}) {
     });
 }
 
-export async function spinWheel(spinMode = 'knockout', booster = null, moviesOverride = null) {
+export async function spinWheel(spinMode = getCurrentSpinMode(), booster = null, moviesOverride = null) {
     if (isSpinning || isLastStandingInProgress || spinSessionActive) return;
     const hasOverride = Array.isArray(moviesOverride) && moviesOverride.length > 0;
     const eligible = hasOverride ? moviesOverride : getFilteredSelectedMovies();
@@ -797,15 +747,11 @@ export async function spinWheel(spinMode = 'knockout', booster = null, moviesOve
     spinSessionActive = true;
     const isSingleSpin = spinMode === 'one-spin';
     const isRandomBoost = spinMode === 'random-boost';
-    const selectedMovies = hasOverride
-        ? [...moviesOverride]
-        : (isSingleSpin ? getVhsLineup(eligible, spinMode) : [...eligible]);
+    const selectedMovies = hasOverride ? [...eligible] : getVhsLineup(eligible, spinMode);
     let completed = false;
-    const weightBackup = new Map();
 
     spinPool = selectedMovies;
     setVhsSpinMode(spinMode);
-    setWeightMode(spinMode === 'knockout' ? 'inverse' : 'normal');
     clearVhsReveal();
     setWinnerId(null);
     appState.knockoutResults.clear();
@@ -824,13 +770,6 @@ export async function spinWheel(spinMode = 'knockout', booster = null, moviesOve
         ui.highlightKnockoutCandidate(null);
         ui.updateKnockoutRemainingBox([]);
         ui.updateSpinButtonLabel();
-        // The mode callback follows the selected radio; a Random Boost always uses equal weights.
-        if (isRandomBoost) {
-            selectedMovies.forEach(movie => {
-                weightBackup.set(movie.id, movie.weight);
-                movie.weight = 1;
-            });
-        }
         drawWheel(selectedMovies);
         await delay(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450);
         if (spinMode === 'knockout' && selectedMovies.length > 1) {
@@ -839,13 +778,9 @@ export async function spinWheel(spinMode = 'knockout', booster = null, moviesOve
             return;
         }
 
-        const selectionOdds = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
+        const { winOddsMap } = getModeOdds();
         const { winningMovie } = await performSpin(selectedMovies,
             isSingleSpin ? DRAMATIC_SPIN_SETTINGS : DEFAULT_SPIN_SETTINGS);
-        for (const movie of selectedMovies) {
-            if (weightBackup.has(movie.id)) movie.weight = weightBackup.get(movie.id);
-        }
-        weightBackup.clear();
         if (!winningMovie) return;
         setWinnerId(winningMovie.id, spinMode);
         if (isRandomBoost) {
@@ -873,12 +808,9 @@ export async function spinWheel(spinMode = 'knockout', booster = null, moviesOve
         ui.triggerConfetti();
         // Record while the session is locked, so double clicks cannot create extra winners.
         addToHistory(winningMovie, spinMode);
-        ui.showWinnerPopup(winningMovie, { spinMode, selectionOdds: selectionOdds.get(winningMovie.id) });
+        ui.showWinnerPopup(winningMovie, { spinMode, selectionOdds: winOddsMap.get(winningMovie.id) });
         completed = true;
     } finally {
-        for (const movie of selectedMovies) {
-            if (weightBackup.has(movie.id)) movie.weight = weightBackup.get(movie.id);
-        }
         isSpinning = false;
         isLastStandingInProgress = false;
         spinSessionActive = false;
@@ -905,7 +837,7 @@ async function runLastStandingMode(selectedMovies) {
     let eliminationOrder = 1;
     isLastStandingInProgress = true;
     ui.updateSpinButtonLabel();
-    ui.updateOdds?.(eliminationPool);
+    ui.updateOdds?.();
     ui.updateKnockoutRemainingBox(eliminationPool);
     ui.updateKnockoutResultText('start', eliminationPool.length);
 
@@ -913,16 +845,13 @@ async function runLastStandingMode(selectedMovies) {
     const isSpinchinko = getCurrentSpinMode() === 'wheelchinko';
     const vhsCap = isSpinchinko ? 10 : getVhsCapacity();
     if (!isSpinchinko && isVhsEnabled() && eliminationPool.length > vhsCap) {
+        const candidates = eliminationPool.map(movie => ({ weight: getEffectiveWeight(movie, 'knockout') }));
         const batchSize = Math.max(1, Math.ceil((eliminationPool.length - vhsCap) / 45));
         while (eliminationPool.length > vhsCap) {
             for (let index = 0; index < batchSize && eliminationPool.length > vhsCap; index += 1) {
-                const total = eliminationPool.reduce((sum, movie) => sum + getEffectiveWeight(movie, true), 0);
-                let pick = Math.random() * total;
-                let removalIndex = eliminationPool.length - 1;
-                for (let candidate = 0; candidate < eliminationPool.length; candidate += 1) {
-                    pick -= getEffectiveWeight(eliminationPool[candidate], true);
-                    if (pick <= 0) { removalIndex = candidate; break; }
-                }
+                const total = candidates.reduce((sum, candidate) => sum + candidate.weight, 0);
+                const removalIndex = candidates.indexOf(pickWeighted(candidates, total));
+                candidates.splice(removalIndex, 1);
                 const [removed] = eliminationPool.splice(removalIndex, 1);
                 appState.knockoutResults.set(removed.id, { order: eliminationOrder++, status: 'knocked-out' });
             }
@@ -945,7 +874,6 @@ async function runLastStandingMode(selectedMovies) {
             ? speedConfig.finalSpin
             : speedConfig.eliminationSpin;
 
-        setWeightMode('inverse');
 
         const { winningMovie: eliminatedMovie } = await performSpin(
             eliminationPool,
@@ -963,9 +891,6 @@ async function runLastStandingMode(selectedMovies) {
         });
 
         ui.updateKnockoutResultText('eliminated', remainingCount, eliminatedMovie);
-        ui.updateKnockoutRemainingBox(eliminationPool);
-        ui.updateOdds?.(eliminationPool);
-
         playKnockoutSound();
         if (vhs) {
             await animateVhsKnockout(eliminatedMovie, eliminationOrder);
@@ -1007,7 +932,6 @@ async function runLastStandingMode(selectedMovies) {
         });
         ui.updateKnockoutRemainingBox(eliminationPool);
         ui.updateKnockoutResultText('winner', 0, finalMovie);
-        setWeightMode('normal');
 
         playWinSound();
         drawWheel(eliminationPool);

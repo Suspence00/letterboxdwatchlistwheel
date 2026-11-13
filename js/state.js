@@ -29,6 +29,7 @@ export const appState = {
     },
     knockoutResults: new Map(),
     preferences: {
+        spinMode: 'one-spin',
         wheelStyle: 'vhs',
         vhsCapacity: 250,
         vhsShowLabels: true,
@@ -78,6 +79,28 @@ export function saveWorkspacesIndex() {
 }
 
 export const debouncedSaveState = debounce(saveState, 1000);
+
+/** @param {unknown} mode @returns {import('./types.js').BoardSpinMode|undefined} */
+export function normalizeSpinMode(mode) {
+    if (mode === 'one-spin' || mode === 'knockout' || mode === 'wheelchinko') return mode;
+}
+
+export function getCurrentSpinMode() {
+    return appState.preferences.spinMode || 'one-spin';
+}
+
+export function getFilteredMovies() {
+    const { movies, filter } = appState;
+    return movies.filter(movie => {
+        if (!filter.showCustoms && movie.isCustom) return false;
+        if (!filter.normalizedQuery) return true;
+        return [movie.name, movie.year, movie.date].filter(Boolean).join(' ').toLowerCase().includes(filter.normalizedQuery);
+    });
+}
+
+export function getFilteredSelectedMovies() {
+    return getFilteredMovies().filter(movie => appState.selectedIds.has(movie.id));
+}
 
 /**
  * Loads state from localStorage
@@ -205,6 +228,7 @@ function loadWorkspaceData(id) {
                 ? Math.max(4, Math.min(250, loadedCap))
                 : 250;
             appState.preferences = {
+                spinMode: normalizeSpinMode(loaded.preferences.spinMode) || 'knockout',
                 wheelStyle: loaded.preferences.wheelStyle === 'classic' ? 'classic' : 'vhs',
                 vhsCapacity,
                 vhsCapacityVersion: loaded.preferences.vhsCapacityVersion || 2,
@@ -221,6 +245,7 @@ function loadWorkspaceData(id) {
             };
         } else {
             appState.preferences = {
+                spinMode: 'knockout',
                 wheelStyle: 'vhs',
                 vhsCapacity: 250,
                 hideFinalistsBox: false,
@@ -263,6 +288,7 @@ export function resetState() {
     };
     // Keep user preferences or reset? Resetting is safer for clean slate
     appState.preferences = {
+        spinMode: 'one-spin',
         wheelStyle: 'vhs',
         vhsCapacity: 250,
         hideFinalistsBox: false,

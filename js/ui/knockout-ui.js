@@ -2,7 +2,7 @@
  * Knockout mode visualization, contenders display, and launch effects.
  */
 
-import { appState } from "../state.js";
+import { appState, getCurrentSpinMode, getFilteredSelectedMovies } from "../state.js";
 import {
     escapeSelector,
     getDefaultColorForIndex,
@@ -10,10 +10,10 @@ import {
     getMovieOriginalIndex
 } from "../utils.js";
 import {
-    getSelectionOdds,
     getIsSpinning,
     getIsLastStandingInProgress
 } from "../wheel.js";
+import { getKnockoutWinOdds } from "../wheel-odds.js";
 
 // Knockout state
 export let knockoutLaunchPrimed = false;
@@ -58,27 +58,6 @@ function isThemePaletteLocked() {
     return Boolean(appState.preferences?.theme && appState.preferences.theme !== "default");
 }
 
-function getSpinMode() {
-    return appState.spinMode || "knockout";
-}
-
-function getFilteredSelectedMovies() {
-    if (!appState.movies || !appState.selectedIds) return [];
-    const filter = appState.filter || {};
-    return appState.movies.filter((movie) => {
-        if (!appState.selectedIds.has(movie.id)) return false;
-        if (filter.showCustoms === false && movie.isCustom) return false;
-        if (filter.normalizedQuery) {
-            const haystack = [movie.name, movie.year, movie.date]
-                .filter((part) => typeof part === "string" && part.trim())
-                .join(" ")
-                .toLowerCase();
-            if (!haystack.includes(filter.normalizedQuery)) return false;
-        }
-        return true;
-    });
-}
-
 function updateWheelAsideLayout() {
     const wheelAside = document.getElementById("wheel-aside") || document.querySelector(".wheel-aside");
     const wheelLayout = document.getElementById("wheel-layout") || document.querySelector(".wheel-layout");
@@ -93,7 +72,7 @@ function updateWheelAsideLayout() {
 
 function shouldLaunchKnockoutEffects() {
     const selection = getFilteredSelectedMovies();
-    return getSpinMode() === "knockout" && selection.length > 1 && !getIsSpinning() && !getIsLastStandingInProgress();
+    return getCurrentSpinMode() === "knockout" && selection.length > 1 && !getIsSpinning() && !getIsLastStandingInProgress();
 }
 
 function clearSpinButtonShards() {
@@ -260,8 +239,7 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
         theaterContenders.hidden = false;
         document.querySelector(".spin-theater")?.classList.toggle("has-contenders", true);
     }
-    const oddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: true });
-    const winOddsMap = getSelectionOdds(lastKnockoutRemaining, { inverseModeOverride: false });
+    const winOddsMap = getKnockoutWinOdds(lastKnockoutRemaining);
     const themeLocked = isThemePaletteLocked();
 
     const items = [];
@@ -307,10 +285,10 @@ export function updateKnockoutRemainingBox(remainingMovies = []) {
             item.appendChild(meta);
         }
 
-        const winOddsValue = winOddsMap.get(movie.id) || oddsMap.get(movie.id) || 0;
+        const winOddsValue = winOddsMap.get(movie.id) || 0;
         const odds = document.createElement("span");
         odds.className = "knockout-remaining__odds";
-        odds.textContent = `Odds: ${formatOddsPercent(winOddsValue)}`;
+        odds.textContent = `Win: ${formatOddsPercent(winOddsValue)}`;
         item.appendChild(odds);
 
         items.push(item);

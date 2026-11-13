@@ -27,6 +27,19 @@ async function importLargeList(page, count = 1001) {
 
 test('spin focuses the wheel, matches the pointer to the winner, and restores the page', async ({ page }) => {
     await oneSpin(page);
+    const tape = page.getByRole('button', { name: 'Inspect The Witch (2015)' });
+    const angle = () => tape.evaluate(el => parseFloat(el.style.getPropertyValue('--tape-angle')));
+    const initialAngle = await angle();
+    await tape.click();
+    await page.locator('#vhs-edit').click();
+    await page.locator('#slice-weight').fill('5');
+    await expect.poll(angle).not.toBe(initialAngle);
+    await expect(page.locator('.vhs-inspector__detail')).toContainText('5× weight · 35.7%');
+    await page.locator('.movie-weight__select').first().selectOption('1');
+    await expect.poll(angle).toBe(initialAngle);
+    await expect(page.locator('.vhs-inspector__detail')).toContainText('1× weight · 10.0%');
+    await page.locator('.movie-weight__select').first().selectOption('5');
+    await expect.poll(angle).not.toBe(initialAngle);
     await page.locator('#spin-button').scrollIntoViewIfNeeded();
     const scroll = await page.evaluate(() => window.scrollY);
     const expanded = await page.locator('#selection-toggle').getAttribute('aria-expanded');
@@ -78,12 +91,14 @@ test('a 1001-movie list draws unique tapes and keeps pins across redraws', async
     expect(state.selected).toBe(1001);
     expect(state.odds).toHaveLength(250);
     expect(state.odds.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
+    await expect(page.locator('.movie-odds--win[aria-label*="outside the current lineup"]').first()).toBeVisible();
     await page.locator('#movie-search').fill('Movie 1000');
     await expect(page.locator('.vhs-tapes .vhs-tape')).toHaveCount(1);
     await expect(page.locator('#vhs-lineup-note')).toContainText('1 tape from 1 eligible');
 });
 
 test('large knockout reaches a VHS finale and records one champion', async ({ page }) => {
+    await page.locator('.spin-mode-card').filter({ hasText: 'Knockout Mode' }).click();
     await importLargeList(page, 31);
     await page.locator('#settings-open').click();
     await page.locator('#settings-vhs-capacity').selectOption('10');

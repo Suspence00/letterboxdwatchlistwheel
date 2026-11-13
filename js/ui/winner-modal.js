@@ -2,13 +2,13 @@
  * Winner Modal & Metadata Enrichment module
  */
 
-import { appState } from '../state.js';
+import { appState, getCurrentSpinMode } from '../state.js';
 import { fetchMovieMetadata, buildMetadataKey } from '../movie-metadata.js';
 import { createTapeViewer } from '../tape-viewer.js';
 import { addMovieToRadarr, isRadarrConfigured } from '../radarr.js';
 import { sendDiscordNotification } from '../discord.js';
 import { triggerConfetti } from './confetti.js';
-import { isVhsEnabled, clearVhsReveal, getCurrentSpinMode } from '../vhs-wheel.js';
+import { isVhsEnabled, clearVhsReveal } from '../vhs-wheel.js';
 import { closeSpinTheater } from '../spin-theater.js';
 import { getStoredWeight } from '../utils.js';
 import { getWinnerId } from '../wheel.js';
@@ -70,17 +70,6 @@ function getSafeHttpUrl(value) {
     }
 }
 
-function getSpinMode() {
-    if (typeof document === 'undefined') return 'classic';
-    const radios = document.querySelectorAll('input[name="spin-mode"]');
-    for (const radio of radios) {
-        if (radio.checked) {
-            return radio.value;
-        }
-    }
-    return 'classic';
-}
-
 function buildTrailerSearchUrl(name, year) {
     const terms = [name, year, 'trailer'].filter(Boolean).join(' ');
     const query = terms || 'movie trailer';
@@ -95,7 +84,7 @@ function setWinnerModalLoadingState(movie, spinMode) {
     }
 
     // Decide whether to use the 3D tape viewer or the flat poster
-    const isSpinchinko = spinMode === 'wheelchinko' || getCurrentSpinMode?.() === 'wheelchinko';
+    const isSpinchinko = spinMode === 'wheelchinko' || getCurrentSpinMode() === 'wheelchinko';
     const useTapeViewer = (isVhsEnabled() || isSpinchinko) && elements.winModalTapeViewer && movie;
 
     if (useTapeViewer) {
@@ -389,7 +378,7 @@ export function handleReshowWinner() {
     if (!winnerId) return;
     const winningMovie = appState.movies.find(m => m.id === winnerId);
     if (winningMovie) {
-        showWinnerPopup(winningMovie, { spinMode: appState.winnerSpinMode || getSpinMode(), isRestore: true });
+        showWinnerPopup(winningMovie, { spinMode: appState.winnerSpinMode || getCurrentSpinMode(), isRestore: true });
     }
 }
 

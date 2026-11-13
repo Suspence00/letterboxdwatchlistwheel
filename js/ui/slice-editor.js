@@ -2,10 +2,7 @@
  * Slice editor and odds calculation display management.
  */
 
-import {
-    appState,
-    debouncedSaveState
-} from '../state.js';
+import { appState } from '../state.js';
 import {
     clampWeight,
     getStoredColor,
@@ -16,20 +13,18 @@ import {
     getMovieOriginalIndex
 } from '../utils.js';
 import {
-    drawWheel,
-    getSelectionOdds,
+    getModeOdds,
     invalidateWheelCache,
     getIsSpinning,
     getIsLastStandingInProgress
 } from '../wheel.js';
-import { setMovieOddsLabel } from './movie-odds.js';
+import { getActiveSpinMode } from '../vhs-wheel.js';
+import { getModeCopy } from './movie-odds.js';
 
 // Internal module state
 export let activeSliceId = null;
 
-let wheelUpdateFrame = null;
-let pendingWheelSelection = null;
-let pendingOddsMaps = null;
+let scheduleWheelUpdate;
 
 const domOverrides = {};
 
@@ -75,34 +70,6 @@ function isRandomBoostEnabled() {
     return false;
 }
 
-function getSpinMode() {
-    if (typeof document === 'undefined') return 'knockout';
-    const radios = document.querySelectorAll('input[name="spin-mode"]');
-    for (const radio of radios) {
-        if (radio.checked) {
-            return radio.value;
-        }
-    }
-    return 'knockout';
-}
-
-function getModeCopy(isInverseMode) {
-    if (isInverseMode) {
-        return {
-            riskLabel: 'Pick risk this spin',
-            winLabel: 'Odds to be final winner',
-            weightHelp: 'Knockout mode: higher weight makes a movie harder to be picked in elimination spins (better odds to reach the end).',
-            weightLabel: 'Knockout weight'
-        };
-    }
-    return {
-        riskLabel: 'Odds to win',
-        winLabel: 'Final winner odds',
-        weightHelp: 'One Spin mode: higher weight increases the chance this movie is picked on the single spin.',
-        weightLabel: 'Spin weight (more likely)'
-    };
-}
-
 function formatOddsPercent(value = 0) {
     const numeric = Number(value) * 100;
     const safePercent = Number.isFinite(numeric) ? Math.min(100, Math.max(0, numeric)) : 0;
@@ -110,22 +77,6 @@ function formatOddsPercent(value = 0) {
         return Math.round(safePercent) + '%';
     }
     return safePercent.toFixed(1) + '%';
-}
-
-function getFilteredSelectedMovies() {
-    const { movies = [], selectedIds = new Set(), filter = {} } = appState;
-    return movies.filter((movie) => {
-        if (!selectedIds.has(movie.id)) return false;
-        if (filter.showCustoms === false && movie.isCustom) return false;
-        if (filter.normalizedQuery) {
-            const haystack = [movie.name, movie.year]
-                .filter(Boolean)
-                .join(' ')
-                .toLowerCase();
-            if (!haystack.includes(filter.normalizedQuery)) return false;
-        }
-        return true;
-    });
 }
 
 function updateWheelAsideLayout() {
@@ -138,32 +89,9 @@ function updateWheelAsideLayout() {
     wheelLayout.classList.toggle('is-centered', !asideVisible);
 }
 
-function scheduleWheelUpdate(selectionOverride = null, oddsOverride = null) {
-    if (selectionOverride) {
-        pendingWheelSelection = selectionOverride;
-    }
-    if (oddsOverride) {
-        pendingOddsMaps = oddsOverride;
-    }
-    if (wheelUpdateFrame) {
-        return;
-    }
-    const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : setTimeout;
-    wheelUpdateFrame = raf(() => {
-        wheelUpdateFrame = null;
-        const selectedMoviesSnapshot = pendingWheelSelection || getFilteredSelectedMovies();
-        const oddsMaps = pendingOddsMaps;
-        pendingWheelSelection = null;
-        pendingOddsMaps = null;
-        drawWheel(selectedMoviesSnapshot);
-        updateDisplayedOdds(selectedMoviesSnapshot, oddsMaps);
-        debouncedSaveState();
-    });
-}
-
 function redrawWheelAndPersist() {
     invalidateWheelCache();
-    scheduleWheelUpdate();
+    scheduleWheelUpdate?.();
 }
 
 function syncListControlsWithMovie(movie, colorOverride = null) {
@@ -357,41 +285,14 @@ export function populateSliceEditor(m) {
     if (elements.sliceWeightValue) elements.sliceWeightValue.textContent = getStoredWeight(m) + 'x';
 }
 
-export function updateDisplayedOdds(selectionOverride = null, oddsOverride = null) {
-    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const spinMode = getSpinMode();
-    const currentWeightCopy = getModeCopy(spinMode === 'knockout');
-    const oddsMap = oddsOverride?.oddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: spinMode === 'knockout' });
-    const winOddsMap = oddsOverride?.winOddsMap || getSelectionOdds(selectedMovies, { inverseModeOverride: false });
-    if (elements.movieListEl) {
-        const items = elements.movieListEl.querySelectorAll('li[data-id]');
-        items.forEach((item) => {
-            const oddsEl = item.querySelector('.movie-odds');
-            if (!oddsEl) return;
-            const id = item.dataset.id;
-            const isSelected = appState.selectedIds.has(id);
-            const hasRisk = oddsMap.has(id);
-            const hasWin = winOddsMap.has(id);
-            const isActive = isSelected && hasRisk;
-            const isWinActive = isSelected && hasWin;
-            const oddsValue = isActive ? oddsMap.get(id) || 0 : 0;
-            oddsEl.hidden = spinMode !== 'knockout';
-            setMovieOddsLabel(oddsEl, oddsValue, isActive, 'Risk', currentWeightCopy.riskLabel);
-            const winOddsEl = item.querySelector('.movie-odds--win');
-            if (winOddsEl) {
-                const winOddsValue = isWinActive ? winOddsMap.get(id) || 0 : 0;
-                setMovieOddsLabel(winOddsEl, winOddsValue, isWinActive, 'Win', currentWeightCopy.winLabel);
-            }
-        });
-    }
-    updateSliceOddsDisplay(oddsMap, selectedMovies);
-}
-
-export function updateSliceOddsDisplay(oddsMap = null, selectionOverride = null) {
+export function updateSliceOddsDisplay({ oddsMap, winOddsMap } = getModeOdds()) {
     if (!elements.sliceOddsValueRisk || !elements.sliceOddsValueWin) {
         return;
     }
-    const currentWeightCopy = getModeCopy(getSpinMode() === 'knockout');
+    const mode = getActiveSpinMode();
+    const currentWeightCopy = getModeCopy(mode);
+    elements.sliceOddsValueRisk.parentElement.hidden = mode !== 'knockout';
+    elements.sliceOddsValueWin.parentElement.hidden = mode === 'wheelchinko';
     if (elements.sliceOddsLabelRisk) {
         elements.sliceOddsLabelRisk.textContent = currentWeightCopy.riskLabel;
     }
@@ -406,21 +307,17 @@ export function updateSliceOddsDisplay(oddsMap = null, selectionOverride = null)
         elements.sliceOddsValueWin.classList.add('slice-editor__odds-value--inactive');
         return;
     }
-    const selectedMovies = Array.isArray(selectionOverride) ? selectionOverride : getFilteredSelectedMovies();
-    const resolvedMap = oddsMap || getSelectionOdds(selectedMovies);
-    const winMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
-    const hasRiskOdds = resolvedMap.has(movie.id);
-    const hasWinOdds = winMap.has(movie.id);
-    const oddsValue = hasRiskOdds ? resolvedMap.get(movie.id) || 0 : 0;
-    const winOddsValue = hasWinOdds ? winMap.get(movie.id) || 0 : 0;
+    const oddsValue = oddsMap.get(movie.id) || 0;
+    const winOddsValue = winOddsMap.get(movie.id) || 0;
     elements.sliceOddsValueRisk.textContent = formatOddsPercent(oddsValue);
-    elements.sliceOddsValueRisk.classList.toggle('slice-editor__odds-value--inactive', !hasRiskOdds || oddsValue <= 0);
+    elements.sliceOddsValueRisk.classList.toggle('slice-editor__odds-value--inactive', oddsValue <= 0);
     elements.sliceOddsValueWin.textContent = formatOddsPercent(winOddsValue);
-    elements.sliceOddsValueWin.classList.toggle('slice-editor__odds-value--inactive', !hasWinOdds || winOddsValue <= 0);
+    elements.sliceOddsValueWin.classList.toggle('slice-editor__odds-value--inactive', winOddsValue <= 0);
 }
 
-export function initSliceEditor(domElements = {}) {
+export function initSliceEditor(domElements, refreshWheel) {
     Object.assign(domOverrides, domElements);
+    scheduleWheelUpdate = refreshWheel;
     if (elements.sliceColorInput) {
         elements.sliceColorInput.addEventListener('input', handleSliceColorInput);
     }

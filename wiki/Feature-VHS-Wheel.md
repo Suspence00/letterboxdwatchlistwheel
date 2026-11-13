@@ -15,6 +15,8 @@ Each cassette tape is modeled as an interactive 3D cuboid with distinct textured
 * **Bottom Label Toggle**: In **Settings → Options**, users can toggle **Show bottom tape labels** (`vhsShowLabels` preference) on or off. Hiding bottom labels maximizes artwork visibility and cleans up sleeve presentation.
 * **Rotor Assembly**: The center wheel assembly (`.vhs-rotor`) features three layered metallic discs (`.vhs-disc--back`, `.vhs-disc--middle`, `.vhs-disc--front`) with an elevated brass hub (`.vhs-hub`) emblazoned with "PRAISE THE WHEEL!" and an elevated, fixed flapper pointer (`.vhs-flapper`).
 
+Changing a weight moves the slice boundaries and centers each tape in its updated slice. In 1 Spin, higher weights widen slices. In Knockout, higher weights narrow slices and lower elimination risk.
+
 ---
 
 ## Interactive Inspection

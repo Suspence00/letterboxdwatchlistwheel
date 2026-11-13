@@ -141,6 +141,10 @@
     justify-content: space-between;
 }
 
+.slice-editor__odds-row[hidden] {
+    display: none;
+}
+
 .slice-editor__odds-value {
     color: var(--muted);
     font-variant-numeric: tabular-nums;

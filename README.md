@@ -26,7 +26,7 @@ Give your Letterboxd watchlist a dramatic spin (or pegboard drop!) to decide wha
 
 1. Open `index.html` via any local static server (or host the folder on any static site).
 2. Import your list (Letterboxd URL/username, CSV upload, or bulk entry). A sample file (`sample-watchlist.csv`) is included.
-3. Pick your spin mode (**Knockout**, **1 Spin**, or **Wheelchinko**) and press **Spin** / **Drop Puck**. Everything saves per board in `localStorage` automatically.
+3. Press **Spin the wheel** for a quick pick. New boards start in **1 Spin** and remember your choice if you switch to **Knockout** or **Wheelchinko**.
 4. Optional: open **Settings** to switch boards, change themes, adjust 3D VHS tape capacity, configure Discord/Radarr, or export/restore a `.wheel` backup.
 
 ## 3D VHS wheel and Theater mode

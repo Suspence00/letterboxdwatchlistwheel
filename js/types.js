@@ -4,6 +4,7 @@
  */
 
 /** @typedef {string|number} MovieId */
+/** @typedef {'one-spin'|'knockout'|'wheelchinko'} BoardSpinMode */
 
 /**
  * @typedef {Object} MovieBooster
@@ -61,6 +62,7 @@
 
 /**
  * @typedef {Object} Preferences
+ * @property {BoardSpinMode} [spinMode]
  * @property {string} [theme]
  * @property {Object<string, string>} [themeColorOverrides]
  * @property {Object<string, string>} [boosterColors]

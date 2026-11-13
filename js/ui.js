@@ -5,6 +5,8 @@
 
 import {
     appState,
+    getCurrentSpinMode as getSpinMode,
+    getFilteredSelectedMovies,
     saveState
 } from './state.js';
 import {
@@ -16,7 +18,6 @@ import {
     spinWheel,
     getIsSpinning,
     getIsLastStandingInProgress,
-    setWeightMode,
     invalidateWheelCache
 } from './wheel.js';
 
@@ -47,7 +48,7 @@ import {
 import { initBoardsUI } from './ui/boards-ui.js';
 import { initVerificationModal, showConfirmModal } from './ui/modals.js';
 import { initSettingsDialog } from './ui/settings-dialog.js';
-import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/movie-list.js';
+import { initMovieList, scheduleWheelUpdate, updateMovieList } from './ui/movie-list.js';
 import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 import {
     initWheelchinkoUI, syncWheelchinko, triggerDrop, triggerRandomDrop,
@@ -56,7 +57,9 @@ import {
 
 // Re-export public API from submodules
 export { syncWheelchinko, triggerDrop, triggerRandomDrop };
-export { updateMovieList, getFilteredMovies, getFilteredSelectedMovies } from './ui/movie-list.js';
+export { getSpinMode };
+export { updateMovieList, updateDisplayedOdds } from './ui/movie-list.js';
+export { getFilteredMovies, getFilteredSelectedMovies } from './state.js';
 export { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 export { showConfirmModal, promptForInput, showVerificationResults } from './ui/modals.js';
 export { renderWorkspaceSwitcher, renderBoardsList, initBoardsUI } from './ui/boards-ui.js';
@@ -100,7 +103,6 @@ export {
 export {
     handleSliceSelection,
     resetSliceEditor,
-    updateDisplayedOdds,
     updateSliceOddsDisplay,
     populateSliceEditor,
     getActiveSliceMovie,
@@ -122,7 +124,7 @@ export function initUI(domElements) {
     initHistoryModal(domElements);
     initSettingsDialog(domElements);
     initVerificationModal(domElements);
-    initSliceEditor(domElements);
+    initSliceEditor(domElements, scheduleWheelUpdate);
     initWheelchinkoUI(domElements, {
         triggerConfetti,
         showWinnerPopup,
@@ -274,13 +276,12 @@ export function initUI(domElements) {
         }
     });
 
-    initMovieList(domElements, { getSpinMode, updateSpinButtonLabel });
+    initMovieList(domElements, { updateSpinButtonLabel });
 }
 
 export function updateSpinButtonLabel() {
     if (!elements.spinButton) return;
     const spinMode = getSpinMode();
-    const inverseMode = spinMode === 'knockout';
     const lastStandingActive = getIsLastStandingInProgress();
     const spinning = getIsSpinning();
     elements.spinButton.disabled = spinning || lastStandingActive || getFilteredSelectedMovies().length === 0;
@@ -289,7 +290,6 @@ export function updateSpinButtonLabel() {
         resetKnockoutLaunchEffects();
     }
 
-    setWeightMode(inverseMode ? 'inverse' : 'normal');
     const selector = document.querySelector('.spin-mode-selector');
     if (selector) {
         selector.hidden = spinning || lastStandingActive;
@@ -306,7 +306,7 @@ export function updateSpinButtonLabel() {
     }
 
     if (spinMode === 'one-spin') {
-        elements.spinButton.textContent = 'Spin One Spin Mode';
+        elements.spinButton.textContent = 'Spin the wheel';
         return;
     }
 
@@ -321,16 +321,6 @@ export function updateSpinButtonLabel() {
 
 export function isAdvancedOptionsEnabled() {
     return true;
-}
-
-export function getSpinMode() {
-    const radios = document.querySelectorAll('input[name="spin-mode"]');
-    for (const radio of radios) {
-        if (radio.checked) {
-            return radio.value;
-        }
-    }
-    return 'knockout';
 }
 
 export function isRandomBoostEnabled() {

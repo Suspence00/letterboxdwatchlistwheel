@@ -2,7 +2,7 @@
  * Backup, export, and import helpers for the Letterboxd Watchlist Wheel
  */
 
-import { appState, saveState } from './state.js';
+import { appState, getCurrentSpinMode, normalizeSpinMode, saveState } from './state.js';
 import { buildMovieIdentityKey, clampWeight, getDefaultColorForIndex, sanitizeColor, DEFAULT_THEME } from './utils.js';
 
 const BACKUP_VERSION = 1;
@@ -120,6 +120,7 @@ function buildBackupPayload() {
         }),
         history: Array.isArray(appState.history) ? appState.history : [],
         preferences: {
+            spinMode: getCurrentSpinMode(),
             wheelStyle: appState.preferences?.wheelStyle === 'classic' ? 'classic' : 'vhs',
             vhsCapacity: Math.max(4, Math.min(250, Number(appState.preferences?.vhsCapacity) || 250)),
             vhsShowLabels: appState.preferences?.vhsShowLabels !== false,
@@ -237,11 +238,11 @@ function handleImportAction(mode = 'apply') {
                 `Restored ${result.movieCount} entries${importHistory ? ' with history' : ''}.`,
                 false
             );
+            callbacks.refreshPreferences();
             callbacks.refreshMovies();
             if (importHistory) {
                 callbacks.renderHistory();
             }
-            callbacks.refreshPreferences();
             callbacks.resetKnockoutUI();
             closeImportModal();
         } catch (error) {
@@ -387,7 +388,9 @@ function getIdentity(movie, fallbackIndex) {
 }
 
 function normalizePreferences(preferences = {}) {
+    const spinMode = normalizeSpinMode(preferences?.spinMode);
     return {
+        ...(spinMode ? { spinMode } : {}),
         wheelStyle: preferences?.wheelStyle === 'classic' ? 'classic' : 'vhs',
         vhsCapacity: Math.max(4, Math.min(250, Number(preferences?.vhsCapacity) || 250)),
         vhsShowLabels: preferences?.vhsShowLabels !== false,

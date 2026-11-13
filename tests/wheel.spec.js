@@ -360,7 +360,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
         uri: 'javascript:window.__backupLinkXss=true',
         mode: 'one-spin'
       }],
-      preferences: { theme: 'default' }
+      preferences: { theme: 'default', spinMode: 'knockout' }
     };
 
     await page.click('#tab-btn-data');
@@ -368,6 +368,7 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await page.click('#backup-restore');
 
     await expect(page.locator('#backup-injection')).toHaveCount(0);
+    await expect(page.locator('input[name="spin-mode"]:checked')).toHaveValue('knockout');
     expect(await page.evaluate(() => window.__backupXss)).toBeUndefined();
     await page.click('#tab-btn-discord');
     await expect(page.locator('#discord-webhook-url')).toHaveValue('https://discord.com/api/webhooks/preserved');
