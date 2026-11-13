@@ -6,6 +6,35 @@
     width: 100%;
 }
 
+.selection-summary {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+}
+
+.selection-summary p,
+.selection-search-help {
+    color: var(--muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.selection-summary__link {
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding-block: 0.5rem;
+    text-underline-offset: 0.2em;
+}
+
+.selection-search-help {
+    align-self: flex-start;
+    margin-top: -0.5rem;
+}
+
 .movie-list-wrapper {
     margin: 0 auto;
     max-height: 520px;

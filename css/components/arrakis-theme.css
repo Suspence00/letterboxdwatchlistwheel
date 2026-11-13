@@ -1,0 +1,223 @@
+.arrakis-decorations,
+.arrakis-heading,
+.arrakis-winner-note {
+    display: none;
+}
+
+body.theme-arrakis {
+    --accent: #f4ae70;
+    --accent-glow: rgb(244 174 112 / 30%);
+    --accent-strong: #d98c53;
+    --background: #170e0b;
+    --border: #79563f;
+    --card-bg: #211612;
+    --focus-ring: #9cdafa;
+    --muted: #d1b5a1;
+    --shadow: rgb(13 6 3 / 60%);
+    --surface-2: #2a1c16;
+    --surface-3: #452b1d;
+    --surface-control: #37251c;
+    --text: #fff0d8;
+    --text-1: var(--text);
+    --text-2: var(--muted);
+    --text-muted: var(--muted);
+    --wheel-fm-accent: var(--accent);
+    --wheel-fm-focus: var(--focus-ring);
+    --wheel-fm-surface: #211612;
+
+    background: radial-gradient(ellipse at top right, #492617, var(--background) 42rem);
+    color-scheme: dark;
+}
+
+.theme-arrakis .app-header {
+    background: #24140e;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    justify-content: center;
+    margin-bottom: clamp(0.75rem, 1.5vw, 1.375rem);
+    min-height: clamp(14rem, 24vw, 24rem);
+    overflow: hidden;
+    padding: clamp(1.25rem, 4vw, 4rem);
+    position: relative;
+}
+
+.theme-arrakis .arrakis-decorations {
+    background: linear-gradient(90deg, #170d08bf 0%, #170d0866 44%, transparent 76%),
+        linear-gradient(0deg, #170e0b99, transparent 48%),
+        url('../../media/themes/arrakis.webp') 62% 16% / cover;
+    display: block;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+.theme-arrakis .app-header .arrakis-heading {
+    color: #ffd3a4;
+    display: block;
+    font: 700 0.75rem/1.4 'Cinzel', Georgia, serif;
+    letter-spacing: 0.4em;
+    margin: 0 0 0.625rem;
+    text-transform: uppercase;
+}
+
+.theme-arrakis .app-header h1 {
+    font: 700 clamp(1.75rem, 3.4vw, 3.25rem)/1.14 'Cinzel', Georgia, serif;
+    margin: 0;
+    max-width: 19ch;
+    text-wrap: balance;
+}
+
+.theme-arrakis .app-header p:last-child {
+    color: #ffe1c1;
+    max-width: 41ch;
+}
+
+.theme-arrakis .settings-toggle {
+    background: #211612;
+    border: 1px solid var(--border);
+    color: var(--text);
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.theme-arrakis .header-controls {
+    position: static;
+}
+
+.theme-arrakis :is(.card, .saved-wheels-bar, .win-modal__content) {
+    border: 1px solid var(--border);
+}
+
+.theme-arrakis :is(.card h2, .settings-group legend, .win-modal__title) {
+    color: var(--text);
+    font-family: 'Cinzel', Georgia, serif;
+}
+
+.theme-arrakis .win-modal__title {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+}
+
+.theme-arrakis :is(.btn, .text-input, .import-bar, .movie-weight__select) {
+    border-color: var(--border);
+}
+
+.theme-arrakis :is(.text-input--select, .movie-weight__select) {
+    background-color: #271a15;
+}
+
+.theme-arrakis #random-boost-btn {
+    background: #243e4a;
+    border: 1px solid #60879a;
+    color: #d9f3ff;
+}
+
+.theme-arrakis :is(.btn--primary, .btn.primary, .import-btn) {
+    background: linear-gradient(135deg, #ffd29e, #e89a5f);
+    color: #25120b;
+}
+
+.theme-arrakis :is(input, textarea)::placeholder {
+    color: var(--muted);
+}
+
+.theme-arrakis .spin-mode-option input:checked + .spin-mode-card {
+    border-color: var(--accent);
+}
+
+.theme-arrakis .spin-theater {
+    background: radial-gradient(ellipse at 50% 72%, #57301c, #241510 52%, #110c0b 90%);
+}
+
+.theme-arrakis .vhs-disc--front {
+    background: repeating-conic-gradient(#ffc08244 0deg 0.5deg, transparent 0.5deg 15deg),
+        repeating-radial-gradient(circle, #6a3b2380 0 2px, transparent 3px 19px),
+        radial-gradient(circle, #2a1915 9%, #a15f3b 62%, #60321f 100%);
+    border-color: #a66a43;
+    box-shadow: inset 0 0 0 3px #422116, inset 0 0 32px #2a140e;
+}
+
+.theme-arrakis .vhs-hub {
+    background: radial-gradient(circle, #a6e7ff 0 7%, #39769a 8% 16%, #101f2b 18% 24%, #5da9cb 26% 30%, #28201d 32%);
+    border-color: #a66a43;
+}
+
+.theme-arrakis .vhs-hub > * {
+    visibility: hidden;
+}
+
+.theme-arrakis .vhs-flapper {
+    background: linear-gradient(90deg, #966343, #ffe0ac 54%, #b98358);
+    border-color: #f1bc85;
+}
+
+.theme-arrakis #win-modal .win-modal__content {
+    background: radial-gradient(ellipse at top, #4b2819, var(--card-bg) 55%);
+}
+
+.theme-arrakis .arrakis-winner-note {
+    color: #a6dcf8;
+    display: block;
+    font: 700 0.75rem/1.4 'Cinzel', Georgia, serif;
+    letter-spacing: 0.14em;
+    margin: 0 0 0.75rem;
+    text-transform: uppercase;
+}
+
+.theme-arrakis .confetti-container {
+    z-index: 2010;
+}
+
+.theme-arrakis .confetti-piece {
+    animation-fill-mode: both;
+    animation-name: arrakis-dust;
+    animation-timing-function: ease-out;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ffd19b80;
+    position: absolute;
+    top: 8vh;
+}
+
+@keyframes arrakis-dust {
+    0% {
+        opacity: 0;
+        transform: translate(-10vw, -8vh);
+    }
+
+    18% {
+        opacity: 0.85;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(calc(25vw + var(--confetti-x-move)), 70vh);
+    }
+}
+
+.theme-card[data-theme='arrakis'] .theme-card__preview {
+    background: linear-gradient(90deg, #21140fe6, transparent 90%),
+        url('../../media/themes/arrakis.webp') 70% 30% / cover;
+}
+
+@media (max-width: 700px) {
+    .theme-arrakis .app-header {
+        justify-content: flex-end;
+        min-height: 17rem;
+    }
+
+    .theme-arrakis .arrakis-decorations {
+        background: linear-gradient(0deg, #170d08 2%, #170d08e6 22%, transparent 76%),
+            url('../../media/themes/arrakis.webp') 78% 22% / cover;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-arrakis .confetti-piece {
+        display: none;
+    }
+}

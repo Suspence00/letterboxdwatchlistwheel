@@ -42,7 +42,7 @@ import {
     THEMES
 } from './utils.js';
 import { openSpinTheater } from './spin-theater.js';
-import { getCurrentSpinMode, applyLabelsPreference, syncSettingsControls } from './vhs-wheel.js';
+import { getCurrentSpinMode, applyLabelsPreference } from './vhs-wheel.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Select all DOM elements
@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         movieListWrapper: document.querySelector('.movie-list-wrapper'),
         movieListEl: document.getElementById('movie-list'),
         spinButton: document.getElementById('spin-button'),
+        spinEligibility: document.getElementById('spin-eligibility'),
+        goToSpin: document.getElementById('go-to-spin'),
         selectAllBtn: document.getElementById('select-all'),
         clearSelectionBtn: document.getElementById('clear-selection'),
         resetWeightsBtn: document.getElementById('reset-weights'),
@@ -97,8 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsModal: document.getElementById('settings-modal'),
         settingsOpenBtn: document.getElementById('settings-open'),
         settingsCloseBtn: document.getElementById('settings-modal-close'),
-        settingsTabs: document.querySelectorAll('.settings-tab-btn'),
-        settingsPanels: document.querySelectorAll('.settings-panel'),
 
         // Discord
         discordWebhookInput: document.getElementById('discord-webhook-url'),
@@ -198,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
         newBoardName: document.getElementById('new-board-name'),
         boardsList: document.getElementById('boards-list'),
         tabBtnBoards: document.getElementById('tab-btn-boards'),
-        tabBtnAdvanced: document.getElementById('tab-btn-advanced'),
 
         // Verification
         verifyFairnessBtn: document.getElementById('verify-fairness-btn'),
@@ -616,50 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 event.preventDefault();
                 handleBulkSubmit(event);
             }
-        });
-    }
-
-    // Settings Modal Logic
-    if (elements.settingsOpenBtn && elements.settingsModal) {
-        elements.settingsOpenBtn.addEventListener('click', () => {
-            elements.settingsModal.hidden = false;
-            syncSettingsControls();
-            // Also ensure correct tab is active (default to first if none)
-            // Logic to animate or handle focus can go here
-        });
-    }
-
-    if (elements.settingsCloseBtn && elements.settingsModal) {
-        elements.settingsCloseBtn.addEventListener('click', () => {
-            elements.settingsModal.hidden = true;
-        });
-    }
-
-    // Close on backdrop click
-    if (elements.settingsModal) {
-        elements.settingsModal.addEventListener('click', (event) => {
-            if (event.target === elements.settingsModal) {
-                elements.settingsModal.hidden = true;
-            }
-        });
-    }
-
-    if (elements.settingsTabs) {
-        elements.settingsTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetId = tab.getAttribute('aria-controls');
-
-                // Update Tabs
-                elements.settingsTabs.forEach(t => t.setAttribute('aria-selected', 'false'));
-                tab.setAttribute('aria-selected', 'true');
-
-                // Update Panels
-                if (elements.settingsPanels) {
-                    elements.settingsPanels.forEach(panel => {
-                        panel.hidden = panel.id !== targetId;
-                    });
-                }
-            });
         });
     }
 

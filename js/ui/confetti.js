@@ -5,6 +5,9 @@
 let confettiTimeoutId = null;
 
 export function getConfettiPalette() {
+    if (typeof document !== 'undefined' && document.body?.classList.contains('theme-arrakis')) {
+        return ['#ffcc96', '#eea465', '#bb6d3d', '#fff0d8', '#9cdafa'];
+    }
     if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-birthday')) {
         return ['#f59e0b', '#2563eb', '#059669', '#dc2626', '#d97706', '#94a3b8', '#3b82f6', '#fbbf24'];
     }
@@ -32,12 +35,13 @@ export function triggerConfetti(container = document.getElementById('confetti-co
     container.innerHTML = '';
 
     const colors = getConfettiPalette();
-    const pieceCount = 140;
+    const isArrakis = document.body.classList.contains('theme-arrakis');
+    const pieceCount = isArrakis ? 90 : 140;
 
     for (let i = 0; i < pieceCount; i += 1) {
         const piece = document.createElement('span');
         piece.className = 'confetti-piece';
-        const size = 8 + Math.random() * 8;
+        const size = isArrakis ? 2 + Math.random() * 4 : 8 + Math.random() * 8;
         piece.style.width = `${size}px`;
         piece.style.height = `${size * 1.4}px`;
         piece.style.backgroundColor = colors[i % colors.length];

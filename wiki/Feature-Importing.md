@@ -10,7 +10,7 @@ The primary method for importing movies is via the built-in Cloudflare Worker pr
 
 ### Supported Input Formats
 
-You can paste any of the following into the **Letterboxd URL or profile name** field:
+The **Letterboxd URL or username** field accepts these formats:
 
 | Format | Example | Description |
 | :--- | :--- | :--- |

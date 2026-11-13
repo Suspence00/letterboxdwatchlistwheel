@@ -55,7 +55,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     expect((await page.locator('#theme-picker').boundingBox()).height).toBeLessThan(100);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-collapsed.png') });
     await summary.click();
-    await expect(gallery.getByRole('radio')).toHaveCount(16);
+    await expect(gallery.getByRole('radio')).toHaveCount(17);
     expect((await gallery.boundingBox()).height).toBeLessThanOrEqual(290);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('theme-picker-desktop.png') });
 
@@ -78,7 +78,7 @@ test('Theme browser stays compact, filters results, and persists the selected th
     await expect(search).toBeFocused();
     await search.fill('');
     await page.getByRole('button', { name: 'All', exact: true }).click();
-    await expect(gallery.getByRole('radio')).toHaveCount(16);
+    await expect(gallery.getByRole('radio')).toHaveCount(17);
     await birthday.focus();
     await page.keyboard.press('Escape');
     await expect(gallery).not.toBeVisible();
@@ -108,6 +108,51 @@ test('Theme gallery fits a narrow screen and all themes remain reachable', async
         await expect(page.locator('.theme-picker__current-name')).toHaveText(await card.getAttribute('aria-label'));
         expect(await gallery.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     }
+});
+
+test('Dune · Arrakis persists its palette, artwork preference, and winner reveal', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await expect(page.locator('.arrakis-decorations')).toBeHidden();
+    await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+    await expect(page.locator('#movie-list li')).toHaveCount(10);
+    await page.getByRole('button', { name: 'Open settings' }).click();
+    await page.locator('.theme-picker__summary').click();
+    await page.getByRole('searchbox', { name: 'Search themes' }).fill('dune');
+    await page.getByRole('radio', { name: 'Dune · Arrakis', exact: true }).click();
+    await expect(page.locator('body')).toHaveClass(/\btheme-arrakis\b/);
+    await expect(page.locator('.arrakis-decorations')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const firstColor = () => page.evaluate(async () => {
+        const { appState } = await import('/js/state.js');
+        return appState.movies[0].color;
+    });
+    expect(await firstColor()).toBe('#b45f33');
+    await page.locator('#decorations-toggle').uncheck();
+    await expect(page.locator('.arrakis-decorations')).toBeHidden();
+    await page.reload();
+    await expect(page.locator('body')).toHaveClass(/\btheme-arrakis\b/);
+    await expect(page.locator('.arrakis-decorations')).toBeHidden();
+    expect(await firstColor()).toBe('#b45f33');
+    await expect(page.locator('.vhs-hub')).toBeVisible();
+    await expect(page.locator('.vhs-hub')).toHaveCSS('background-image', /radial-gradient.*166, 231, 255/);
+
+    await page.getByRole('button', { name: 'Open settings' }).click();
+    await page.locator('#wheel-style').selectOption('classic');
+    await page.getByRole('button', { name: 'Close settings' }).click();
+    await expect(page.locator('#wheel')).toBeVisible();
+    await expect.poll(() => page.locator('#wheel').evaluate(canvas =>
+        Array.from(canvas.getContext('2d').getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data)
+    )).toEqual([16, 31, 43, 255]);
+    await page.locator('.spin-mode-card').filter({ hasText: '1 Spin Mode' }).click();
+    await page.locator('#spin-button').click();
+    await expect(page.getByRole('dialog', { name: /The movie selected was/ })).toBeVisible();
+    await expect(page.getByText('The desert has spoken.', { exact: true })).toBeVisible();
+    await expect(page.locator('.confetti-piece').first()).toBeAttached();
+    await expect(page.locator('.confetti-piece').first()).toBeHidden();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(page.locator('.confetti-piece').first()).toHaveCSS('animation-name', 'arrakis-dust');
 });
 
 for (const theme of [

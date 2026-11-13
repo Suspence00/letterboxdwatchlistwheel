@@ -107,7 +107,7 @@ body:is(.theme-omni, .theme-omni-dark) :is(.card, .saved-wheels-bar) {
     border-radius: 10px;
 }
 
-body:is(.theme-omni, .theme-omni-dark) :is(.card h2, .app-header h1, .win-modal__title, .import-hero-text h3) {
+body:is(.theme-omni, .theme-omni-dark) :is(.card h2, .app-header h1, .win-modal__title) {
     -webkit-text-fill-color: currentColor;
     background: none;
     color: var(--text);

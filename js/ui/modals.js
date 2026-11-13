@@ -4,38 +4,17 @@
 
 import { runFairnessAudit } from '../verify.js';
 
-let confirmModalTimeoutId = null;
-
-export function initVerificationModal({ verifyFairnessBtn, verifyModal, verifyCloseBtn, settingsModal }) {
+export function initVerificationModal({ verifyFairnessBtn, verifyModal, verifyCloseBtn }) {
     if (!verifyFairnessBtn || !verifyModal || !verifyCloseBtn) return;
-    let restoreSettings = false;
 
     verifyFairnessBtn.addEventListener('click', () => {
-        const auditData = runFairnessAudit();
-        if (!auditData.error && settingsModal) {
-            restoreSettings = !settingsModal.hidden;
-            settingsModal.hidden = true;
-        }
-        showVerificationResults(auditData);
-    });
-
-    const close = () => {
-        if (verifyModal.hidden) return;
-        verifyModal.hidden = true;
-        if (restoreSettings && settingsModal) settingsModal.hidden = false;
         verifyFairnessBtn.focus();
-    };
-
-    verifyCloseBtn.addEventListener('click', close);
-    verifyModal.addEventListener('click', (event) => {
-        if (event.target === verifyModal) close();
+        showVerificationResults(runFairnessAudit());
     });
-    verifyModal.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            close();
-        }
+
+    verifyCloseBtn.addEventListener('click', () => verifyModal.close());
+    verifyModal.addEventListener('click', (event) => {
+        if (event.target === verifyModal) verifyModal.close();
     });
 }
 
@@ -54,11 +33,6 @@ export function showConfirmModal({ title, message, confirmText, secondaryText, c
 
     if (!modal) return;
 
-    if (confirmModalTimeoutId) {
-        clearTimeout(confirmModalTimeoutId);
-        confirmModalTimeoutId = null;
-    }
-
     titleEl.textContent = title || 'Confirm';
     messageEl.innerHTML = message || '';
     confirmBtn.textContent = confirmText || 'Confirm';
@@ -72,45 +46,23 @@ export function showConfirmModal({ title, message, confirmText, secondaryText, c
 
     cancelBtn.textContent = cancelText || 'Cancel';
 
-    modal.hidden = false;
-    requestAnimationFrame(() => modal.classList.add('show'));
-
-    const close = () => {
-        modal.classList.remove('show');
-        if (confirmModalTimeoutId) clearTimeout(confirmModalTimeoutId);
-        confirmModalTimeoutId = setTimeout(() => {
-            modal.hidden = true;
-            confirmModalTimeoutId = null;
-        }, 200);
-        cleanup();
+    const listeners = new AbortController();
+    const options = { signal: listeners.signal };
+    const finish = (callback) => {
+        listeners.abort();
+        modal.close();
+        callback?.();
     };
 
-    const confirmHandler = () => {
-        if (onConfirm) onConfirm();
-        close();
-    };
-
-    const secondaryHandler = () => {
-        if (onSecondary) onSecondary();
-        close();
-    };
-
-    const cancelHandler = () => {
-        if (onCancel) onCancel();
-        close();
-    };
-
-    const cleanup = () => {
-        confirmBtn.removeEventListener('click', confirmHandler);
-        if (secondaryBtn) secondaryBtn.removeEventListener('click', secondaryHandler);
-        cancelBtn.removeEventListener('click', cancelHandler);
-        closeBtn.removeEventListener('click', cancelHandler);
-    };
-
-    confirmBtn.addEventListener('click', confirmHandler);
-    if (secondaryBtn) secondaryBtn.addEventListener('click', secondaryHandler);
-    cancelBtn.addEventListener('click', cancelHandler);
-    closeBtn.addEventListener('click', cancelHandler);
+    confirmBtn.addEventListener('click', () => finish(onConfirm), options);
+    secondaryBtn?.addEventListener('click', () => finish(onSecondary), options);
+    cancelBtn.addEventListener('click', () => finish(onCancel), options);
+    closeBtn.addEventListener('click', () => finish(onCancel), options);
+    modal.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        finish(onCancel);
+    }, options);
+    modal.showModal();
 }
 
 export function promptForInput(title, label, callback) {
@@ -127,35 +79,21 @@ export function promptForInput(title, label, callback) {
     labelEl.textContent = label;
     input.value = '';
 
-    const close = () => {
-        modal.classList.remove('show');
-        setTimeout(() => { modal.hidden = true; }, 200);
-        input.value = ''; // Clear for security/cleanliness
-    };
-
-    const submitHandler = (e) => {
-        e.preventDefault();
+    const listeners = new AbortController();
+    const options = { signal: listeners.signal };
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
         const value = input.value.trim();
-        if (value) {
-            callback(value);
-            close();
-        }
-        form.removeEventListener('submit', submitHandler);
-        closeBtn.removeEventListener('click', closeHandler);
-    };
-
-    const closeHandler = () => {
-        close();
-        form.removeEventListener('submit', submitHandler);
-        closeBtn.removeEventListener('click', closeHandler);
-    };
-
-    form.addEventListener('submit', submitHandler);
-    closeBtn.addEventListener('click', closeHandler);
-
-    modal.hidden = false;
-    requestAnimationFrame(() => modal.classList.add('show'));
-    input.focus();
+        if (!value) return;
+        modal.close();
+        callback(value);
+    }, options);
+    closeBtn.addEventListener('click', () => modal.close(), options);
+    modal.addEventListener('close', () => {
+        listeners.abort();
+        input.value = '';
+    }, { once: true });
+    modal.showModal();
 }
 
 export function showVerificationResults(auditData) {
@@ -254,7 +192,6 @@ export function showVerificationResults(auditData) {
     });
 
     if (modal) {
-        modal.hidden = false;
-        document.getElementById('verify-close')?.focus();
+        modal.showModal();
     }
 }

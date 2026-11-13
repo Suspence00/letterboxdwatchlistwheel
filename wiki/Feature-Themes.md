@@ -1,6 +1,6 @@
 # Feature: Visual Themes
 
-The **Letterboxd Watchlist Wheel** features a collection of 16 rich, handcrafted visual themes designed to transform the atmosphere of your movie night. Themes tailor every visual element: typography, card backdrops, button gradients, atmospheric particles, ambient animations, and wheel slice palettes.
+The **Letterboxd Watchlist Wheel** includes 17 visual themes with distinct typography, surfaces, wheel palettes, and decorations.
 
 All themes share a wide studio layout inspired by Omni Wheel: saved wheels and import controls span the top, with the movie list beside the wheel on screens at least 1100px wide. Smaller screens stack the sections in their original reading order. The slice editor and remaining contenders fit within the wheel column; Theater Mode still provides a full-window stage.
 
@@ -21,6 +21,10 @@ Themes can be configured in the **Settings Modal**:
 ## Complete Catalog of Themes
 
 ### Everyday Themes
+
+#### Dune · Arrakis
+
+Choose **Dune · Arrakis** in the theme browser. The theme pairs original sandworm and ornithopter artwork with copper, sandstone, and spice-blue accents. Both wheel styles have a blue iris at the hub. With wheel sounds enabled, the wheel ticks like a thumper and the winner gets a low three-note chime. Turn off **Enable ambient theme decorations** to hide the header artwork. The theme is saved per wheel as `arrakis`.
 
 #### Omni
 * **Aesthetic**: Omni Wheel's light studio design, with warm cream paper, white cards, sage selection states, charcoal buttons, and terracotta accents.

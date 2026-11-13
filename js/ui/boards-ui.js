@@ -47,12 +47,6 @@ export function initBoardsUI(domElements = {}, callbacks = {}) {
             switchWorkspace(newId);
         });
     });
-    document.getElementById('saved-wheels-manage')?.addEventListener('click', () => {
-        document.getElementById('settings-open')?.click();
-        tabBtnBoards?.click();
-        search?.focus();
-    });
-
     renderWorkspaceSwitcher(workspaceSelect);
     renderBoardsList(domElements.boardsList);
 

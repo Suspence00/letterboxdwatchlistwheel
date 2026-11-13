@@ -58,7 +58,7 @@ Once your titles are loaded, fine-tune your contenders in the **"2. Curate your 
 ```
 
 ### Filtering & Search
-* **Search Filter:** Type into the search field to filter your list by movie title, release year, or import date in real time.
+* **Search Filter:** Search by movie title, release year, or import date. Only selected movies that match the search can spin. The eligibility count updates as you search and change the selection.
 * **Custom Filter Toggle:** Toggle "Show custom selections" under Advanced Options or Settings to show or hide manually added entries.
 * **Batch Selection:** Use **Select all** or **Clear all** to quickly adjust which movies are active on the wheel. Individual checkboxes allow granular inclusion.
 
@@ -92,18 +92,7 @@ The **Boost Station** allows group members or contributors to back their favorit
 
 ## 3. Spin the Wheel
 
-Scroll down to **"3. Spin the wheel"** to initiate your selection.
-
-```
-+----------------------------------------------------------------------------+
-|  3. Spin the wheel                                                         |
-|  (o) Knockout Mode   ( ) One Spin Mode                 [ Draw another 10 ] |
-|  +----------------------------------------------------------------------+  |
-|  |                 [ 3D VHS Carousel or Classic Canvas ]                |  |
-|  +----------------------------------------------------------------------+  |
-|                        [  SPIN THE WHEEL / THEATER  ]                      |
-+----------------------------------------------------------------------------+
-```
+Select **Go to spin** beside the eligibility count to jump to the spin section. Choose a mode, then use the main action directly below the mode choices.
 
 ### 3D VHS Mode vs. Classic Wheel
 Toggle between two rendering engines via the controls or **Settings → Options**:
@@ -131,10 +120,10 @@ When spinning large watchlists in 3D VHS mode:
 
 ## 4. Settings Modal
 
-Access global configuration anytime by clicking the gear icon (**Settings**) in the header. Settings are organized into 6 dedicated tabs:
+Open **Settings** from the gear icon in the header. When a Settings tab has focus, use the arrow keys to change sections, or Home and End to jump to the first or last tab. Press Escape to close Settings and return focus to the control that opened it.
 
 ### Tab 1: Options
-* **Visual Theme:** Select from 14 handcrafted preview cards including *Classic*, *Fantasy & Runic*, *Modern*, *Gaming Friendslop*, *Christmas*, *Hanukkah*, *Alaska*, *Chinese New Year*, *St. Patrick's Day*, *4th of July*, *Retro 95*, *Spooky Halloween*, *Forest Camp*, and *Birthday Party*.
+* **Visual Theme:** Browse or search the theme gallery for styles such as *Omni Dark*, *Dune · Arrakis*, *Retro 95*, and *Forest Camp*.
 * **Show Seasonal Decorations:** Toggle themed corner artwork and festive accents without changing palette colors.
 * **Wheel Style:** Switch between *3D VHS Tapes* and *Classic Wheel*.
 * **Lineup Capacity:** Set carousel density to *10*, *24*, *50*, *100*, or *250* tapes (default: 250).

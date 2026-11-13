@@ -46,6 +46,7 @@ import {
 } from './ui/slice-editor.js';
 import { initBoardsUI } from './ui/boards-ui.js';
 import { initVerificationModal, showConfirmModal } from './ui/modals.js';
+import { initSettingsDialog } from './ui/settings-dialog.js';
 import { initMovieList, updateMovieList, getFilteredSelectedMovies } from './ui/movie-list.js';
 import { triggerConfetti, getConfettiPalette } from './ui/confetti.js';
 import {
@@ -119,6 +120,7 @@ export function initUI(domElements) {
     initWinnerModal(domElements);
     initBoostStation(domElements, { updateMovieList });
     initHistoryModal(domElements);
+    initSettingsDialog(domElements);
     initVerificationModal(domElements);
     initSliceEditor(domElements);
     initWheelchinkoUI(domElements, {
@@ -186,15 +188,17 @@ export function initUI(domElements) {
     }
 
     document.addEventListener('keydown', (event) => {
+        if (event.defaultPrevented) return;
+        const nativeModal = event.target.closest?.('dialog:modal');
         if (event.key === 'Escape') {
-            closeWinnerPopup();
+            if (!nativeModal) closeWinnerPopup();
         } else if (event.key === 'Tab') {
-            const activeModal = document.querySelector('.win-modal:not([hidden])');
+            const activeModal = nativeModal || document.querySelector('.win-modal:not(dialog, [hidden])');
             if (!activeModal) return;
 
             const focusables = Array.from(
-                activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-            ).filter((el) => !el.disabled && el.offsetParent !== null);
+                activeModal.querySelectorAll('button, [href], input, select, textarea, summary, [tabindex]')
+            ).filter((el) => el.tabIndex >= 0 && !el.matches(':disabled') && el.getClientRects().length > 0);
 
             if (focusables.length === 0) return;
             const first = focusables[0];

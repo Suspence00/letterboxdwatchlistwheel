@@ -38,9 +38,17 @@
     padding: 1rem;
 }
 
-#confirm-modal,
-#input-modal {
-    z-index: 2100;
+dialog.win-modal {
+    border: 0;
+    color: inherit;
+    inset: 0;
+    margin: 0;
+    max-height: none;
+    max-width: none;
+}
+
+dialog.win-modal:not([open]) {
+    display: none;
 }
 
 .win-modal__content {

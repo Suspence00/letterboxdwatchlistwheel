@@ -228,12 +228,18 @@ export const omniDarkPalette = [
     '#a67d59', '#748b96', '#9f5037', '#a09d83'
 ];
 
+export const arrakisPalette = [
+    '#b45f33', '#d9b780', '#3a657b', '#8d5035', '#ec9554',
+    '#55535d', '#af8257', '#8faebb', '#6a392a', '#e6ce9d'
+];
+
 export const THEMES = [
     { id: 'default', name: 'Classic', palette: basePalette },
     { id: 'fantasy', name: 'Fantasy & Runic', palette: fantasyPalette },
     { id: 'modern', name: 'Modern', palette: modernPalette },
     { id: 'omni', name: 'Omni', palette: omniPalette },
     { id: 'omni-dark', name: 'Omni Dark', palette: omniDarkPalette },
+    { id: 'arrakis', name: 'Dune · Arrakis', palette: arrakisPalette },
     { id: 'friendslop', name: 'Gaming Friendslop', palette: friendslopPalette },
     { id: 'holiday', name: 'Christmas', palette: holidayPalette },
     { id: 'hanukkah', name: 'Hanukkah', palette: hanukkahPalette },

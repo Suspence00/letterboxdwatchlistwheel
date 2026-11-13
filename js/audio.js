@@ -3,6 +3,8 @@
  * Handles sound effects and Wheel.FM
  */
 
+import { getActiveTheme } from './utils.js';
+
 const WHEEL_FM_PLAYLIST_PATH = 'wheel-fm/playlist.json';
 const DEFAULT_WHEEL_FM_VOLUME = 0.8;
 
@@ -68,11 +70,13 @@ export function playTickSound() {
     if (wheelSoundsMuted) return;
 
     ensureAudioContext();
+    const isArrakis = getActiveTheme() === 'arrakis';
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
     oscillator.type = 'triangle';
-    oscillator.frequency.value = 600;
     const now = audioContext.currentTime;
+    oscillator.frequency.setValueAtTime(isArrakis ? 145 : 600, now);
+    if (isArrakis) oscillator.frequency.exponentialRampToValueAtTime(62, now + 0.1);
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
@@ -87,19 +91,21 @@ export function playWinSound() {
     ensureAudioContext();
     const now = audioContext.currentTime;
 
-    const notes = [523.25, 659.25, 783.99];
+    const isArrakis = getActiveTheme() === 'arrakis';
+    const notes = isArrakis ? [82.41, 123.47, 164.81] : [523.25, 659.25, 783.99];
     notes.forEach((frequency, index) => {
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
         oscillator.type = 'sine';
         oscillator.frequency.value = frequency;
-        const startTime = now + index * 0.12;
+        const startTime = now + index * (isArrakis ? 0.16 : 0.12);
         gain.gain.setValueAtTime(0.0001, startTime);
         gain.gain.exponentialRampToValueAtTime(0.12, startTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.4);
+        const release = isArrakis ? 0.9 : 0.4;
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + release);
         oscillator.connect(gain).connect(audioContext.destination);
         oscillator.start(startTime);
-        oscillator.stop(startTime + 0.45);
+        oscillator.stop(startTime + release + 0.05);
     });
 }
 

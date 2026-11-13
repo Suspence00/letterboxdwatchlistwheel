@@ -51,10 +51,6 @@
     text-align: left;
 }
 
-.app .import-hero-text h3 {
-    font-size: 1rem;
-}
-
 .app .import-actions-row {
     gap: 8px;
     justify-content: flex-start;
@@ -169,9 +165,9 @@
 .app #spin-button {
     font-size: 1rem;
     height: auto;
-    margin-top: 8px;
-    min-width: 220px;
-    padding: 14px 32px;
+    margin-top: 0;
+    min-width: min(220px, 100%);
+    padding: 14px 24px;
 }
 
 @media (min-width: 1100px) {
@@ -250,5 +246,24 @@
 
     .app .spin-mode-selector {
         grid-template-columns: 1fr;
+    }
+
+    .app #spin-button {
+        width: 100%;
+    }
+
+    .app .card-header--selection {
+        align-items: center;
+        display: grid;
+        gap: 0.625rem 0.5rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .app .card-header--selection h2 {
+        font-size: 1.1rem;
+    }
+
+    .app .selection-header-actions {
+        grid-column: 1 / -1;
     }
 }

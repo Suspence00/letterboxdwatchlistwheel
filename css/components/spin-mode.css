@@ -61,6 +61,21 @@
     line-height: 1.4;
 }
 
+.spin-action {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+#spin-heading {
+    scroll-margin-block-start: 1rem;
+}
+
+#spin-heading:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+}
+
 /* Random Boost Button */
 #random-boost-btn {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);

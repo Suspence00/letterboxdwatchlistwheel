@@ -92,6 +92,7 @@ letterboxdwatchlistwheel/
 │       ├── movie-list-item.js      # Individual row markup, weight, and color controls
 │       ├── movie-list-viewport.js  # Virtualized list viewport for large collections
 │       ├── movie-list.js           # Filtering, sorting, and coordinator synchronization
+│       ├── settings-dialog.js      # Settings dialog and keyboard navigation for tabs
 │       ├── slice-editor.js         # Slice color picker & live odds readout display
 │       ├── theme-picker.js         # Accessible theme card picker & decoration toggle
 │       ├── wheelchinko-ui.js       # Wheelchinko slot orchestration, styles, & drop aim

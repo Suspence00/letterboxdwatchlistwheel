@@ -3,9 +3,6 @@ import { appState, debouncedSaveState } from '../state.js';
 import { getStoredWeight, getMovieOriginalIndex } from '../utils.js';
 import {
     drawWheel,
-    drawEmptyWheel,
-    getIsSpinning,
-    getIsLastStandingInProgress,
     getWinnerId,
     setWinnerId,
     setWeightMode,
@@ -21,8 +18,6 @@ let getSpinMode = () => 'knockout';
 let updateSpinButtonLabel = () => {};
 let viewport = null;
 let wheelUpdateFrame = null;
-let pendingWheelSelection = null;
-let pendingOddsMaps = null;
 
 function isThemePaletteLocked() {
     return Boolean(appState.preferences?.theme && appState.preferences.theme !== 'default');
@@ -142,27 +137,13 @@ export function updateMovieList() {
     const weightsEnabled = true;
     const randomBoostActive = spinMode === 'random-boost';
     const themeLocked = isThemePaletteLocked();
-
-    if (!appState.movies.length) {
-        viewport.resetVirtualList();
-        elements.movieListEl.innerHTML = '';
-        const emptyItem = document.createElement('li');
-        emptyItem.className = 'empty';
-        emptyItem.textContent = 'Upload a CSV to see your movies here.';
-        elements.movieListEl.appendChild(emptyItem);
-        if (elements.spinButton) elements.spinButton.disabled = true;
-        drawEmptyWheel();
-        closeWinnerPopup({ restoreFocus: false });
-        updateSpinButtonLabel();
-        resetSliceEditor();
-        updateDisplayedOdds();
-        return;
-    }
-
     const filteredMovies = getFilteredMovies();
-    const winnerId = getWinnerId();
+    const selectedMovies = filteredMovies.filter((movie) => appState.selectedIds.has(movie.id));
 
-    const winnerVisible = filteredMovies.some((movie) => movie.id === winnerId && appState.selectedIds.has(movie.id));
+    updateSpinEligibility(selectedMovies.length);
+
+    const winnerId = getWinnerId();
+    const winnerVisible = selectedMovies.some((movie) => movie.id === winnerId);
     if (winnerId && !winnerVisible) {
         setWinnerId(null);
         if (elements.resultEl) elements.resultEl.textContent = '';
@@ -175,18 +156,21 @@ export function updateMovieList() {
         const emptyItem = document.createElement('li');
         emptyItem.className = 'empty';
         const descriptions = getActiveFilterDescriptions();
-        emptyItem.textContent = descriptions.length
-            ? `No movies match your current filters (${descriptions.join(', ')}).`
-            : 'No movies match your current filters.';
+        if (!appState.movies.length) {
+            emptyItem.textContent = 'Import from Letterboxd, upload a CSV, paste a list, or add a movie to get started.';
+        } else {
+            emptyItem.textContent = descriptions.length
+                ? `No movies match your current filters (${descriptions.join(', ')}).`
+                : 'No movies match your current filters.';
+        }
         elements.movieListEl.appendChild(emptyItem);
-        if (elements.spinButton) elements.spinButton.disabled = true;
-        drawEmptyWheel();
+        closeWinnerPopup({ restoreFocus: false });
+        updateSpinButtonLabel();
         resetSliceEditor();
-        updateDisplayedOdds();
+        scheduleWheelUpdate();
         return;
     }
 
-    const selectedMovies = filteredMovies.filter((movie) => appState.selectedIds.has(movie.id));
     const oddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: inverseMode });
     const winOddsMap = getSelectionOdds(selectedMovies, { inverseModeOverride: false });
 
@@ -255,36 +239,30 @@ export function updateMovieList() {
     };
     viewport.renderMovieList(displayMovies, renderContext);
 
-    if (elements.spinButton) {
-        elements.spinButton.disabled = selectedMovies.length === 0 || getIsSpinning() || getIsLastStandingInProgress();
-    }
     if (!selectedMovies.length) {
         closeWinnerPopup({ restoreFocus: false });
     }
     syncSliceEditorWithSelection(selectedMovies);
-    scheduleWheelUpdate(selectedMovies, { oddsMap, winOddsMap });
+    scheduleWheelUpdate();
     updateSpinButtonLabel();
     updateReshowWinnerButton();
 }
 
-function scheduleWheelUpdate(selectionOverride = null, oddsOverride = null) {
-    if (selectionOverride) {
-        pendingWheelSelection = selectionOverride;
+function updateSpinEligibility(count) {
+    if (elements.spinEligibility) {
+        const label = `${count} ${count === 1 ? 'movie' : 'movies'} eligible to spin`;
+        if (elements.spinEligibility.textContent !== label) elements.spinEligibility.textContent = label;
     }
-    if (oddsOverride) {
-        pendingOddsMaps = oddsOverride;
-    }
-    if (wheelUpdateFrame) {
-        return;
-    }
+    if (elements.goToSpin) elements.goToSpin.hidden = count === 0;
+}
+
+function scheduleWheelUpdate() {
+    if (wheelUpdateFrame) return;
     wheelUpdateFrame = requestAnimationFrame(() => {
         wheelUpdateFrame = null;
-        const selectedMoviesSnapshot = pendingWheelSelection || getFilteredSelectedMovies();
-        const oddsMaps = pendingOddsMaps;
-        pendingWheelSelection = null;
-        pendingOddsMaps = null;
-        drawWheel(selectedMoviesSnapshot);
-        updateDisplayedOdds(selectedMoviesSnapshot, oddsMaps);
+        const selectedMovies = getFilteredSelectedMovies();
+        drawWheel(selectedMovies);
+        updateDisplayedOdds(selectedMovies);
         debouncedSaveState();
     });
 }

@@ -41,3 +41,42 @@ test('Compact movie controls retain accessible names and keep odds in sync', asy
     await page.locator('#settings-modal-close').click();
     await page.locator('#selection-card').screenshot({ path: testInfo.outputPath('compact-curation.png'), animations: 'disabled' });
 });
+
+test('Mobile import leads to the spin action and search explains eligibility', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    await expect(page.getByRole('textbox', { name: 'Letterboxd URL or username' })).toBeVisible();
+    await expect(page.locator('#movie-list .empty')).toHaveText('Import from Letterboxd, upload a CSV, paste a list, or add a movie to get started.');
+
+    const summary = page.locator('#spin-eligibility');
+    const jump = page.getByRole('link', { name: 'Go to spin' });
+    await expect(summary).toHaveText('0 movies eligible to spin');
+    await expect(jump).toBeHidden();
+    await page.locator('#csv-input').setInputFiles(path.resolve('sample-watchlist.csv'));
+    await expect(summary).toHaveText('10 movies eligible to spin');
+    await expect(jump).toBeInViewport({ ratio: 1 });
+    await jump.click({ trial: true });
+
+    const search = page.getByRole('searchbox', { name: 'Search your picks' });
+    await expect(search).toHaveAccessibleDescription('Only selected movies that match your search can spin.');
+    await search.fill('Witch');
+    await expect(summary).toHaveText('1 movie eligible to spin');
+    await search.fill('no matching title');
+    await expect(summary).toHaveText('0 movies eligible to spin');
+    await expect(page.locator('#spin-button')).toBeDisabled();
+    await expect(jump).toBeHidden();
+    await search.fill('');
+    await expect(summary).toHaveText('10 movies eligible to spin');
+
+    await jump.press('Enter');
+    await expect(page.getByRole('heading', { name: '3. Spin the wheel' })).toBeFocused();
+    const spin = page.locator('#spin-button');
+    await expect(spin).toBeEnabled();
+    await expect(spin).toBeInViewport({ ratio: 1 });
+    const modeBounds = await page.getByRole('group', { name: 'Spin mode' }).boundingBox();
+    const spinBounds = await spin.boundingBox();
+    const stageBounds = await page.locator('.wheel-section').boundingBox();
+    expect(spinBounds.y).toBeGreaterThan(modeBounds.y + modeBounds.height);
+    expect(spinBounds.y + spinBounds.height).toBeLessThan(stageBounds.y);
+    await spin.click({ trial: true });
+});
