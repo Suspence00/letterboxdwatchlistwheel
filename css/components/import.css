@@ -37,8 +37,40 @@
     color: var(--muted);
 }
 
+.import-sync-container {
+    align-items: center;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    margin: 0 auto 0.75rem;
+    max-width: 600px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+}
+
+.import-sync-sources {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.import-sync-sources ul {
+    margin: 0.25rem 0 0;
+    padding-inline-start: 1.25rem;
+}
+
+#import-sync-btn {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+}
+
 /* Import Bar (Input + Button) */
 .import-bar {
+    align-items: flex-start;
     display: flex;
     width: 100%;
     gap: 0.5rem;
@@ -56,8 +88,42 @@
     border-color: rgba(255, 255, 255, 0.2);
 }
 
+.import-sources,
+.import-extra-sources {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.import-sources {
+    flex: 1;
+}
+
+.import-source-row {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+}
+
+.import-source-row > .import-input {
+    min-width: 0;
+    padding-inline-start: 0.75rem;
+}
+
+.import-source-row .import-input:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.import-source-action {
+    flex-shrink: 0;
+    padding-inline: 0.6rem;
+    white-space: nowrap;
+}
+
 .import-input-wrapper {
     flex: 1;
+    min-width: 0;
     position: relative;
     display: flex;
     align-items: center;
@@ -186,6 +252,10 @@
         flex-direction: column;
         padding: 0.75rem;
         border-radius: 12px;
+    }
+
+    .import-sources {
+        width: 100%;
     }
 
     .import-input {

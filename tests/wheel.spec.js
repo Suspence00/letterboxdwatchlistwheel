@@ -255,6 +255,79 @@ test.describe('Letterboxd Watchlist Wheel', () => {
     await expect(page.locator('#letterboxd-proxy-status')).toBeVisible();
   });
 
+  test('Merging Letterboxd sources preserves existing movies and syncs the union after reload', async ({ page }) => {
+    const watchlist = 'https://letterboxd.com/movie-friend/watchlist/';
+    const curated = 'https://letterboxd.com/movie-friend/list/picks/';
+    const requested = [];
+    let rowsBySource = {
+      [watchlist]: ['The Witch,2015,https://letterboxd.com/film/the-witch-2015/', 'Watchlist Pick,2024,'],
+      [curated]: ['The Witch,2015,https://boxd.it/9X0m', 'List Pick,2025,']
+    };
+    let failCurated = true;
+    await page.route('**/letterboxd-proxy.cwbcode.workers.dev/**', async route => {
+      const url = new URL(route.request().url()).searchParams.get('url');
+      requested.push(url);
+      if (url === curated && failCurated) {
+        await route.fulfill({ status: 503 });
+        return;
+      }
+      await route.fulfill({ contentType: 'text/csv', body: ['Name,Year,URL', ...rowsBySource[url]].join('\n') });
+    });
+
+    await page.locator('#csv-input').setInputFiles(SAMPLE_CSV_PATH);
+    const movies = page.locator('#movie-list li');
+    const witch = movies.filter({ hasText: 'The Witch' });
+    await expect(movies).toHaveCount(10);
+    await witch.locator('.movie-weight__select').selectOption('4');
+    await witch.getByRole('checkbox').uncheck();
+    await page.click('#import-toggle');
+    await page.fill('#letterboxd-proxy-input', 'movie-friend');
+
+    const addList = page.getByRole('button', { name: '+ Add list' });
+    const extraSources = page.getByRole('textbox', { name: 'Additional Letterboxd URL or username' });
+    await addList.click();
+    await expect(extraSources).toBeFocused();
+    await extraSources.fill(curated);
+    await addList.click();
+    await page.getByRole('button', { name: 'Remove', exact: true }).last().click();
+    await addList.click();
+    await extraSources.last().fill(`${watchlist}page/2/?test=1`);
+
+    const submitAppend = async () => {
+      await page.click('#letterboxd-proxy-open');
+      await page.getByRole('button', { name: 'Add New Movies Only' }).click();
+    };
+    await submitAppend();
+    const status = page.locator('#letterboxd-proxy-status');
+    await expect(status).toContainText('list 2 of 2 could not be loaded');
+    await expect(movies).toHaveCount(10);
+    await expect(page.locator('#import-sync-container')).toBeHidden();
+    expect(requested).toEqual([watchlist, curated]);
+
+    failCurated = false;
+    await submitAppend();
+    await expect(movies).toHaveCount(12);
+    await expect(witch).toHaveCount(1);
+    await expect(witch.locator('.movie-weight__select')).toHaveValue('4');
+    await expect(witch.getByRole('checkbox')).not.toBeChecked();
+    await page.reload();
+    await page.click('#import-toggle');
+    const links = page.locator('#import-sync-urls a');
+    await expect(links).toHaveText([watchlist, curated]);
+
+    rowsBySource = {
+      [watchlist]: ['New Pick,2026,'],
+      [curated]: ['The Witch,2015,https://letterboxd.com/film/the-witch-2015/', 'List Pick,2025,']
+    };
+    await page.getByRole('button', { name: 'Sync Lists', exact: true }).click();
+    await expect(status).toContainText('Sync complete!');
+    await expect(movies).toHaveCount(3);
+    await expect(witch.locator('.movie-weight__select')).toHaveValue('4');
+    await expect(witch.getByRole('checkbox')).not.toBeChecked();
+    await expect(movies.filter({ hasText: 'New Pick' })).toBeVisible();
+    expect(requested).toEqual([watchlist, curated, watchlist, curated, watchlist, curated]);
+  });
+
   test('Board switch restores board-specific winner, controls, and integrations', async ({ page }) => {
     await page.evaluate(() => {
       const boardA = 'board-a';

@@ -21,6 +21,12 @@ The **Letterboxd URL or username** field accepts these formats:
 > [!NOTE]
 > Direct import only works for **public** Letterboxd watchlists and lists. If your watchlist is set to private, use the [CSV Import](#2-csv-import) method instead.
 
+### Merge Multiple Letterboxd Lists
+
+Enter the first list or username, select **+ Add list** beside the field, and enter the next source. Repeat as needed, then select **Fetch Movies**. Overlapping films appear once on the wheel.
+
+On a wheel with existing movies, choose **Add New Movies Only** to keep its movies and linked lists while adding the new sources. Choose **Replace Existing List** to use the submitted sources instead. If a source fails to load, the wheel keeps its existing movies and links so you can retry.
+
 ### Multi-Page Pagination
 
 Letterboxd divides lists into 100 films per page, watchlists into 28 films per page, and member films into 72 films per page (e.g. `/page/1/`, `/page/2/`, etc.).
@@ -80,22 +86,22 @@ Need to add a custom list of titles quickly without creating a Letterboxd list o
 
 ## 4. Tied List Syncing & Auto-Collapse
 
-When you import a Letterboxd URL into an active board, the application establishes a permanent binding between the URL and that board.
+The wheel remembers the public Letterboxd lists and watchlists you import.
 
 ### The "Sync List" Banner
-* Once a list is tied to a board, an elegant status banner appears at the top of Step 1 displaying the tied Letterboxd URL and a **Sync List** button.
-* You do not need to re-type or re-paste the URL when your Letterboxd list changes. Simply click **Sync List** to refresh the board.
+* Expand Step 1 to see the linked sources.
+* Select **Sync List** or **Sync Lists** to refresh the wheel from all its linked sources.
 
 ### Incremental Re-Sync Algorithm
 When you trigger a list sync:
 1. **Preserve Custom Entries**: Any titles added via "Add Custom Movie" or "Bulk Add" are preserved untouched.
-2. **Remove Outdated Titles**: Films removed from your Letterboxd list are pruned from the wheel.
+2. **Remove Outdated Titles**: A film stays on the wheel while any linked source still includes it.
 3. **Add New Discoveries**: Newly added films are appended, automatically selected, assigned palette colors, and initialized with a 1x weight.
 4. **Preserve Existing Weights**: Movies that remain on the list retain their existing customized weights and booster tags.
 5. **Interactive Diff Tooltips**: The status message reports exact totals (e.g. `Sync complete! Added 3 new movies, removed 1 movie.`). Hovering over the badge reveals a tooltip listing the specific titles added or removed.
 
 ### Step 1 Auto-Collapse
-To maximize screen space for the interactive wheel and slice editor, Step 1 automatically collapses (`card--collapsed`) upon successful import or sync. An **Expand Step** toggle button remains available whenever you wish to view the import controls or tie a new URL.
+Step 1 automatically collapses after a successful import. After syncing, it stays open so you can review the result.
 
 ---
 

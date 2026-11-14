@@ -87,24 +87,24 @@ graph TD
 
 ## 4. Letterboxd List Binding & 1-Click Syncing
 
-Each wheel can be tied directly to a live Letterboxd list or watchlist URL.
+Each wheel can be linked to one or more public Letterboxd lists or watchlists.
 
 ### How Binding Occurs
-When you import a Letterboxd URL in Step 1, that URL is automatically bound to the active wheel (`workspace.letterboxdUrl`). In **Settings → Saved wheels**, your wheel displays its tied source:
+When you import Letterboxd lists in Step 1, the active wheel remembers their URLs. In **Settings → Saved wheels**, each wheel displays its source or the number of sources:
 ```text
 Horror Month
 Updated 10/31/2026 • Letterboxd: username/list/spooky-season/
 ```
 
-### 1-Click "Sync List" Banner
-Whenever an active wheel has a bound URL, an active synchronization banner appears at the top of Step 1:
+### Sync Banner
+When the active wheel has linked sources, the sync banner appears at the top of Step 1:
 
 * **Direct Link**: Click the displayed URL to inspect the list on Letterboxd in a new tab.
-* **Sync List Button**: Click **Sync List** to fetch the latest changes from Letterboxd in one click without closing or collapsing the import section.
+* **Sync Button**: Select **Sync List** or **Sync Lists** to fetch the latest changes from every linked source.
 * **Smart Reconcile**:
   * Retains manually created custom titles.
   * Adds new titles discovered on Letterboxd.
-  * Prunes titles that were removed from the Letterboxd list.
+  * Prunes titles that are absent from every linked source.
   * Restores customized slice weights for existing titles.
 * **Hover Tooltips**: The resulting status banner shows interactive badges detailing the exact titles added or removed.
 

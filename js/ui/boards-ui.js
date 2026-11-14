@@ -9,6 +9,7 @@ import {
     deleteWorkspace,
     renameWorkspace
 } from '../state.js';
+import { getWorkspaceLetterboxdUrls } from '../letterboxd-sources.js';
 import {
     promptForInput,
     showConfirmModal
@@ -106,7 +107,7 @@ export function renderBoardsList(boardsList = (typeof document !== 'undefined' ?
 
     const query = document.getElementById('saved-wheels-search')?.value.trim().toLocaleLowerCase() || '';
     const wheels = appState.workspaces.filter(ws =>
-        `${ws.name} ${ws.letterboxdUrl || ''}`.toLocaleLowerCase().includes(query));
+        `${ws.name} ${getWorkspaceLetterboxdUrls(ws).join(' ')}`.toLocaleLowerCase().includes(query));
     const status = document.getElementById('saved-wheels-status');
     if (status) status.textContent = wheels.length
         ? `${wheels.length} saved ${wheels.length === 1 ? 'wheel' : 'wheels'}${query ? ' found' : ''}`
@@ -130,16 +131,9 @@ export function renderBoardsList(boardsList = (typeof document !== 'undefined' ?
         meta.className = 'board-item__meta';
         const date = new Date(ws.lastModified || Date.now()).toLocaleDateString();
         let metaText = `Updated ${date}`;
-        if (ws.letterboxdUrl) {
-            let urlDisplay = ws.letterboxdUrl;
-            try {
-                const parts = ws.letterboxdUrl.replace(/^https?:\/\/(www\.)?letterboxd\.com\//i, '').split('/');
-                if (parts.length > 0 && parts[0]) {
-                    urlDisplay = parts.filter(Boolean).join('/');
-                }
-            } catch (e) {}
-            metaText += ` • Letterboxd: ${urlDisplay}`;
-        }
+        const urls = getWorkspaceLetterboxdUrls(ws);
+        if (urls.length === 1) metaText += ` • Letterboxd: ${urls[0].replace(/^https:\/\/(?:letterboxd\.com\/)?/, '').replace(/\/$/, '')}`;
+        if (urls.length > 1) metaText += ` • ${urls.length} linked Letterboxd lists`;
         meta.textContent = metaText;
 
         info.appendChild(name);

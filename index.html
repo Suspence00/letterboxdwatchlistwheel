@@ -289,13 +289,13 @@
           aria-controls="import-body">Collapse Step</button>
       </div>
       <div class="card-body import-body" id="import-body">
-        <div id="import-sync-container" class="import-sync-container" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; width: 100%; max-width: 600px; margin: 0 auto 0.75rem; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);" hidden>
-          <div style="text-align: left;">
-            <span style="font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 0.15rem;">Tied Letterboxd List</span>
-            <a href="#" target="_blank" id="import-sync-url" class="link-subtle" style="font-weight: 600; color: var(--accent); text-decoration: underline; word-break: break-all;">https://letterboxd.com/...</a>
+        <div id="import-sync-container" class="import-sync-container" hidden>
+          <div class="import-sync-sources">
+            <span id="import-sync-label">Linked Letterboxd lists</span>
+            <ul id="import-sync-urls" aria-labelledby="import-sync-label"></ul>
           </div>
-          <button type="button" class="btn btn--primary" id="import-sync-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" class="btn btn--primary" id="import-sync-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
             </svg>
             <span>Sync List</span>
@@ -307,16 +307,23 @@
             <div class="import-hero-text">
               <label for="letterboxd-proxy-input">Letterboxd URL or username</label>
               <p class="helper-text" id="letterboxd-import-help">Use a public list or watchlist. For a private list, upload a CSV.</p>
+              <p class="helper-text">Example list <a class="link-subtle" href="https://letterboxd.com/suspence0/list/the-wheel/" target="_blank" rel="noopener">The Wheel by suspence0</a></p>
             </div>
 
             <form id="letterboxd-proxy-form" class="import-bar">
-              <div class="import-input-wrapper">
-                <svg class="import-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-                <input type="text" id="letterboxd-proxy-input" class="import-input" name="letterboxd-proxy-input"
-                  placeholder="e.g. yourusername" aria-describedby="letterboxd-import-help" autocomplete="off" />
+              <div class="import-sources">
+                <div class="import-source-row">
+                  <div class="import-input-wrapper">
+                    <svg class="import-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    <input type="text" id="letterboxd-proxy-input" class="import-input" name="letterboxd-proxy-input"
+                      placeholder="e.g. suspence0" aria-describedby="letterboxd-import-help" autocomplete="off" />
+                  </div>
+                  <button type="button" class="btn import-source-action" id="letterboxd-add-list">+ Add list</button>
+                </div>
+                <div class="import-extra-sources" id="letterboxd-extra-lists" hidden></div>
               </div>
               <button type="submit" class="btn btn--primary import-btn" id="letterboxd-proxy-open">
                 <span>Fetch Movies</span>
@@ -326,6 +333,13 @@
                 </svg>
               </button>
             </form>
+            <template id="letterboxd-source-template">
+              <div class="import-source-row">
+                <input type="text" class="import-input" placeholder="List URL or username" aria-label="Additional Letterboxd URL or username"
+                  aria-describedby="letterboxd-import-help" autocomplete="off" />
+                <button type="button" class="btn import-source-action">Remove</button>
+              </div>
+            </template>
             <div class="import-actions-row">
               <label class="btn file-upload-btn" for="csv-input" title="Upload a Letterboxd watchlist or list CSV">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -48,7 +48,8 @@
  * @property {string} name Display name
  * @property {number} created Unix timestamp in milliseconds
  * @property {number} lastModified Unix timestamp in milliseconds
- * @property {string} [letterboxdUrl] Tied list URL, or an empty string
+ * @property {string} [letterboxdUrl] Legacy single linked list URL
+ * @property {string[]} [letterboxdUrls] Linked Letterboxd list and watchlist URLs
  */
 
 /**

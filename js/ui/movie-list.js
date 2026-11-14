@@ -10,7 +10,7 @@ import {
 import { getActiveSpinMode } from '../vhs-wheel.js';
 import { closeWinnerPopup, updateReshowWinnerButton } from './winner-modal.js';
 import { resetSliceEditor, syncSliceEditorWithSelection, updateSliceOddsDisplay } from './slice-editor.js';
-import { buildMovieListItem, getSafeHttpUrl } from './movie-list-item.js';
+import { buildMovieListItem } from './movie-list-item.js';
 import { getModeCopy, updateMovieOdds } from './movie-odds.js';
 import { createMovieListViewport } from './movie-list-viewport.js';
 
@@ -71,20 +71,6 @@ function applyWeightCopy(copy) {
 
 export function updateMovieList() {
     if (!elements.movieListEl) return;
-
-    const syncContainer = document.getElementById('import-sync-container');
-    const syncUrlLink = document.getElementById('import-sync-url');
-    if (syncContainer && syncUrlLink) {
-        const currentBoard = appState.workspaces.find(w => w.id === appState.activeWorkspaceId);
-        if (currentBoard && currentBoard.letterboxdUrl) {
-            syncContainer.hidden = false;
-            const safeUrl = getSafeHttpUrl(currentBoard.letterboxdUrl);
-            syncUrlLink.href = safeUrl || '#';
-            syncUrlLink.textContent = currentBoard.letterboxdUrl;
-        } else {
-            syncContainer.hidden = true;
-        }
-    }
 
     const spinMode = getActiveSpinMode();
     const currentWeightCopy = getModeCopy(spinMode);

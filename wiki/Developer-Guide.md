@@ -69,7 +69,10 @@ letterboxdwatchlistwheel/
 │   ├── audio.js                    # Web Audio synthesizer & floating Wheel.FM player
 │   ├── backup.js                   # JSON/.wheel file import/export & identity matching
 │   ├── discord.js                  # Discord Webhook winner notification dispatch
-│   ├── import.js                   # Letterboxd proxy scraping & CSV parser engine
+│   ├── import.js                   # CSV uploads and common import card controls
+│   ├── import-data.js              # Shared CSV parsing and import helpers
+│   ├── letterboxd-import.js         # Public list import, pagination, and sync
+│   ├── letterboxd-sources.js        # Source URL normalization and saved list lookup
 │   ├── movie-metadata.js           # Cloudflare proxy client for TMDB metadata enrichment
 │   ├── radarr.js                   # Radarr v3 REST API client & connection diagnostics
 │   ├── spin-theater.js             # Full-screen theater modal, Returns Wall, & stage slotting
