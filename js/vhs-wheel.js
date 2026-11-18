@@ -437,7 +437,7 @@ export async function animateVhsKnockout(movie, order) {
         proxy.style.setProperty('--sleeve-hue', sleeveHue);
 
         proxy.innerHTML = `<div class="vhs-stack-tape__cover">
-            ${posterSrc ? `<img class="vhs-stack-tape__poster" src="${posterSrc}" alt="" style="display:block;" />` : ''}
+            ${posterSrc ? '<img class="vhs-stack-tape__poster" alt="" style="display:block;" />' : ''}
             <div class="vhs-stack-tape__fallback">
                 <small>VIDEO CASSETTE</small>
                 <strong></strong>
@@ -450,6 +450,8 @@ export async function animateVhsKnockout(movie, order) {
             <span>#${order}</span>
         </div>`;
 
+        const proxyPoster = proxy.querySelector('.vhs-stack-tape__poster');
+        if (proxyPoster) proxyPoster.src = posterSrc;
         proxy.querySelector('.vhs-stack-tape__fallback strong').textContent = movie.name;
         proxy.querySelector('.vhs-stack-tape__fallback em').textContent = movie.year || 'HOME VIDEO';
 
