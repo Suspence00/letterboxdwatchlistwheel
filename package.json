@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/Suspence00/letterboxdwatchlistwheel#readme",
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.65.1"
   }
 }
