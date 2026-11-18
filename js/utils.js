@@ -459,8 +459,9 @@ export function buildMovieIdentityKey(movie = {}) {
  */
 export function decodeHtmlEntities(text) {
     if (!text) return '';
-    const doc = new DOMParser().parseFromString(text, 'text/html');
-    return doc.documentElement.textContent;
+    const decoder = document.createElement('textarea');
+    decoder.innerHTML = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return decoder.value;
 }
 
 /**

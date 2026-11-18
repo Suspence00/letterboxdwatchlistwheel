@@ -210,7 +210,7 @@ export function prepareEliminationStackSlot(movie, order) {
         slot.style.setProperty('--sleeve-hue', sleeveHue);
 
         slot.innerHTML = `<div class="vhs-stack-tape__cover">
-            ${posterUrl ? `<img class="vhs-stack-tape__poster" src="${posterUrl}" alt="" />` : ''}
+            ${posterUrl ? '<img class="vhs-stack-tape__poster" alt="" />' : ''}
             <div class="vhs-stack-tape__fallback">
                 <small>VIDEO CASSETTE</small>
                 <strong></strong>
@@ -226,6 +226,7 @@ export function prepareEliminationStackSlot(movie, order) {
         if (posterUrl) {
             const img = slot.querySelector('.vhs-stack-tape__poster');
             if (img) {
+                img.src = posterUrl;
                 img.addEventListener('error', () => {
                     slot.classList.remove('has-poster');
                 }, { once: true });
@@ -273,7 +274,7 @@ export function commitEliminationStackSlot(movie, order) {
         slot.setAttribute('role', 'listitem');
         slot.style.setProperty('--sleeve-hue', sleeveHue);
         slot.innerHTML = `<div class="vhs-stack-tape__cover">
-            ${posterUrl ? `<img class="vhs-stack-tape__poster" src="${posterUrl}" alt="" />` : ''}
+            ${posterUrl ? '<img class="vhs-stack-tape__poster" alt="" />' : ''}
             <div class="vhs-stack-tape__fallback">
                 <small>VIDEO CASSETTE</small>
                 <strong></strong>
@@ -289,6 +290,7 @@ export function commitEliminationStackSlot(movie, order) {
         if (posterUrl) {
             const img = slot.querySelector('.vhs-stack-tape__poster');
             if (img) {
+                img.src = posterUrl;
                 img.addEventListener('error', () => {
                     slot.classList.remove('has-poster');
                 }, { once: true });
